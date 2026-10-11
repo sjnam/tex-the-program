@@ -1,7 +1,7 @@
 Compiler directives	컴파일러 지시문
-Labels in the outer block	바깥 블록의 레이블
-Constants in the outer block	바깥 블록의 상수
-Types in the outer block	바깥 블록의 형
+Labels in the outer block	전역 레이블
+Constants in the outer block	전역 상수
+Types in the outer block	전역 형
 Global variables	전역 변수
 Local variables for initialization	초기화를 위한 지역 변수
 Initialize whatever \TeX\ might access	\TeX이 건드릴 만한 것은 무엇이든 초기화한다
@@ -13,8 +13,8 @@ Check the ``constant'' values for consistency	``상수'' 값들이 서로 맞는
 Report overflow of the input buffer, and abort	입력 버퍼의 넘침을 알리고 그만둔다
 Make the first 256 strings	처음 256개의 문자열을 만든다
 Character |k| cannot be printed	문자 |k|를 찍을 수 없다
-Read the other strings from the \.{TEX.POOL} file and return |true|, or give an error message and return |false|	나머지 문자열을 \.{TEX.POOL}에서 읽고 |true|나 |false|를 돌려준다
-Read one string, but return |false| if the string memory space is getting too tight for comfort	문자열 하나를 읽되, 자리가 빠듯하면 |false|를 돌려준다
+Read the other strings from the \.{TEX.POOL} file and return |true|, or give an error message and return |false|	나머지 문자열을 |pool_literals|에서 넣고 |true|나 |false|를 돌려준다
+Read one string, but return |false| if the string memory space is getting too tight for comfort	문자열 하나를 넣되, 자리가 빠듯하면 |false|를 돌려준다
 Initialize the output routines	출력 루틴들을 초기화한다
 Character |s| is the current new-line character	문자 |s|가 현재의 줄바꿈 문자다
 Set variable |c| to the current escape character	변수 |c|를 현재의 탈출 문자로 놓는다
@@ -110,9 +110,9 @@ Insert the \(v)\<v_j> template and |goto restart|	\<v_j> 틀을 끼워 넣고 |g
 Change state if necessary, and |goto switch| if the current character should be ignored, or |goto reswitch| if the current character changes to another	필요하면 상태를 바꾸고, 무시할 문자면 |goto switch|, 다른 문자로 바뀌면 |goto reswitch|
 Move to next line of file, or |goto restart| if there is no next line, or |return| if a \.{\\read} line has finished	파일의 다음 줄로 옮겨 가거나, 다음 줄이 없으면 |goto restart|, \.{\\read} 줄이 끝났으면 |return|
 Cases where character is ignored	문자를 무시하는 경우들
-Scan a control sequence and set |state:=skip_blanks| or |mid_line|	제어 시퀀스를 훑고 |state:=skip_blanks|나 |mid_line|으로 놓는다
-Process an active-character control sequence and set |state:=mid_line|	능동 문자 제어 시퀀스를 처리하고 |state:=mid_line|으로 놓는다
-If this |sup_mark| starts an expanded character like~\.{\^\^A} or~\.{\^\^df}, then |goto reswitch|, otherwise set |state:=mid_line|	이 |sup_mark|가 \.{\^\^A}나 \.{\^\^df} 같은 펼친 문자를 시작하면 |goto reswitch|, 아니면 |state:=mid_line|
+Scan a control sequence and set |state:=skip_blanks| or |mid_line|	제어 시퀀스를 훑고 |state=skip_blanks|나 |mid_line|으로 놓는다
+Process an active-character control sequence and set |state:=mid_line|	능동 문자 제어 시퀀스를 처리하고 |state=mid_line|으로 놓는다
+If this |sup_mark| starts an expanded character like~\.{\^\^A} or~\.{\^\^df}, then |goto reswitch|, otherwise set |state:=mid_line|	이 |sup_mark|가 \.{\^\^A}나 \.{\^\^df} 같은 펼친 문자를 시작하면 |goto reswitch|, 아니면 |state=mid_line|
 Decry the invalid character and |goto restart|	잘못된 문자를 꾸짖고 |goto restart|
 Handle situations involving spaces, braces, changes of state	공백, 중괄호, 상태 변화가 얽힌 상황을 다룬다
 Enter |skip_blanks| state, emit a space	|skip_blanks| 상태에 들어가고 공백을 내보낸다
@@ -237,7 +237,7 @@ Read font parameters	글꼴 매개변수들을 읽는다
 Make final adjustments and |goto done|	마지막 조정을 하고 |goto done|
 Issue an error message if |cur_val=fmem_ptr|	|cur_val=fmem_ptr|면 오류 메시지를 낸다
 Increase the number of parameters in the last font	마지막 글꼴의 매개변수 수를 늘린다
-(added) macros of read_font_info	\.{TFM} 파일을 읽는 매크로들
+(added) macros of read_font_info	\.{TFM} 파일을 읽는 함수들
 (added) check one lig/kern instruction	합자/커닝 명령 하나를 검사한다
 Empty the last bytes out of |dvi_buf|	|dvi_buf|의 마지막 바이트들을 비운다
 Output the font name whose internal number is |f|	내부 번호가 |f|인 글꼴의 이름을 출력한다
@@ -403,7 +403,7 @@ Prepare to deactivate node~|r|, and |goto deactivate| unless there is a reason t
 Record a new feasible break	새 실행 가능한 나눔을 기록한다
 Deactivate node |r|	노드 |r|을 비활성화한다
 Print a symbolic description of this feasible break	이 실행 가능한 나눔을 기호로 설명해 찍는다
-Print the list between |printed_node| and |cur_p|, then set |printed_node:=cur_p|	|printed_node|와 |cur_p| 사이의 목록을 찍고 |printed_node:=cur_p|로 한다
+Print the list between |printed_node| and |cur_p|, then set |printed_node:=cur_p|	|printed_node|와 |cur_p| 사이의 목록을 찍고 |printed_node=cur_p|로 한다
 Compute the demerits, |d|, from |r| to |cur_p|	|r|에서 |cur_p|까지의 감점 |d|를 계산한다
 Update the active widths, since the first active node has been deleted	첫 활성 노드가 지워졌으므로 활성 너비들을 갱신한다
 Initialize for hyphenating a paragraph	문단에 하이픈을 넣을 준비를 한다
@@ -429,7 +429,7 @@ Put the \(l)\.{\\leftskip} glue at the left and detach this line	\.{\\leftskip} 
 Call the packaging subroutine, setting |just_box| to the justified box	묶기 서브루틴을 불러 |just_box|를 맞춘 상자로 한다
 Append the new box to the current vertical list, followed by the list of special nodes taken out of the box by the packager	새 상자를 현재 세로 목록에 덧붙이고, 묶개가 꺼낸 특별한 노드들을 잇는다
 Append a penalty node, if a nonzero penalty is appropriate	알맞으면 0이 아닌 벌점 노드를 덧붙인다
-Change discretionary to compulsory and set |disc_break:=true|	선택적 나눔을 강제 나눔으로 바꾸고 |disc_break:=true|로 한다
+Change discretionary to compulsory and set |disc_break:=true|	선택적 나눔을 강제 나눔으로 바꾸고 |disc_break=true|로 한다
 Destroy the |t| nodes following |q|, and make |r| point to the following node	|q| 뒤의 노드 |t|개를 없애고 |r|이 그 다음 노드를 가리키게 한다
 Transplant the post-break list	나눔 뒤 목록을 옮겨 심는다
 Transplant the pre-break list	나눔 앞 목록을 옮겨 심는다
@@ -476,8 +476,8 @@ Enter all of the patterns into a linked trie, until coming to a right brace	오�
 Append a new letter or a hyphen level	새 글자나 하이픈 수준을 덧붙인다
 Insert a new pattern into the linked trie	연결 트라이에 새 패턴을 넣는다
 Insert a new trie node between |q| and |p|, and make |p| point to it	|q|와 |p| 사이에 새 트라이 노드를 넣고 |p|가 그것을 가리키게 한다
-Compute the trie op code, |v|, and set |l:=0|	트라이 연산 코드 |v|를 계산하고 |l:=0|으로 한다
-Insert glue for |split_top_skip| and set~|p:=null|	|split_top_skip|을 위한 글루를 넣고 |p:=null|로 한다
+Compute the trie op code, |v|, and set |l:=0|	트라이 연산 코드 |v|를 계산하고 |l=0|으로 한다
+Insert glue for |split_top_skip| and set~|p:=null|	|split_top_skip|을 위한 글루를 넣고 |p=null|로 한다
 If node |p| is a legal breakpoint, check if this break is the best known, ...	노드 |p|가 합법적인 나눔점이면 가장 좋은지 검사한다
 Use node |p| to update the current height and depth measurements; ...	노드 |p|로 현재 높이와 깊이 측정값을 갱신한다
 Check if node |p| is a new champion breakpoint; ...	노드 |p|가 새 챔피언 나눔점인지 검사한다
@@ -560,19 +560,19 @@ Readjust the height and depth of |cur_box|, for \.{\\vtop}	\.{\\vtop}을 위해 
 Apologize for inability to do the operation now, unless \.{\\unskip} follows non-glue	지금은 이 연산을 할 수 없다고 사과한다
 Prune the current list, if necessary, until it contains only |char_node|, |kern_node|, |hlist_node|, |vlist_node|, |rule_node|, and |ligature_node| items; set |n| to the length of the list, and set |q| to the list's tail	현재 목록에 허락된 노드만 남도록 쳐내고, |n|을 길이로, |q|를 꼬리로 한다
 Attach list |p| to the current list, and record its length; then finish up and |return|	목록 |p|를 현재 목록에 붙이고 그 길이를 기록한 뒤, 마무리하고 |return|한다
-Create a character node |q| for the next character, but set |q:=null| if problems arise	다음 문자를 위한 문자 노드 |q|를 만들되, 문제가 생기면 |q:=null|로 한다
-Append the accent with appropriate kerns, then set |p:=q|	알맞은 커닝과 함께 악센트를 덧붙이고 |p:=q|로 한다
+Create a character node |q| for the next character, but set |q:=null| if problems arise	다음 문자를 위한 문자 노드 |q|를 만들되, 문제가 생기면 |q=null|로 한다
+Append the accent with appropriate kerns, then set |p:=q|	알맞은 커닝과 함께 악센트를 덧붙이고 |p=q|로 한다
 Express consternation over the fact that no alignment is in progress	정렬이 진행 중이지 않다는 사실에 당황을 나타낸다
 Go into display math mode	따로 세운 수식 모드로 들어간다
 Go into ordinary math mode	보통 수식 모드로 들어간다
 Calculate the natural width, |w|, by which the characters of the final line extend to the right of the reference point, ...	마지막 줄의 문자들이 기준점 오른쪽으로 뻗는 자연 너비 |w|를 계산한다
 Calculate the length, |l|, and the shift amount, |s|, of the display lines	따로 세운 수식 줄의 길이 |l|과 옮김 양 |s|를 계산한다
 Let |d| be the natural width of node |p|; ...	|d|를 노드 |p|의 자연 너비로 한다
-Let |d| be the natural width of this glue; if stretching or shrinking, set |v:=max_dimen|; |goto found| in the case of leaders	|d|를 이 글루의 자연 너비로 하고, 늘이거나 줄이면 |v:=max_dimen|으로 한다
+Let |d| be the natural width of this glue; if stretching or shrinking, set |v:=max_dimen|; |goto found| in the case of leaders	|d|를 이 글루의 자연 너비로 하고, 늘이거나 줄이면 |v=max_dimen|으로 한다
 Let |d| be the width of the whatsit |p|	|d|를 whatsit |p|의 너비로 한다
 Treat |cur_chr| as an active character	|cur_chr|를 능동 문자로 다룬다
 Scan a subformula enclosed in braces and |return|	중괄호로 둘러싼 하위 수식을 훑고 |return|한다
-Report that an invalid delimiter code is being changed to null; set~|cur_val:=0|	무효한 구분자 코드를 널로 바꾼다고 알리고 |cur_val:=0|으로 한다
+Report that an invalid delimiter code is being changed to null; set~|cur_val:=0|	무효한 구분자 코드를 널로 바꾼다고 알리고 |cur_val=0|으로 한다
 Complain that the user should have said \.{\\mathaccent}	사용자가 \.{\\mathaccent}라고 했어야 한다고 불평한다
 Declare the function called |fin_mlist|	|fin_mlist|라는 함수를 선언한다
 Insert a dummy noad to be sub/superscripted	첨자를 붙일 가짜 노드를 넣는다
@@ -586,7 +586,7 @@ Check that the necessary fonts for math symbols are present; if not, flush the c
 Check that another \.\$ follows	\.\$가 하나 더 오는지 확인한다
 Finish math in text	본문 안의 수식을 마무리한다
 Finish displayed math	따로 세운 수식을 마무리한다
-Squeeze the equation as much as possible; ...	수식을 될 수 있는 대로 줄이고, 수식 번호를 따로 한 줄에 놓아야 하면 |e:=0|으로 한다
+Squeeze the equation as much as possible; ...	수식을 될 수 있는 대로 줄이고, 수식 번호를 따로 한 줄에 놓아야 하면 |e=0|으로 한다
 Determine the displacement, |d|, of the left edge of the equation, with respect to the line size |z|, assuming that |l=false|	줄 크기 |z|에 대한 수식 왼쪽 끝의 변위 |d|를 정한다
 Append the glue or equation number preceding the display	따로 세운 수식 앞의 글루나 수식 번호를 덧붙인다
 Append the display and perhaps also the equation number	따로 세운 수식과, 어쩌면 수식 번호도 덧붙인다

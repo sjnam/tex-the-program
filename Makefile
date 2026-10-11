@@ -25,7 +25,7 @@ $(BUILD)/tex: tex.go go.mod
 
 build: $(BUILD)/tex
 
-# 교차 참조(\os)를 맞추려면 luatex를 두 번 돌려야 한다
+# 절 번호 참조(\secref)를 맞추려면 luatex를 두 번 돌려야 한다
 tex.pdf: tex.w
 	gweave tex.w
 	luatex --interaction=nonstopmode tex.tex >/dev/null
@@ -51,4 +51,4 @@ trip:
 test: story trip
 
 clean:
-	rm -rf $(BUILD) tex.go tex.tex tex.log tex.pdf tex.toc tex.onum tex.idx tex.scn
+	rm -rf $(BUILD) tex.go tex.tex tex.log tex.pdf tex.toc tex.ref tex.idx tex.scn
