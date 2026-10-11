@@ -1,0 +1,17 @@
+# make build: gtangle이 뽑은 Go 소스와 실행 파일, 포맷 파일
+tex.go
+build/
+
+# make pdf: gweave와 luatex가 만든 것
+tex.tex
+tex.log
+tex.pdf
+tex.toc
+tex.onum
+tex.idx
+tex.scn
+
+# make trip: tests/trip.sh가 처음 돌 때 CTAN에서 받아 오는 크누스의 원본 파일들
+tests/trip/
+
+.DS_Store
