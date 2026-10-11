@@ -57,7 +57,7 @@ dvitype -output-level=2 -dpi=72.27 -page-start='*.*.*.*.*.*.*.*.*.*' \
 # 5. 원본 결과와 비교한다
 echo "TRIP 결과 ($WORK)"
 for f in tripin.log tripin.fot trip.log trip.fot trip.typ tripos.tex; do
-  n=$(diff "$DIST/$f" "$f" | grep -c '^[<>]' || true)
+  n=$(diff "$DIST/$f" "$f" | grep -c '^[!=]' || true)
   printf '  %-11s 다른 줄 %s\n' "$f" "$n"
   if [ "$1" = "-v" ] && [ "$n" != 0 ]; then
     diff "$DIST/$f" "$f" | sed 's/^/      /' || true

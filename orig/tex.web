@@ -360,7 +360,7 @@ $$\vbox{\halign{\ignorespaces#\hfil\cr
 |case x of|\cr
 1: $\langle\,$code for $x=1\,\rangle$;\cr
 3: $\langle\,$code for $x=3\,\rangle$;\cr
-|othercases| $\langle\,$code for |x<>1| and |x<>3|$\,\rangle$\cr
+|othercases| $\langle\,$code for |x!=1| and |x!=3|$\,\rangle$\cr
 |endcases|\cr}}$$
 since most \PASCAL\ compilers have plugged this hole in the language by
 incorporating some sort of default mechanism. For example, the \ph\
@@ -467,7 +467,7 @@ or something similar. (We can't do that until |max_halfword| has been defined.)
 bad:=0;
 if (half_error_line<30)or(half_error_line>error_line-15) then bad:=1;
 if max_print_line<60 then bad:=2;
-if dvi_buf_size mod 8<>0 then bad:=3;
+if dvi_buf_size mod 8!=0 then bad:=3;
 if mem_bot+1100>mem_top then bad:=4;
 if hash_prime>hash_size then bad:=5;
 if max_in_open>=128 then bad:=6;
@@ -820,7 +820,7 @@ The `\.{/O}' parameter tells the operating system not to issue its own
 error messages if something goes wrong. If a file of the specified name
 cannot be found, or if such a file cannot be opened for some other reason
 (e.g., someone may already be trying to write the same file), we will have
-|@!erstat(f)<>0| after an unsuccessful |reset| or |rewrite|.  This allows
+|@!erstat(f)!=0| after an unsuccessful |reset| or |rewrite|.  This allows
 \TeX\ to undertake appropriate corrective action.
 @:PASCAL H}{\ph@>
 @^system dependencies@>
@@ -913,7 +913,7 @@ numbers that represent the next line of the file are input into
 |buffer[first]|, |buffer[first+1]|, \dots, |buffer[last-1]|; and the
 global variable |last| is set equal to |first| plus the length of the
 line. Trailing blanks are removed from the line; thus, either |last=first|
-(in which case the line was entirely blank) or |buffer[last-1]<>" "|.
+(in which case the line was entirely blank) or |buffer[last-1]!=" "|.
 
 An overflow error is given, however, if the normal actions of |input_ln|
 would make |last>=buf_size|; this is done so that other parts of \TeX\
@@ -960,7 +960,7 @@ else  begin last_nonblank:=first;
         @<Report overflow of the input buffer, and abort@>;
       end;
     buffer[last]:=xord[f^]; get(f); incr(last);
-    if buffer[last-1]<>" " then last_nonblank:=last;
+    if buffer[last-1]!=" " then last_nonblank:=last;
     end;
   last:=last_nonblank; input_ln:=true;
   end;
@@ -1218,7 +1218,7 @@ var j: pool_pointer; {running index}
 @!result: boolean; {result of comparison}
 begin j:=str_start[s];
 while j<str_start[s+1] do
-  begin if so(str_pool[j])<>buffer[k] then
+  begin if so(str_pool[j])!=buffer[k] then
     begin result:=false; goto not_found;
     end;
   incr(j); incr(k);
@@ -1236,10 +1236,10 @@ label not_found; {loop exit}
 var j,@!k: pool_pointer; {running indices}
 @!result: boolean; {result of comparison}
 begin result:=false;
-if length(s)<>length(t) then goto not_found;
+if length(s)!=length(t) then goto not_found;
 j:=str_start[s]; k:=str_start[t];
 while j<str_start[s+1] do
-  begin if str_pool[j]<>str_pool[k] then goto not_found;
+  begin if str_pool[j]!=str_pool[k] then goto not_found;
   incr(j); incr(k);
   end;
 result:=true;
@@ -1375,7 +1375,7 @@ loop@+  begin if (xord[n]<"0")or(xord[n]>"9") then
   if k=9 then goto done;
   incr(k); read(pool_file,n);
   end;
-done: if a<>@$ then bad_pool('! TEX.POOL doesn''t match; TANGLE me again.');
+done: if a!=@$ then bad_pool('! TEX.POOL doesn''t match; TANGLE me again.');
 @.TEX.POOL doesn't match@>
 c:=true;
 end
@@ -1714,7 +1714,7 @@ if not input_ln(term_in,true) then fatal_error("End of file on the terminal!");
 @.End of file on the terminal@>
 term_offset:=0; {the user's line ended with \<\rm return>}
 decr(selector); {prepare to echo the input}
-if last<>first then for k:=first to last-1 do print(buffer[k]);
+if last!=first then for k:=first to last-1 do print(buffer[k]);
 print_ln; incr(selector); {restore previous status}
 end;
 
@@ -1894,7 +1894,7 @@ if error_count=100 then
 exit:end;
 
 @ @<Get user's advice...@>=
-loop@+begin continue: if interaction<>error_stop_mode then return;
+loop@+begin continue: if interaction!=error_stop_mode then return;
   clear_for_error_prompt; prompt_input("? ");
 @.?\relax@>
   if last=first then return;
@@ -2111,7 +2111,7 @@ a way to make |interrupt| nonzero using the \PASCAL\ debugger.
 @^system dependencies@>
 @^debugging@>
 
-@d check_interrupt==begin if interrupt<>0 then pause_for_instructions;
+@d check_interrupt==begin if interrupt!=0 then pause_for_instructions;
   end
 
 @<Global...@>=
@@ -2432,7 +2432,7 @@ The values defined here are recommended for most 32-bit computers.
 must satisfy (or rather, the inequalities that they mustn't satisfy):
 
 @<Check the ``constant''...@>=
-init if (mem_min<>mem_bot)or(mem_max<>mem_top) then bad:=10;@+tini@;@/
+init if (mem_min!=mem_bot)or(mem_max!=mem_top) then bad:=10;@+tini@;@/
 if (mem_min>mem_bot)or(mem_max<mem_top) then bad:=10;
 if (min_quarterword>0)or(max_quarterword<127) then bad:=11;
 if (min_halfword>0)or(max_halfword<32767) then bad:=12;
@@ -2612,7 +2612,7 @@ done, i.e., if |hi_mem_min=lo_mem_max+1|, we have to quit.
 @p function get_avail : pointer; {single-word node allocation}
 var p:pointer; {the new node being got}
 begin p:=avail; {get top location in the |avail| stack}
-if p<>null then avail:=link(avail) {and pop it off}
+if p!=null then avail:=link(avail) {and pop it off}
 else if mem_end<mem_max then {or go into virgin territory}
   begin incr(mem_end); p:=mem_end;
   end
@@ -2658,7 +2658,7 @@ one-word nodes that starts at position |p|.
 @p procedure flush_list(@!p:pointer); {makes list of single-word nodes
   available}
 var @!q,@!r:pointer; {list traversers}
-begin if p<>null then
+begin if p!=null then
   begin r:=p;
   repeat q:=r; r:=link(r); @!stat decr(dyn_used);@+tats@/
   until r=null; {now |q| is the last node on the list}
@@ -2758,7 +2758,7 @@ while is_empty(q) do {merge node |p| with node |q|}
   end;
 r:=q-s;
 if r>p+1 then @<Allocate from the top of node |p| and |goto found|@>;
-if r=p then if rlink(p)<>p then
+if r=p then if rlink(p)!=p then
   @<Allocate entire node |p| and |goto found|@>;
 node_size(p):=q-p {reset the size in case it grew}
 
@@ -2802,10 +2802,10 @@ var p,@!q,@!r: pointer; {indices into |mem|}
 @!old_rover:pointer; {initial |rover| setting}
 begin p:=get_node(@'10000000000); {merge adjacent free areas}
 p:=rlink(rover); rlink(rover):=max_halfword; old_rover:=rover;
-while p<>old_rover do @<Sort \(p)|p| into the list starting at |rover|
+while p!=old_rover do @<Sort \(p)|p| into the list starting at |rover|
   and advance |p| to |rlink(p)|@>;
 p:=rover;
-while rlink(p)<>max_halfword do
+while rlink(p)!=max_halfword do
   begin llink(rlink(p)):=p; p:=rlink(p);
   end;
 rlink(p):=rover; llink(rover):=p;
@@ -3423,7 +3423,7 @@ gubed
 
 @ @<Check single-word...@>=
 p:=avail; q:=null; clobbered:=false;
-while p<>null do
+while p!=null do
   begin if (p>mem_end)or(p<hi_mem_min) then clobbered:=true
   else if free[p] then clobbered:=true;
   if clobbered then
@@ -3440,7 +3440,7 @@ p:=rover; q:=null; clobbered:=false;
 repeat if (p>=lo_mem_max)or(p<mem_min) then clobbered:=true
   else if (rlink(p)>=lo_mem_max)or(rlink(p)<mem_min) then clobbered:=true
   else if  not(is_empty(p))or(node_size(p)<2)or@|
-   (p+node_size(p)>lo_mem_max)or@| (llink(rlink(p))<>p) then clobbered:=true;
+   (p+node_size(p)>lo_mem_max)or@| (llink(rlink(p))!=p) then clobbered:=true;
   if clobbered then
   begin print_nl("Double-AVAIL list clobbered at ");
   print_int(q); goto done2;
@@ -3543,7 +3543,7 @@ var n:integer; {for replacement counts}
 begin while p>mem_min do
   begin if is_char_node(p) then
     begin if p<=mem_end then
-      begin if font(p)<>font_in_short_display then
+      begin if font(p)!=font_in_short_display then
         begin if (font(p)<font_base)or(font(p)>font_max) then
           print_char("*")
 @.*\relax@>
@@ -3563,14 +3563,14 @@ case type(p) of
 hlist_node,vlist_node,ins_node,whatsit_node,mark_node,adjust_node,
   unset_node: print("[]");
 rule_node: print_char("|");
-glue_node: if glue_ptr(p)<>zero_glue then print_char(" ");
+glue_node: if glue_ptr(p)!=zero_glue then print_char(" ");
 math_node: print_char("$");
 ligature_node: short_display(lig_ptr(p));
 disc_node: begin short_display(pre_break(p));
   short_display(post_break(p));@/
   n:=replace_count(p);
   while n>0 do
-    begin if link(p)<>null then p:=link(p);
+    begin if link(p)!=null then p:=link(p);
     decr(n);
     end;
   end;
@@ -3615,7 +3615,7 @@ else if order>normal then
     begin print_char("l"); decr(order);
     end;
   end
-else if s<>0 then print(s);
+else if s!=0 then print(s);
 end;
 
 @ The next subroutine prints a whole glue specification.
@@ -3625,11 +3625,11 @@ end;
 begin if (p<mem_min)or(p>=lo_mem_max) then print_char("*")
 @.*\relax@>
 else  begin print_scaled(width(p));
-  if s<>0 then print(s);
-  if stretch(p)<>0 then
+  if s!=0 then print(s);
+  if stretch(p)!=0 then
     begin print(" plus "); print_glue(stretch(p),stretch_order(p),s);
     end;
-  if shrink(p)<>0 then
+  if shrink(p)!=0 then
     begin print(" minus "); print_glue(shrink(p),shrink_order(p),s);
     end;
   end;
@@ -3730,7 +3730,7 @@ print_scaled(depth(p)); print(")x"); print_scaled(width(p));
 if type(p)=unset_node then
   @<Display special fields of the unset node |p|@>
 else  begin @<Display the value of |glue_set(p)|@>;
-  if shift_amount(p)<>0 then
+  if shift_amount(p)!=0 then
     begin print(", shifted "); print_scaled(shift_amount(p));
     end;
   end;
@@ -3738,14 +3738,14 @@ node_list_display(list_ptr(p)); {recursive call}
 end
 
 @ @<Display special fields of the unset node |p|@>=
-begin if span_count(p)<>min_quarterword then
+begin if span_count(p)!=min_quarterword then
   begin print(" ("); print_int(qo(span_count(p))+1);
   print(" columns)");
   end;
-if glue_stretch(p)<>0 then
+if glue_stretch(p)!=0 then
   begin print(", stretch "); print_glue(glue_stretch(p),glue_order(p),0);
   end;
-if glue_shrink(p)<>0 then
+if glue_shrink(p)!=0 then
   begin print(", shrink "); print_glue(glue_shrink(p),glue_sign(p),0);
   end;
 end
@@ -3762,7 +3762,7 @@ floating point underflow on the author's computer.
 
 @<Display the value of |glue_set(p)|@>=
 g:=float(glue_set(p));
-if (g<>float_constant(0))and(glue_sign(p)<>normal) then
+if (g!=float_constant(0))and(glue_sign(p)!=normal) then
   begin print(", glue set ");
   if glue_sign(p)=shrinking then print("- ");
   if abs(mem[p+glue_offset].int)<@'4000000 then print("?.?")
@@ -3792,7 +3792,7 @@ end
 @ @<Display glue |p|@>=
 if subtype(p)>=a_leaders then @<Display leaders |p|@>
 else  begin print_esc("glue");
-  if subtype(p)<>normal then
+  if subtype(p)!=normal then
     begin print_char("(");
     if subtype(p)<cond_math_glue then
       print_skip_param(subtype(p)-1)
@@ -3800,7 +3800,7 @@ else  begin print_esc("glue");
     else print_esc("mskip");
     print_char(")");
     end;
-  if subtype(p)<>cond_math_glue then
+  if subtype(p)!=cond_math_glue then
     begin print_char(" ");
     if subtype(p)<cond_math_glue then print_spec(glue_ptr(p),0)
     else print_spec(glue_ptr(p),"mu");
@@ -3818,9 +3818,9 @@ end
 @ An ``explicit'' kern value is indicated implicitly by an explicit space.
 
 @<Display kern |p|@>=
-if subtype(p)<>mu_glue then
+if subtype(p)!=mu_glue then
   begin print_esc("kern");
-  if subtype(p)<>normal then print_char(" ");
+  if subtype(p)!=normal then print_char(" ");
   print_scaled(width(p));
   if subtype(p)=acc_kern then print(" (for accent)");
 @.for accent@>
@@ -3832,7 +3832,7 @@ else  begin print_esc("mkern"); print_scaled(width(p)); print("mu");
 begin print_esc("math");
 if subtype(p)=before then print("on")
 else print("off");
-if width(p)<>0 then
+if width(p)!=0 then
   begin print(", surrounded "); print_scaled(width(p));
   end;
 end
@@ -3922,7 +3922,7 @@ and they are glue nodes in about half of the remaining cases.
 @p procedure flush_node_list(@!p:pointer); {erase list of nodes starting at |p|}
 label done; {go here when node |p| has been freed}
 var q:pointer; {successor to node |p|}
-begin while p<>null do
+begin while p!=null do
 @^inner loop@>
   begin q:=link(p);
   if is_char_node(p) then free_avail(p)
@@ -3938,7 +3938,7 @@ begin while p<>null do
       end;
     whatsit_node: @<Wipe out the whatsit node |p| and |goto done|@>;
     glue_node: begin fast_delete_glue_ref(glue_ptr(p));
-      if leader_ptr(p)<>null then flush_node_list(leader_ptr(p));
+      if leader_ptr(p)!=null then flush_node_list(leader_ptr(p));
       end;
     kern_node,math_node,penalty_node: do_nothing;
     ligature_node: flush_node_list(lig_ptr(p));
@@ -3988,7 +3988,7 @@ var h:pointer; {temporary head of copied list}
 @!r:pointer; {current node being fabricated for new list}
 @!words:0..5; {number of words remaining to be copied}
 begin h:=get_avail; q:=h;
-while p<>null do
+while p!=null do
   begin @<Make a copy of node |p| in node |r|@>;
   link(q):=r; q:=r; p:=link(p);
   end;
@@ -4403,7 +4403,7 @@ for p:=nest_ptr downto 0 do
   begin m:=nest[p].mode_field; a:=nest[p].aux_field;
   print_nl("### "); print_mode(m);
   print(" entered at line "); print_int(abs(nest[p].ml_field));
-  if m=hmode then if nest[p].pg_field <> @'40600000 then
+  if m=hmode then if nest[p].pg_field != @'40600000 then
     begin print(" (language"); print_int(nest[p].pg_field mod @'200000);
     print(":hyphenmin"); print_int(nest[p].pg_field div @'20000000);
     print_char(","); print_int((nest[p].pg_field div @'200000) mod @'100);
@@ -4412,7 +4412,7 @@ for p:=nest_ptr downto 0 do
   if nest[p].ml_field<0 then print(" (\output routine)");
   if p=0 then
     begin @<Show the status of the current page@>;
-    if link(contrib_head)<>null then
+    if link(contrib_head)!=null then
       print_nl("### recent contributions:");
     end;
   show_box(link(nest[p].head_field));
@@ -4425,10 +4425,10 @@ case abs(m) div (max_command+1) of
 0: begin print_nl("prevdepth ");
   if a.sc<=ignore_depth then print("ignored")
   else print_scaled(a.sc);
-  if nest[p].pg_field<>0 then
+  if nest[p].pg_field!=0 then
     begin print(", prevgraf ");
     print_int(nest[p].pg_field); print(" line");
-    if nest[p].pg_field<>1 then print_char("s");
+    if nest[p].pg_field!=1 then print_char("s");
     end;
   end;
 1: begin print_nl("spacefactor "); print_int(a.hh.lh);
@@ -4436,7 +4436,7 @@ case abs(m) div (max_command+1) of
     begin print(", current language "); print_int(a.hh.rh);@+
     end;
   end;
-2: if a.int<>null then
+2: if a.int!=null then
   begin print("this will begin denominator of:"); show_box(a.int);@+
   end;
 end {there are no other cases}
@@ -4858,11 +4858,11 @@ if n=par_shape_loc then
   end
 else if n<toks_base then
   begin print_cmd_chr(assign_toks,n); print_char("=");
-  if equiv(n)<>null then show_token_list(link(equiv(n)),null,32);
+  if equiv(n)!=null then show_token_list(link(equiv(n)),null,32);
   end
 else if n<box_base then
   begin print_esc("toks"); print_int(n-toks_base); print_char("=");
-  if equiv(n)<>null then show_token_list(link(equiv(n)),null,32);
+  if equiv(n)!=null then show_token_list(link(equiv(n)),null,32);
   end
 else if n<cur_font_loc then
   begin print_esc("box"); print_int(n-box_base); print_char("=");
@@ -5962,7 +5962,7 @@ begin case eq_type_field(w) of
 call,long_call,outer_call,long_outer_call: delete_token_ref(equiv_field(w));
 glue_ref: delete_glue_ref(equiv_field(w));
 shape_ref: begin q:=equiv_field(w); {we need to free a \.{\\parshape} block}
-  if q<>null then free_node(q,info(q)+info(q)+1);
+  if q!=null then free_node(q,info(q)+info(q)+1);
   end; {such a block is |2n+1| words long, where |n=info(q)|}
 box_ref: flush_node_list(equiv_field(w));
 othercases do_nothing
@@ -6001,7 +6001,7 @@ end;
 |p|, a `|restore_zero|' will never be used in this case.
 
 @p procedure eq_word_define(@!p:pointer;@!w:integer);
-begin if xeq_level[p]<>cur_level then
+begin if xeq_level[p]!=cur_level then
   begin eq_save(p,xeq_level[p]); xeq_level[p]:=cur_level;
   end;
 eqtb[p].int:=w;
@@ -6083,7 +6083,7 @@ if p<int_base then
     eqtb[p]:=save_stack[save_ptr]; {restore the saved value}
     @!stat if tracing_restores>0 then restore_trace(p,"restoring");@+tats@;@/
     end
-else if xeq_level[p]<>level_one then
+else if xeq_level[p]!=level_one then
   begin eqtb[p]:=save_stack[save_ptr]; xeq_level[p]:=l;
   @!stat if tracing_restores>0 then restore_trace(p,"restoring");@+tats@;@/
   end
@@ -6130,7 +6130,7 @@ mag_set:=0;
 for magnification.
 
 @p procedure prepare_mag;
-begin if (mag_set>0)and(mag<>mag_set) then
+begin if (mag_set>0)and(mag!=mag_set) then
   begin print_err("Incompatible magnification ("); print_int(mag);
 @.Incompatible magnification@>
   print(");"); print_nl(" the previous value will be retained");
@@ -6264,12 +6264,12 @@ var m,@!c:integer; {pieces of a token}
 @!match_chr:ASCII_code; {character used in a `|match|'}
 @!n:ASCII_code; {the highest parameter number, as an ASCII digit}
 begin match_chr:="#"; n:="0"; tally:=0;
-while (p<>null) and (tally<l) do
+while (p!=null) and (tally<l) do
   begin if p=q then @<Do magic computation@>;
   @<Display token |p|, and |return| if there are problems@>;
   p:=link(p);
   end;
-if p<>null then print_esc("ETC.");
+if p!=null then print_esc("ETC.");
 @.ETC@>
 exit:
 end;
@@ -6314,7 +6314,7 @@ endcases
 to its reference count; the pointer may be null.
 
 @p procedure token_show(@!p:pointer);
-begin if p<>null then show_token_list(link(p),null,10000000);
+begin if p!=null then show_token_list(link(p),null,10000000);
 end;
 
 @ The |print_meaning| subroutine displays |cur_cmd| and |cur_chr| in
@@ -6420,7 +6420,7 @@ end;
 
 @p procedure show_cur_cmd_chr;
 begin begin_diagnostic; print_nl("{");
-if mode<>shown_mode then
+if mode!=shown_mode then
   begin print_mode(mode); print(": "); shown_mode:=mode;
   end;
 print_cmd_chr(cur_cmd,cur_chr); print_char("}");
@@ -6772,7 +6772,7 @@ begin base_ptr:=input_ptr; input_stack[base_ptr]:=cur_input;
   {store current state}
 nn:=-1; bottom_line:=false;
 loop@+begin cur_input:=input_stack[base_ptr]; {enter into the context}
-  if (state<>token_list) then
+  if (state!=token_list) then
     if (name>17) or (base_ptr=0) then bottom_line:=true;
   if (base_ptr=input_ptr)or bottom_line or(nn<error_context_lines) then
     @<Display the current context@>
@@ -6786,12 +6786,12 @@ done: cur_input:=input_stack[input_ptr]; {restore original state}
 end;
 
 @ @<Display the current context@>=
-begin if (base_ptr=input_ptr) or (state<>token_list) or
-   (token_type<>backed_up) or (loc<>null) then
+begin if (base_ptr=input_ptr) or (state!=token_list) or
+   (token_type!=backed_up) or (loc!=null) then
     {we omit backed-up token lists that have already been read}
   begin tally:=0; {get ready to count characters}
   old_setting:=selector;
-  if state<>token_list then
+  if state!=token_list then
     begin @<Print location of current line@>;
     @<Pseudoprint the line@>;
     end
@@ -7022,7 +7022,7 @@ so it has been slightly optimized for speed.
 
 @p procedure back_input; {undoes one token of input}
 var p:pointer; {a token list of length one}
-begin while (state=token_list)and(loc=null)and(token_type<>v_template) do
+begin while (state=token_list)and(loc=null)and(token_type!=v_template) do
   end_token_list; {conserve stack space}
 p:=get_avail; info(p):=cur_tok;
 if cur_tok<right_brace_limit then
@@ -7080,7 +7080,7 @@ inserted `\.{\\show}' commands, the following routine removes completed
 error-inserted lines from memory.
 
 @p procedure clear_for_error_prompt;
-begin while (state<>token_list)and terminal_input and@|
+begin while (state!=token_list)and terminal_input and@|
   (input_ptr>0)and(loc>limit) do end_file_reading;
 print_ln; clear_terminal;
 end;
@@ -7149,7 +7149,7 @@ by |cur_cs|, which is zero at the end of a file.
 @p procedure check_outer_validity;
 var p:pointer; {points to inserted token list}
 @!q:pointer; {auxiliary pointer}
-begin if scanner_status<>normal then
+begin if scanner_status!=normal then
   begin deletions_allowed:=false;
   @<Back up an outer control sequence so that it can be reread@>;
   if scanner_status>skipping then
@@ -7160,7 +7160,7 @@ begin if scanner_status<>normal then
     help3("A forbidden control sequence occurred in skipped text.")@/
     ("This kind of error happens when you say `\if...' and forget")@/
     ("the matching `\fi'. I've inserted a `\fi'; this might work.");
-    if cur_cs<>0 then cur_cs:=0
+    if cur_cs!=0 then cur_cs:=0
     else help_line[2]:=@|
       "The file ended while I was skipping conditional text.";
     cur_tok:=cs_token_flag+frozen_fi; ins_error;
@@ -7173,7 +7173,7 @@ end;
 since the error recovery for \.{\\read} is not very powerful.
 
 @<Back up an outer control sequence so that it can be reread@>=
-if cur_cs<>0 then
+if cur_cs!=0 then
   begin if (state=token_list)or(name<1)or(name>17) then
     begin p:=get_avail; info(p):=cs_token_flag+cur_cs;
     back_list(p); {prepare to read the control sequence again}
@@ -7247,7 +7247,7 @@ var k:0..buf_size; {an index into |buffer|}
 @!c,@!cc:ASCII_code; {constituents of a possible expanded code}
 @!d:2..3; {number of excess characters in an expanded code}
 begin restart: cur_cs:=0;
-if state<>token_list then
+if state!=token_list then
 @<Input from external file, |goto restart| if no input found@>
 else @<Input from token list, |goto restart| if end of list or
   if a parameter needs to be expanded@>;
@@ -7463,9 +7463,9 @@ end
 
 @ @<Scan ahead in the buffer...@>=
 begin repeat cur_chr:=buffer[k]; cat:=cat_code(cur_chr); incr(k);
-until (cat<>letter)or(k>limit);
+until (cat!=letter)or(k>limit);
 @<If an expanded...@>;
-if cat<>letter then decr(k);
+if cat!=letter then decr(k);
   {now |k| points to first nonletter}
 if k>loc+1 then {multiletter control sequence has been scanned}
   begin cur_cs:=id_lookup(loc,k-loc); loc:=k; goto found;
@@ -7476,7 +7476,7 @@ end
 
 @<Input from token list, |goto restart| if end of list or
   if a parameter needs to be expanded@>=
-if loc<>null then {list not exhausted}
+if loc!=null then {list not exhausted}
 @^inner loop@>
   begin t:=info(loc); loc:=link(loc); {move to next}
   if t>=cs_token_flag then {a control sequence token}
@@ -7746,8 +7746,8 @@ the variables |p| and |q| are reserved for token-list building.
 begin r:=get_avail; p:=r; {head of the list of characters}
 repeat get_x_token;
 if cur_cs=0 then store_new_token(cur_tok);
-until cur_cs<>0;
-if cur_cmd<>end_cs_name then @<Complain about missing \.{\\endcsname}@>;
+until cur_cs!=0;
+if cur_cmd!=end_cs_name then @<Complain about missing \.{\\endcsname}@>;
 @<Look up the characters of list |r| in the hash table, and set |cur_cs|@>;
 flush_list(r);
 if eq_type(cur_cs)=undefined_cs then
@@ -7766,7 +7766,7 @@ end
 
 @ @<Look up the characters of list |r| in the hash table...@>=
 j:=first; p:=link(r);
-while p<>null do
+while p!=null do
   begin if j>=max_buf_stack then
     begin max_buf_stack:=j+1;
     if max_buf_stack=buf_size then
@@ -7905,7 +7905,7 @@ top_bot_mark: case chr_code of
 when |cur_chr| is a code like |top_mark_code|.
 
 @<Insert the \(a)appropriate mark text into the scanner@>=
-begin if cur_mark[cur_chr]<>null then
+begin if cur_mark[cur_chr]!=null then
   begin_token_list(cur_mark[cur_chr],mark_text);
 end
 
@@ -7968,7 +7968,7 @@ var r:pointer; {current node in the macro's token list}
 begin save_scanner_status:=scanner_status; save_warning_index:=warning_index;
 warning_index:=cur_cs; ref_count:=cur_chr; r:=link(ref_count); n:=0;
 if tracing_macros>0 then @<Show the text of the macro being expanded@>;
-if info(r)<>end_match_token then
+if info(r)!=end_match_token then
   @<Scan the parameters and make |link(r)| point to the macro body; but
     |return| if an illegal \.{\\par} is detected@>;
 @<Feed the macro body and its parameters to the scanner@>;
@@ -7980,7 +7980,7 @@ all token lists that have recently been depleted. Then a user macro that ends
 with a call to itself will not require unbounded stack space.
 
 @<Feed the macro body and its parameters to the scanner@>=
-while (state=token_list)and(loc=null)and(token_type<>v_template) do
+while (state=token_list)and(loc=null)and(token_type!=v_template) do
   end_token_list; {conserve stack space}
 begin_token_list(ref_count,macro); name:=warning_index; loc:=link(r);
 if n>0 then
@@ -8032,7 +8032,7 @@ if cur_tok=info(r) then
 @<Contribute the recently matched tokens to the current parameter, and
   |goto continue| if a partial match is still in effect;
   but abort if |s=null|@>;
-if cur_tok=par_token then if long_state<>long_call then
+if cur_tok=par_token then if long_state!=long_call then
   @<Report a runaway argument and abort@>;
 if cur_tok<right_brace_limit then
   if cur_tok<left_brace_limit then
@@ -8043,7 +8043,7 @@ else @<Store the current token, but |goto continue| if it is
 incr(m);
 if info(r)>end_match_token then goto continue;
 if info(r)<match_token then goto continue;
-found: if s<>null then @<Tidy up the parameter just scanned, and tuck it away@>
+found: if s!=null then @<Tidy up the parameter just scanned, and tuck it away@>
 
 @ @<Store the current token, but |goto continue| if it is...@>=
 begin if cur_tok=space_token then
@@ -8098,7 +8098,7 @@ return;
 end
 
 @ When the following code becomes active, we have matched tokens from |s| to
-the predecessor of |r|, and we have found that |cur_tok<>info(r)|. An
+the predecessor of |r|, and we have found that |cur_tok!=info(r)|. An
 interesting situation now presents itself: If the parameter is to be
 delimited by a string such as `\.{ab}', and if we have scanned `\.{aa}',
 we want to contribute one `\.a' to the current parameter and resume
@@ -8114,15 +8114,15 @@ to prohibit the \.{\\par}, so \TeX\ keeps quiet about this bending of
 the rules.
 
 @<Contribute the recently matched tokens to the current parameter...@>=
-if s<>r then
+if s!=r then
   if s=null then @<Report an improper use of the macro and abort@>
   else  begin t:=s;
     repeat store_new_token(info(t)); incr(m); u:=link(t); v:=s;
     loop@+  begin if u=r then
-        if cur_tok<>info(v) then goto done
+        if cur_tok!=info(v) then goto done
         else  begin r:=link(v); goto continue;
           end;
-      if info(u)<>info(v) then goto done;
+      if info(u)!=info(v) then goto done;
       u:=link(u); v:=link(v);
       end;
     done: t:=link(t);
@@ -8145,7 +8145,7 @@ end
 begin unbalance:=1;
 @^inner loop@>
 loop@+  begin fast_store_new_token(cur_tok); get_token;
-  if cur_tok=par_token then if long_state<>long_call then
+  if cur_tok=par_token then if long_state!=long_call then
     @<Report a runaway argument and abort@>;
   if cur_tok<right_brace_limit then
     if cur_tok<left_brace_limit then incr(unbalance)
@@ -8193,7 +8193,7 @@ appear before the |left_brace|.
 
 @p procedure scan_left_brace; {reads a mandatory |left_brace|}
 begin @<Get the next non-blank non-relax non-call token@>;
-if cur_cmd<>left_brace then
+if cur_cmd!=left_brace then
   begin print_err("Missing { inserted");
 @.Missing \{ inserted@>
   help4("A left brace was mandatory here, so I've put one in.")@/
@@ -8207,19 +8207,19 @@ end;
 
 @ @<Get the next non-blank non-relax non-call token@>=
 repeat get_x_token;
-until (cur_cmd<>spacer)and(cur_cmd<>relax)
+until (cur_cmd!=spacer)and(cur_cmd!=relax)
 
 @ The |scan_optional_equals| routine looks for an optional `\.=' sign preceded
 by optional spaces; `\.{\\relax}' is not ignored here.
 
 @p procedure scan_optional_equals;
 begin  @<Get the next non-blank non-call token@>;
-if cur_tok<>other_token+"=" then back_input;
+if cur_tok!=other_token+"=" then back_input;
 end;
 
 @ @<Get the next non-blank non-call token@>=
 repeat get_x_token;
-until cur_cmd<>spacer
+until cur_cmd!=spacer
 
 @ In case you are getting bored, here is a slightly less trivial routine:
 Given a string of lowercase letters, like `\.{pt}' or `\.{plus}' or
@@ -8249,9 +8249,9 @@ while k<str_start[s+1] do
    ((cur_chr=so(str_pool[k]))or(cur_chr=so(str_pool[k])-"a"+"A")) then
     begin store_new_token(cur_tok); incr(k);
     end
-  else if (cur_cmd<>spacer)or(p<>backup_head) then
+  else if (cur_cmd!=spacer)or(p!=backup_head) then
     begin back_input;
-    if p<>backup_head then back_list(link(backup_head));
+    if p!=backup_head then back_list(link(backup_head));
     scan_keyword:=false; return;
     end;
   end;
@@ -8389,7 +8389,7 @@ else scanned_result(eqtb[m+cur_val].int)(int_val);
 end
 
 @ @<Fetch a token list...@>=
-if level<>tok_val then
+if level!=tok_val then
   begin print_err("Missing number, treated as zero");
 @.Missing number...@>
   help3("A number should have been here; I inserted `0'.")@/
@@ -8463,7 +8463,7 @@ last_item: case chr_code of
   endcases;
 
 @ @<Fetch the |space_factor| or the |prev_depth|@>=
-if abs(mode)<>m then
+if abs(mode)!=m then
   begin print_err("Improper "); print_cmd_chr(set_aux,m);
 @.Improper \\spacefactor@>
 @.Improper \\prevdepth@>
@@ -8472,7 +8472,7 @@ if abs(mode)<>m then
     ("neither of these is meaningful inside \write. So")@/
     ("I'm forgetting what you said and using zero instead.");
   error;
-  if level<>tok_val then scanned_result(0)(dimen_val)
+  if level!=tok_val then scanned_result(0)(dimen_val)
   else scanned_result(0)(int_val);
   end
 else if m=vmode then scanned_result(prev_depth)(dimen_val)
@@ -8504,7 +8504,7 @@ end
 @ @<Fetch the |prev_graf|@>=
 if mode=0 then scanned_result(0)(int_val) {|prev_graf=0| within \.{\\write}}
 else begin nest[nest_ptr]:=cur_list; p:=nest_ptr;
-  while abs(nest[p].mode_field)<>vmode do decr(p);
+  while abs(nest[p].mode_field)!=vmode do decr(p);
   scanned_result(nest[p].pg_field)(int_val);
   end
 
@@ -8528,7 +8528,7 @@ if cur_chr>glue_val then
   end
 else begin if cur_chr=glue_val then cur_val:=zero_glue@+else cur_val:=0;
   cur_val_level:=cur_chr;
-  if not is_char_node(tail)and(mode<>0) then
+  if not is_char_node(tail)and(mode!=0) then
     case cur_chr of
     int_val: if type(tail)=penalty_node then cur_val:=penalty(tail);
     dimen_val: if type(tail)=kern_node then cur_val:=width(tail);
@@ -8541,7 +8541,7 @@ else begin if cur_chr=glue_val then cur_val:=zero_glue@+else cur_val:=0;
     case cur_chr of
     int_val: cur_val:=last_penalty;
     dimen_val: cur_val:=last_kern;
-    glue_val: if last_glue<>max_halfword then cur_val:=last_glue;
+    glue_val: if last_glue!=max_halfword then cur_val:=last_glue;
     end; {there are no other cases}
   end
 
@@ -8573,7 +8573,7 @@ begin print_err("You can't use `"); print_cmd_chr(cur_cmd,cur_chr);
 print("' after "); print_esc("the");
 help1("I'm forgetting what you said and using zero instead.");
 error;
-if level<>tok_val then scanned_result(0)(dimen_val)
+if level!=tok_val then scanned_result(0)(dimen_val)
 else scanned_result(0)(int_val);
 end
 
@@ -8726,7 +8726,7 @@ repeat @<Get the next non-blank non-call token@>;
 if cur_tok=other_token+"-" then
   begin negative := not negative; cur_tok:=other_token+"+";
   end;
-until cur_tok<>other_token+"+"
+until cur_tok!=other_token+"+"
 
 @ A space is ignored after an alphabetic character constant, so that
 such constants behave like numeric ones.
@@ -8753,7 +8753,7 @@ else @<Scan an optional space@>;
 end
 
 @ @<Scan an optional space@>=
-begin get_x_token; if cur_cmd<>spacer then back_input;
+begin get_x_token; if cur_cmd!=spacer then back_input;
 end
 
 @ @<Scan a numeric constant@>=
@@ -8767,7 +8767,7 @@ else if cur_tok=hex_token then
 vacuous:=true; cur_val:=0;@/
 @<Accumulate the constant until |cur_tok| is not a suitable digit@>;
 if vacuous then @<Express astonishment that no number was here@>
-else if cur_cmd<>spacer then back_input;
+else if cur_cmd!=spacer then back_input;
 end
 
 @ @d infinity==@'17777777777 {the largest positive value that \TeX\ knows}
@@ -8785,7 +8785,7 @@ loop@+  begin if (cur_tok<zero_token+radix)and(cur_tok>=zero_token)and
     else goto done
   else goto done;
   vacuous:=false;
-  if (cur_val>=m)and((cur_val>m)or(d>7)or(radix<>10)) then
+  if (cur_val>=m)and((cur_val>m)or(d>7)or(radix!=10)) then
     begin if OK_so_far then
       begin print_err("Number too big");
 @.Number too big@>
@@ -8854,7 +8854,7 @@ if not shortcut then
       or fetch an internal integer@>
   else  begin back_input;
     if cur_tok=continental_point_token then cur_tok:=point_token;
-    if cur_tok<>point_token then scan_int
+    if cur_tok!=point_token then scan_int
     else  begin radix:=10; cur_val:=0;
       end;
     if cur_tok=continental_point_token then cur_tok:=point_token;
@@ -8877,7 +8877,7 @@ if mu then
   begin scan_something_internal(mu_val,false);
   @<Coerce glue to a dimension@>;
   if cur_val_level=mu_val then goto attach_sign;
-  if cur_val_level<>int_val then mu_error;
+  if cur_val_level!=int_val then mu_error;
   end
 else  begin scan_something_internal(dimen_val,false);
   if cur_val_level=dimen_val then goto attach_sign;
@@ -8918,7 +8918,7 @@ done1: for kk:=k downto 1 do
   begin dig[kk-1]:=info(p); q:=p; p:=link(p); free_avail(q);
   end;
 f:=round_decimals(k);
-if cur_cmd<>spacer then back_input;
+if cur_cmd!=spacer then back_input;
 end
 
 @ Now comes the harder part: At this point in the program, |cur_val| is a
@@ -8968,7 +8968,7 @@ save_cur_val:=cur_val;
 if (cur_cmd<min_internal)or(cur_cmd>max_internal) then back_input
 else  begin if mu then
     begin scan_something_internal(mu_val,false); @<Coerce glue...@>;
-    if cur_val_level<>mu_val then mu_error;
+    if cur_val_level!=mu_val then mu_error;
     end
   else scan_something_internal(dimen_val,false);
   v:=cur_val; goto found;
@@ -8999,7 +8999,7 @@ else  begin print_err("Illegal unit of measure ("); print("mu inserted)");
 
 @ @<Adjust \(f)for the magnification ratio@>=
 begin prepare_mag;
-if mag<>1000 then
+if mag!=1000 then
   begin cur_val:=xn_over_d(cur_val,1000,mag);
   f:=(1000*f+@'200000*remainder) div mag;
   cur_val:=cur_val+(f div @'200000); f:=f mod @'200000;
@@ -9081,7 +9081,7 @@ begin mu:=(level=mu_val); @<Get the next non-blank non-sign...@>;
 if (cur_cmd>=min_internal)and(cur_cmd<=max_internal) then
   begin scan_something_internal(level,negative);
   if cur_val_level>=glue_val then
-    begin if cur_val_level<>level then mu_error;
+    begin if cur_val_level!=level then mu_error;
     return;
     end;
   if cur_val_level=int_val then scan_dimen(mu,false,true)
@@ -9199,9 +9199,9 @@ end;
 @ @<Copy the token list@>=
 begin p:=temp_head; link(p):=null;
 if cur_val_level=ident_val then store_new_token(cs_token_flag+cur_val)
-else if cur_val<>null then
+else if cur_val!=null then
   begin r:=link(cur_val); {do not copy the reference count}
-  while r<>null do
+  while r!=null do
     begin fast_store_new_token(info(r)); r:=link(r);
     end;
   end;
@@ -9277,11 +9277,11 @@ end {there are no other cases}
 case c of
 number_code: print_int(cur_val);
 roman_numeral_code: print_roman_int(cur_val);
-string_code:if cur_cs<>0 then sprint_cs(cur_cs)
+string_code:if cur_cs!=0 then sprint_cs(cur_cs)
   else print_char(cur_chr);
 meaning_code: print_meaning;
 font_name_code: begin print(font_name[cur_val]);
-  if font_size[cur_val]<>font_dsize[cur_val] then
+  if font_size[cur_val]!=font_dsize[cur_val] then
     begin print(" at "); print_scaled(font_size[cur_val]);
     print("pt");
     end;
@@ -9329,7 +9329,7 @@ if macro_def then @<Scan and build the parameter part of the macro definition@>
 else scan_left_brace; {remove the compulsory left brace}
 @<Scan and build the body of the token list; |goto found| when finished@>;
 found: scanner_status:=normal;
-if hash_brace<>0 then store_new_token(hash_brace);
+if hash_brace!=0 then store_new_token(hash_brace);
 scan_toks:=p;
 end;
 
@@ -9368,7 +9368,7 @@ if t=zero_token+9 then
     ("as well as the token that followed it."); error; goto continue;
   end
 else  begin incr(t);
-  if cur_tok<>t then
+  if cur_tok!=t then
     begin print_err("Parameters must be numbered consecutively");
 @.Parameters...consecutively@>
     help2("I've inserted the digit you should have used after the #.")@/
@@ -9398,9 +9398,9 @@ expanding it further.
 @<Expand the next part of the input@>=
 begin loop begin get_next;
   if cur_cmd<=max_command then goto done2;
-  if cur_cmd<>the then expand
+  if cur_cmd!=the then expand
   else  begin q:=the_toks;
-    if link(temp_head)<>null then
+    if link(temp_head)!=null then
       begin link(p):=link(temp_head); p:=q;
       end;
     end;
@@ -9411,7 +9411,7 @@ end
 @ @<Look for parameter number...@>=
 begin s:=cur_tok;
 if xpand then get_x_token else get_token;
-if cur_cmd<>mac_param then
+if cur_cmd!=mac_param then
   if (cur_tok<=zero_token)or(cur_tok>t) then
     begin print_err("Illegal parameter number in definition of ");
 @.Illegal parameter number...@>
@@ -9510,7 +9510,7 @@ else  begin a_close(read_file[m]); read_open[m]:=closed;
 @<Input the next line of |read_file[m]|@>=
 begin if not input_ln(read_file[m],true) then
   begin a_close(read_file[m]); read_open[m]:=closed;
-  if align_state<>1000000 then
+  if align_state!=1000000 then
     begin runaway;
     print_err("File ended within "); print_esc("read");
 @.File ended within \\read@>
@@ -9742,7 +9742,7 @@ logic is needed.
 @ @<Skip to \.{\\else} or \.{\\fi}...@>=
 loop@+  begin pass_text;
   if cond_ptr=save_cond_ptr then
-    begin if cur_chr<>or_code then goto common_ending;
+    begin if cur_chr!=or_code then goto common_ending;
     print_err("Extra "); print_esc("or");
 @.Extra \\or@>
     help1("I'm ignoring this; it doesn't match any \if.");
@@ -9847,7 +9847,7 @@ are allowed, but we might be scanning a macro definition or preamble.
 @<Test if two tokens match@>=
 begin save_scanner_status:=scanner_status; scanner_status:=normal;
 get_next; n:=cur_cs; p:=cur_cmd; q:=cur_chr;
-get_next; if cur_cmd<>p then b:=false
+get_next; if cur_cmd!=p then b:=false
 else if cur_cmd<call then b:=(cur_chr=q)
 else @<Test if two macro texts match@>;
 scanner_status:=save_scanner_status;
@@ -9864,8 +9864,8 @@ $$\vbox{\halign{\.{#}\hfil&\qquad\.{#}\hfil\cr
 @<Test if two macro texts match@>=
 begin p:=link(cur_chr); q:=link(equiv(n)); {omit reference counts}
 if p=q then b:=true
-else begin while (p<>null)and(q<>null) do
-    if info(p)<>info(q) then p:=null
+else begin while (p!=null)and(q!=null) do
+    if info(p)!=info(q) then p:=null
     else  begin p:=link(p); q:=link(q);
       end;
   b:=((p=null)and(q=null));
@@ -9878,7 +9878,7 @@ if tracing_commands>1 then
   begin begin_diagnostic; print("{case "); print_int(n); print_char("}");
   end_diagnostic(false);
   end;
-while n<>0 do
+while n!=0 do
   begin pass_text;
   if cond_ptr=save_cond_ptr then
     if cur_chr=or_code then decr(n)
@@ -9903,7 +9903,7 @@ if cur_chr>if_limit then
     help1("I'm ignoring this; it doesn't match any \if.");
     error;
     end
-else  begin while cur_chr<>fi_code do pass_text; {skip to \.{\\fi}}
+else  begin while cur_chr!=fi_code do pass_text; {skip to \.{\\fi}}
   @<Pop the condition stack@>;
   end
 
@@ -10137,7 +10137,7 @@ becomes active when a ``virgin'' \TeX\ is trying to get going, just after
 the preliminary initialization, or when the user is substituting another
 format file by typing `\.\&' after the initial `\.{**}' prompt.  The buffer
 contains the first line of input in |buffer[loc..(last-1)]|, where
-|loc<last| and |buffer[loc]<>" "|.
+|loc<last| and |buffer[loc]!=" "|.
 
 @<Declare the function called |open_fmt_file|@>=
 function open_fmt_file:boolean;
@@ -10146,7 +10146,7 @@ var j:0..buf_size; {the first space after the format file name}
 begin j:=loc;
 if buffer[loc]="&" then
   begin incr(loc); j:=loc; buffer[last]:=" ";
-  while buffer[j]<>" " do incr(j);
+  while buffer[j]!=" " do incr(j);
   pack_buffered_name(0,loc,j-1); {try first without the system file area}
   if w_open_in(fmt_file) then goto found;
   pack_buffered_name(format_area_length,loc,j-1);
@@ -10241,7 +10241,7 @@ except of course for a short time just after |job_name| has become nonzero.
 job_name:=0; name_in_progress:=false; log_opened:=false;
 
 @ Here is a routine that manufactures the output file names, assuming that
-|job_name<>0|. It ignores and changes the current settings of |cur_area|
+|job_name!=0|. It ignores and changes the current settings of |cur_area|
 and |cur_ext|.
 
 @d pack_cur_name==pack_file_name(cur_name,cur_area,cur_ext)
@@ -10945,7 +10945,7 @@ precise details about why it rejects a particular \.{TFM} file.
   if s>=0 then
     begin print(" at "); print_scaled(s); print("pt");
     end
-  else if s<>-1000 then
+  else if s!=-1000 then
     begin print(" scaled "); print_int(-s);
     end
 
@@ -11018,7 +11018,7 @@ fget; read_sixteen(nl);
 fget; read_sixteen(nk);
 fget; read_sixteen(ne);
 fget; read_sixteen(np);
-if lf<>6+lh+(ec-bc+1)+nw+nh+nd+ni+nl+nk+ne+np then abort;
+if lf!=6+lh+(ec-bc+1)+nw+nh+nd+ni+nl+nk+ne+np then abort;
 if (nw=0)or(nh=0)or(nd=0)or(ni=0) then abort;
 end
 
@@ -11067,7 +11067,7 @@ while lh>2 do
   begin fget;fget;fget;fget;decr(lh); {ignore the rest of the header}
   end;
 font_dsize[f]:=z;
-if s<>-1000 then
+if s!=-1000 then
   if s>=0 then z:=s
   else z:=xn_over_d(z,-s,1000);
 font_size[f]:=z;
@@ -11099,7 +11099,7 @@ begin check_byte_range(d);
 while d<current_character_being_worked_on do
   begin qw:=char_info(f)(d);
   {N.B.: not |qi(d)|, since |char_base[f]| hasn't been adjusted yet}
-  if char_tag(qw)<>list_tag then goto not_found;
+  if char_tag(qw)!=list_tag then goto not_found;
   d:=qo(rem_byte(qw)); {next character on the list}
   end;
 if d=current_character_being_worked_on then abort; {yes, there's a cycle}
@@ -11133,10 +11133,10 @@ of \TeX\ between computers.
 begin @<Replace |z| by $|z|^\prime$ and compute $\alpha,\beta$@>;
 for k:=width_base[f] to lig_kern_base[f]-1 do
   store_scaled(font_info[k].sc);
-if font_info[width_base[f]].sc<>0 then abort; {\\{width}[0] must be zero}
-if font_info[height_base[f]].sc<>0 then abort; {\\{height}[0] must be zero}
-if font_info[depth_base[f]].sc<>0 then abort; {\\{depth}[0] must be zero}
-if font_info[italic_base[f]].sc<>0 then abort; {\\{italic}[0] must be zero}
+if font_info[width_base[f]].sc!=0 then abort; {\\{width}[0] must be zero}
+if font_info[height_base[f]].sc!=0 then abort; {\\{height}[0] must be zero}
+if font_info[depth_base[f]].sc!=0 then abort; {\\{depth}[0] must be zero}
+if font_info[italic_base[f]].sc!=0 then abort; {\\{italic}[0] must be zero}
 end
 
 @ @<Replace |z|...@>=
@@ -11162,7 +11162,7 @@ if nl>0 then
       begin if 256*c+d>=nl then abort;
       if a=255 then if k=lig_kern_base[f] then bchar:=b;
       end
-    else begin if b<>bchar then check_existence(b);
+    else begin if b!=bchar then check_existence(b);
       if c<128 then check_existence(d) {check ligature}
       else if 256*(c-128)+d>=nk then abort; {check kern}
       if a<128 then if k-lig_kern_base[f]+a+1>=nl then abort;
@@ -11176,9 +11176,9 @@ for k:=kern_base[f]+kern_base_offset to exten_base[f]-1 do
 @ @<Read extensible character recipes@>=
 for k:=exten_base[f] to param_base[f]-1 do
   begin store_four_quarters(font_info[k].qqqq);
-  if a<>0 then check_existence(a);
-  if b<>0 then check_existence(b);
-  if c<>0 then check_existence(c);
+  if a!=0 then check_existence(a);
+  if b!=0 then check_existence(b);
+  if c!=0 then check_existence(c);
   check_existence(d);
   end
 
@@ -11258,7 +11258,7 @@ var f:internal_font_number;
 begin scan_int; n:=cur_val; scan_font_ident; f:=cur_val;
 if n<=0 then cur_val:=fmem_ptr
 else  begin if writing and(n<=space_shrink_code)and@|
-    (n>=space_code)and(font_glue[f]<>null) then
+    (n>=space_code)and(font_glue[f]!=null) then
     begin delete_glue_ref(font_glue[f]);
     font_glue[f]:=null;
     end;
@@ -12132,7 +12132,7 @@ all |info| fields between |q| and |p| so that |y| is not OK in that range.
 info(q):=info(p);
 if info(q)=y_here then
   begin dvi_out(o+y0-down1); {|y0| or |w0|}
-  while link(q)<>p do
+  while link(q)!=p do
     begin q:=link(q);
     case info(q) of
     yz_OK: info(q):=z_OK;
@@ -12142,7 +12142,7 @@ if info(q)=y_here then
     end;
   end
 else  begin dvi_out(o+z0-down1); {|z0| or |x0|}
-  while link(q)<>p do
+  while link(q)!=p do
     begin q:=link(q);
     case info(q) of
     yz_OK: info(q):=y_OK;
@@ -12187,7 +12187,7 @@ decision-making.
 
 @<Look at the other stack entries until deciding...@>=
 p:=link(q); mstate:=none_seen;
-while p<>null do
+while p!=null do
   begin if width(p)=w then @<Consider a node with matching width;
     |goto found| if it's a hit@>
   else  case mstate+info(p) of
@@ -12240,11 +12240,11 @@ except that some |info|'s may have become more restrictive.
   {delete movement nodes with |location>=l|}
 label done,exit;
 var p:pointer; {node being deleted}
-begin while down_ptr<>null do
+begin while down_ptr!=null do
   begin if location(down_ptr)<l then goto done;
   p:=down_ptr; down_ptr:=link(p); free_node(p,movement_node_size);
   end;
-done: while right_ptr<>null do
+done: while right_ptr!=null do
   begin if location(right_ptr)<l then return;
   p:=right_ptr; right_ptr:=link(p); free_node(p,movement_node_size);
   end;
@@ -12273,10 +12273,10 @@ there is no need for a `\\{cur\_f}' variable.
 The depth of nesting of |hlist_out| and |vlist_out| is called |cur_s|;
 this is essentially the depth of |push| commands in the \.{DVI} output.
 
-@d synch_h==if cur_h<>dvi_h then
+@d synch_h==if cur_h!=dvi_h then
     begin movement(cur_h-dvi_h,right1); dvi_h:=cur_h;
     end
-@d synch_v==if cur_v<>dvi_v then
+@d synch_v==if cur_v!=dvi_v then
     begin movement(cur_v-dvi_v,down1); dvi_v:=cur_v;
     end
 
@@ -12352,7 +12352,7 @@ incr(cur_s);
 if cur_s>0 then dvi_out(push);
 if cur_s>max_push then max_push:=cur_s;
 save_loc:=dvi_offset+dvi_ptr; base_line:=cur_v; left_edge:=cur_h;
-while p<>null do @<Output node |p| for |hlist_out| and move to the next node,
+while p!=null do @<Output node |p| for |hlist_out| and move to the next node,
   maintaining the condition |cur_v=base_line|@>;
 prune_movements(save_loc);
 if cur_s>0 then dvi_pop(save_loc);
@@ -12369,7 +12369,7 @@ reaching a non-|char_node|. The program uses the fact that |set_char_0=0|.
 reswitch: if is_char_node(p) then
   begin synch_h; synch_v;
   repeat f:=font(p); c:=character(p);
-  if f<>dvi_f then @<Change font |dvi_f| to |f|@>;
+  if f!=dvi_f then @<Change font |dvi_f| to |f|@>;
   if c>=qi(128) then dvi_out(set1);
   dvi_out(qo(c));@/
   cur_h:=cur_h+char_width(f)(char_info(f)(c));
@@ -12437,7 +12437,7 @@ if (rule_ht>0)and(rule_wd>0) then {we don't output empty rules}
 
 @<Move right or output leaders@>=
 begin g:=glue_ptr(p); rule_wd:=width(g)-cur_g;
-if g_sign<>normal then
+if g_sign!=normal then
   begin if g_sign=stretching then
     begin if stretch_order(g)=g_order then
       begin cur_glue:=cur_glue+stretch(g);
@@ -12549,7 +12549,7 @@ if cur_s>0 then dvi_out(push);
 if cur_s>max_push then max_push:=cur_s;
 save_loc:=dvi_offset+dvi_ptr; left_edge:=cur_h; cur_v:=cur_v-height(this_box);
 top_edge:=cur_v;
-while p<>null do @<Output node |p| for |vlist_out| and move to the next node,
+while p!=null do @<Output node |p| for |vlist_out| and move to the next node,
   maintaining the condition |cur_h=left_edge|@>;
 prune_movements(save_loc);
 if cur_s>0 then dvi_pop(save_loc);
@@ -12606,7 +12606,7 @@ goto next_p
 
 @ @<Move down or output leaders@>=
 begin g:=glue_ptr(p); rule_ht:=width(g)-cur_g;
-if g_sign<>normal then
+if g_sign!=normal then
   begin if g_sign=stretching then
     begin if stretch_order(g)=g_order then
       begin cur_glue:=cur_glue+stretch(g);
@@ -12797,7 +12797,7 @@ else  begin dvi_out(post); {beginning of the postamble}
   print_nl("Output written on "); slow_print(output_file_name);
 @.Output written on x@>
   print(" ("); print_int(total_pages); print(" page");
-  if total_pages<>1 then print_char("s");
+  if total_pages!=1 then print_char("s");
   print(", "); print_int(dvi_offset+dvi_ptr); print(" bytes).");
   b_close(dvi_file);
   end
@@ -12924,10 +12924,10 @@ begin last_badness:=0; r:=get_node(box_node_size); type(r):=hlist_node;
 subtype(r):=min_quarterword; shift_amount(r):=0;
 q:=r+list_offset; link(q):=p;@/
 h:=0; @<Clear dimensions to zero@>;
-while p<>null do @<Examine node |p| in the hlist, taking account of its effect
+while p!=null do @<Examine node |p| in the hlist, taking account of its effect
   on the dimensions of the new box, or moving it to the adjustment list;
   then advance |p| to the next node@>;
-if adjust_tail<>null then link(adjust_tail):=null;
+if adjust_tail!=null then link(adjust_tail):=null;
 height(r):=h; depth(r):=d;@/
 @<Determine the value of |width(r)| and the appropriate glue setting;
   then |return| or |goto common_ending|@>;
@@ -12948,12 +12948,12 @@ total_stretch[filll]:=0; total_shrink[filll]:=0
 begin reswitch: while is_char_node(p) do
   @<Incorporate character dimensions into the dimensions of
     the hbox that will contain~it, then move to the next node@>;
-if p<>null then
+if p!=null then
   begin case type(p) of
   hlist_node,vlist_node,rule_node,unset_node:
     @<Incorporate box dimensions into the dimensions of
       the hbox that will contain~it@>;
-  ins_node,mark_node,adjust_node: if adjust_tail<>null then
+  ins_node,mark_node,adjust_node: if adjust_tail!=null then
     @<Transfer node |p| to the adjustment list@>;
   whatsit_node:@<Incorporate a whatsit node into an hbox@>;
   glue_node:@<Incorporate glue into the horizontal totals@>;
@@ -13004,10 +13004,10 @@ to make a deletion.
 @^inner loop@>
 
 @<Transfer node |p| to the adjustment list@>=
-begin while link(q)<>p do q:=link(q);
+begin while link(q)!=p do q:=link(q);
 if type(p)=adjust_node then
   begin link(adjust_tail):=adjust_ptr(p);
-  while link(adjust_tail)<>null do adjust_tail:=link(adjust_tail);
+  while link(adjust_tail)!=null do adjust_tail:=link(adjust_tail);
   p:=link(p); free_node(link(q),small_node_size);
   end
 else  begin link(adjust_tail):=p; adjust_tail:=p; p:=link(p);
@@ -13045,21 +13045,21 @@ else @<Determine horizontal glue shrink setting, then |return|
 @ @<Determine horizontal glue stretch setting...@>=
 begin @<Determine the stretch order@>;
 glue_order(r):=o; glue_sign(r):=stretching;
-if total_stretch[o]<>0 then glue_set(r):=unfloat(x/total_stretch[o])
+if total_stretch[o]!=0 then glue_set(r):=unfloat(x/total_stretch[o])
 @^real division@>
 else  begin glue_sign(r):=normal;
   set_glue_ratio_zero(glue_set(r)); {there's nothing to stretch}
   end;
-if o=normal then if list_ptr(r)<>null then
+if o=normal then if list_ptr(r)!=null then
   @<Report an underfull hbox and |goto common_ending|, if this box
     is sufficiently bad@>;
 return;
 end
 
 @ @<Determine the stretch order@>=
-if total_stretch[filll]<>0 then o:=filll
-else if total_stretch[fill]<>0 then o:=fill
-else if total_stretch[fil]<>0 then o:=fil
+if total_stretch[filll]!=0 then o:=filll
+else if total_stretch[fill]!=0 then o:=fill
+else if total_stretch[fil]!=0 then o:=fil
 else o:=normal
 
 @ @<Report an underfull hbox and |goto common_ending|, if...@>=
@@ -13088,7 +13088,7 @@ pack_begin_line:=0;
 
 @ @<Finish issuing a diagnostic message for an overfull or underfull hbox@>=
 if output_active then print(") has occurred while \output is active")
-else  begin if pack_begin_line<>0 then
+else  begin if pack_begin_line!=0 then
     begin if pack_begin_line>0 then print(") in paragraph at lines ")
     else print(") in alignment at lines ");
     print_int(abs(pack_begin_line));
@@ -13104,33 +13104,33 @@ begin_diagnostic; show_box(r); end_diagnostic(true)
 @ @<Determine horizontal glue shrink setting...@>=
 begin @<Determine the shrink order@>;
 glue_order(r):=o; glue_sign(r):=shrinking;
-if total_shrink[o]<>0 then glue_set(r):=unfloat((-x)/total_shrink[o])
+if total_shrink[o]!=0 then glue_set(r):=unfloat((-x)/total_shrink[o])
 @^real division@>
 else  begin glue_sign(r):=normal;
   set_glue_ratio_zero(glue_set(r)); {there's nothing to shrink}
   end;
-if (total_shrink[o]<-x)and(o=normal)and(list_ptr(r)<>null) then
+if (total_shrink[o]<-x)and(o=normal)and(list_ptr(r)!=null) then
   begin last_badness:=1000000;
   set_glue_ratio_one(glue_set(r)); {use the maximum shrinkage}
   @<Report an overfull hbox and |goto common_ending|, if this box
     is sufficiently bad@>;
   end
-else if o=normal then if list_ptr(r)<>null then
+else if o=normal then if list_ptr(r)!=null then
   @<Report a tight hbox and |goto common_ending|, if this box
     is sufficiently bad@>;
 return;
 end
 
 @ @<Determine the shrink order@>=
-if total_shrink[filll]<>0 then o:=filll
-else if total_shrink[fill]<>0 then o:=fill
-else if total_shrink[fil]<>0 then o:=fil
+if total_shrink[filll]!=0 then o:=filll
+else if total_shrink[fill]!=0 then o:=fill
+else if total_shrink[fil]!=0 then o:=fil
 else o:=normal
 
 @ @<Report an overfull hbox and |goto common_ending|, if...@>=
 if (-x-total_shrink[normal]>hfuzz)or(hbadness<100) then
   begin if (overfull_rule>0)and(-x-total_shrink[normal]>hfuzz) then
-    begin while link(q)<>null do q:=link(q);
+    begin while link(q)!=null do q:=link(q);
     link(q):=new_rule;
     width(link(q)):=overfull_rule;
     end;
@@ -13170,7 +13170,7 @@ begin last_badness:=0; r:=get_node(box_node_size); type(r):=vlist_node;
 subtype(r):=min_quarterword; shift_amount(r):=0;
 list_ptr(r):=p;@/
 w:=0; @<Clear dimensions to zero@>;
-while p<>null do @<Examine node |p| in the vlist, taking account of its effect
+while p!=null do @<Examine node |p| in the vlist, taking account of its effect
   on the dimensions of the new box; then advance |p| to the next node@>;
 width(r):=w;
 if d>l then
@@ -13236,12 +13236,12 @@ else @<Determine vertical glue shrink setting, then |return|
 @ @<Determine vertical glue stretch setting...@>=
 begin @<Determine the stretch order@>;
 glue_order(r):=o; glue_sign(r):=stretching;
-if total_stretch[o]<>0 then glue_set(r):=unfloat(x/total_stretch[o])
+if total_stretch[o]!=0 then glue_set(r):=unfloat(x/total_stretch[o])
 @^real division@>
 else  begin glue_sign(r):=normal;
   set_glue_ratio_zero(glue_set(r)); {there's nothing to stretch}
   end;
-if o=normal then if list_ptr(r)<>null then
+if o=normal then if list_ptr(r)!=null then
   @<Report an underfull vbox and |goto common_ending|, if this box
     is sufficiently bad@>;
 return;
@@ -13261,7 +13261,7 @@ end
 
 @ @<Finish issuing a diagnostic message for an overfull or underfull vbox@>=
 if output_active then print(") has occurred while \output is active")
-else  begin if pack_begin_line<>0 then {it's actually negative}
+else  begin if pack_begin_line!=0 then {it's actually negative}
     begin print(") in alignment at lines ");
     print_int(abs(pack_begin_line));
     print("--");
@@ -13275,18 +13275,18 @@ begin_diagnostic; show_box(r); end_diagnostic(true)
 @ @<Determine vertical glue shrink setting...@>=
 begin @<Determine the shrink order@>;
 glue_order(r):=o; glue_sign(r):=shrinking;
-if total_shrink[o]<>0 then glue_set(r):=unfloat((-x)/total_shrink[o])
+if total_shrink[o]!=0 then glue_set(r):=unfloat((-x)/total_shrink[o])
 @^real division@>
 else  begin glue_sign(r):=normal;
   set_glue_ratio_zero(glue_set(r)); {there's nothing to shrink}
   end;
-if (total_shrink[o]<-x)and(o=normal)and(list_ptr(r)<>null) then
+if (total_shrink[o]<-x)and(o=normal)and(list_ptr(r)!=null) then
   begin last_badness:=1000000;
   set_glue_ratio_one(glue_set(r)); {use the maximum shrinkage}
   @<Report an overfull vbox and |goto common_ending|, if this box
     is sufficiently bad@>;
   end
-else if o=normal then if list_ptr(r)<>null then
+else if o=normal then if list_ptr(r)!=null then
   @<Report a tight vbox and |goto common_ending|, if this box
     is sufficiently bad@>;
 return;
@@ -13648,7 +13648,7 @@ procedure@?show_info; forward;@t\2@>@?{|show_node_list(info(temp_ptr))|}
 procedure print_subsidiary_data(@!p:pointer;@!c:ASCII_code);
   {display a noad field}
 begin if cur_length>=depth_threshold then
-  begin if math_type(p)<>empty then print(" []");
+  begin if math_type(p)!=empty then print(" []");
   end
 else  begin append_char(c); {include |c| in the recursion history}
   temp_ptr:=p; {prepare for |show_info| if recursion is needed}
@@ -13721,7 +13721,7 @@ left_noad: begin print_esc("left"); print_delimiter(delimiter(p));
 right_noad: begin print_esc("right"); print_delimiter(delimiter(p));
   end;
 end;
-if subtype(p)<>normal then
+if subtype(p)!=normal then
   if subtype(p)=limits then print_esc("limits")
   else print_esc("nolimits");
 if type(p)<left_noad then print_subsidiary_data(nucleus(p),".");
@@ -13733,16 +13733,16 @@ end
 begin print_esc("fraction, thickness ");
 if thickness(p)=default_code then print("= default")
 else print_scaled(thickness(p));
-if (small_fam(left_delimiter(p))<>0)or@+
-  (small_char(left_delimiter(p))<>min_quarterword)or@|
-  (large_fam(left_delimiter(p))<>0)or@|
-  (large_char(left_delimiter(p))<>min_quarterword) then
+if (small_fam(left_delimiter(p))!=0)or@+
+  (small_char(left_delimiter(p))!=min_quarterword)or@|
+  (large_fam(left_delimiter(p))!=0)or@|
+  (large_char(left_delimiter(p))!=min_quarterword) then
   begin print(", left-delimiter "); print_delimiter(left_delimiter(p));
   end;
-if (small_fam(right_delimiter(p))<>0)or@|
-  (small_char(right_delimiter(p))<>min_quarterword)or@|
-  (large_fam(right_delimiter(p))<>0)or@|
-  (large_char(right_delimiter(p))<>min_quarterword) then
+if (small_fam(right_delimiter(p))!=0)or@|
+  (small_char(right_delimiter(p))!=min_quarterword)or@|
+  (large_fam(right_delimiter(p))!=0)or@|
+  (large_char(right_delimiter(p))!=min_quarterword) then
   begin print(", right-delimiter "); print_delimiter(right_delimiter(p));
   end;
 print_subsidiary_data(numerator(p),"\");
@@ -13924,7 +13924,7 @@ loop@+  begin @<Look at the variants of |(z,x)|; set |f| and |c| whenever
   if large_attempt then goto found; {there were none large enough}
   large_attempt:=true; z:=large_fam(d); x:=large_char(d);
   end;
-found: if f<>null_font then
+found: if f!=null_font then
   @<Make variable |b| point to a box for |(f,c)|@>
 else  begin b:=new_null_box;
   width(b):=null_delimiter_space; {use this width if no delimiter was found}
@@ -13938,10 +13938,10 @@ characters might not be present in some of the fonts, and they might not
 be probed in increasing order of height.
 
 @<Look at the variants of |(z,x)|; set |f| and |c|...@>=
-if (z<>0)or(x<>min_quarterword) then
+if (z!=0)or(x!=min_quarterword) then
   begin z:=z+s+16;
   repeat z:=z-16; g:=fam_fnt(z);
-  if g<>null_font then
+  if g!=null_font then
     @<Look at the list of characters starting with |x| in
       font |g|; set |f| and |c| whenever
       a better character is found; |goto found| as soon as a
@@ -14026,16 +14026,16 @@ r:=font_info[exten_base[f]+rem_byte(q)].qqqq;@/
 @<Compute the minimum suitable height, |w|, and the corresponding
   number of extension steps, |n|; also set |width(b)|@>;
 c:=ext_bot(r);
-if c<>min_quarterword then stack_into_box(b,f,c);
+if c!=min_quarterword then stack_into_box(b,f,c);
 c:=ext_rep(r);
 for m:=1 to n do stack_into_box(b,f,c);
 c:=ext_mid(r);
-if c<>min_quarterword then
+if c!=min_quarterword then
   begin stack_into_box(b,f,c); c:=ext_rep(r);
   for m:=1 to n do stack_into_box(b,f,c);
   end;
 c:=ext_top(r);
-if c<>min_quarterword then stack_into_box(b,f,c);
+if c!=min_quarterword then stack_into_box(b,f,c);
 depth(b):=w-height(b);
 end
 
@@ -14047,13 +14047,13 @@ we don't use any copies of it, otherwise we use as few as possible
 @<Compute the minimum suitable height, |w|, and...@>=
 c:=ext_rep(r); u:=height_plus_depth(f,c);
 w:=0; q:=char_info(f)(c); width(b):=char_width(f)(q)+char_italic(f)(q);@/
-c:=ext_bot(r);@+if c<>min_quarterword then w:=w+height_plus_depth(f,c);
-c:=ext_mid(r);@+if c<>min_quarterword then w:=w+height_plus_depth(f,c);
-c:=ext_top(r);@+if c<>min_quarterword then w:=w+height_plus_depth(f,c);
+c:=ext_bot(r);@+if c!=min_quarterword then w:=w+height_plus_depth(f,c);
+c:=ext_mid(r);@+if c!=min_quarterword then w:=w+height_plus_depth(f,c);
+c:=ext_top(r);@+if c!=min_quarterword then w:=w+height_plus_depth(f,c);
 n:=0;
 if u>0 then while w<v do
   begin w:=w+u; incr(n);
-  if ext_mid(r)<>min_quarterword then w:=w+u;
+  if ext_mid(r)!=min_quarterword then w:=w+u;
   end
 
 @ The next subroutine is much simpler; it is used for numerators and
@@ -14073,16 +14073,16 @@ kern is inserted.
 var p:pointer; {temporary register for list manipulation}
 @!f:internal_font_number; {font in a one-character box}
 @!v:scaled; {width of a character without italic correction}
-begin if (width(b)<>w)and(list_ptr(b)<>null) then
+begin if (width(b)!=w)and(list_ptr(b)!=null) then
   begin if type(b)=vlist_node then b:=hpack(b,natural);
   p:=list_ptr(b);
   if (is_char_node(p))and(link(p)=null) then
     begin f:=font(p); v:=char_width(f)(char_info(f)(character(p)));
-    if v<>width(b) then link(p):=new_kern(width(b)-v);
+    if v!=width(b) then link(p):=new_kern(width(b)-v);
     end;
   free_node(b,box_node_size);
   b:=new_glue(ss_glue); link(b):=p;
-  while link(p)<>null do p:=link(p);
+  while link(p)!=null do p:=link(p);
   link(p):=new_glue(ss_glue);
   rebox:=hpack(b,w,exactly);
   end
@@ -14203,7 +14203,7 @@ end;
 q:=list_ptr(x);
 if is_char_node(q) then
   begin r:=link(q);
-  if r<>null then if link(r)=null then if not is_char_node(r) then
+  if r!=null then if link(r)=null then if not is_char_node(r) then
    if type(r)=kern_node then {unneeded italic correction}
     begin free_node(r,small_node_size); link(q):=null;
     end;
@@ -14296,7 +14296,7 @@ begin mlist:=cur_mlist; penalties:=mlist_penalties;
 style:=cur_style; {tuck global parameters away as local variables}
 q:=mlist; r:=null; r_type:=op_noad; max_h:=0; max_d:=0;
 @<Set up the values of |cur_size| and |cur_mu|, based on |cur_style|@>;
-while q<>null do @<Process node-or-noad |q| as much as possible in preparation
+while q!=null do @<Process node-or-noad |q| as much as possible in preparation
     for the second pass of |mlist_to_hlist|, then move to the next
     item in the mlist@>;
 @<Convert \(a)a final |bin_noad| to an |ord_noad|@>;
@@ -14380,9 +14380,9 @@ flush_node_list(text_mlist(q));
 flush_node_list(script_mlist(q));
 flush_node_list(script_script_mlist(q));@/
 type(q):=style_node; subtype(q):=cur_style; width(q):=0; depth(q):=0;
-if p<>null then
+if p!=null then
   begin z:=link(q); link(q):=p;
-  while link(p)<>null do p:=link(p);
+  while link(p)!=null do p:=link(p);
   link(p):=z;
   end;
 goto done_with_node;
@@ -14402,9 +14402,9 @@ if subtype(q)=mu_glue then
   y:=math_glue(x,cur_mu); delete_glue_ref(x); glue_ptr(q):=y;
   subtype(q):=normal;
   end
-else if (cur_size<>text_size)and(subtype(q)=cond_math_glue) then
+else if (cur_size!=text_size)and(subtype(q)=cond_math_glue) then
   begin p:=link(q);
-  if p<>null then if (type(p)=glue_node)or(type(p)=kern_node) then
+  if p!=null then if (type(p)=glue_node)or(type(p)=kern_node) then
     begin link(q):=link(p); link(p):=null; flush_node_list(p);
     end;
   end
@@ -14456,7 +14456,7 @@ procedure make_vcenter(@!q:pointer);
 var v:pointer; {the box that should be centered vertically}
 @!delta:scaled; {its height plus depth}
 begin v:=info(nucleus(q));
-if type(v)<>vlist_node then confusion("vcenter");
+if type(v)!=vlist_node then confusion("vcenter");
 @:this can't happen vcenter}{\quad vcenter@>
 delta:=height(v)+depth(v);
 height(v):=axis_height(cur_size)+half(delta);
@@ -14513,7 +14513,7 @@ if char_exists(cur_i) then
   x:=clean_box(nucleus(q),cramped_style(cur_style)); w:=width(x); h:=height(x);
   @<Switch to a larger accent if available and appropriate@>;
   if h<x_height(f) then delta:=h@+else delta:=x_height(f);
-  if (math_type(supscr(q))<>empty)or(math_type(subscr(q))<>empty) then
+  if (math_type(supscr(q))!=empty)or(math_type(subscr(q))!=empty) then
     if math_type(nucleus(q))=math_char then
       @<Swap the subscript and superscript into box |x|@>;
   y:=char_box(f,c);
@@ -14532,7 +14532,7 @@ height(y):=h;
 end
 
 @ @<Switch to a larger accent if available and appropriate@>=
-loop@+  begin if char_tag(i)<>list_tag then goto done;
+loop@+  begin if char_tag(i)!=list_tag then goto done;
   y:=rem_byte(i);
   i:=char_info(f)(y);
   if not char_exists(i) then goto done;
@@ -14606,7 +14606,7 @@ if cur_style<text_style then {display style}
   begin shift_up:=num1(cur_size); shift_down:=denom1(cur_size);
   end
 else  begin shift_down:=denom2(cur_size);
-  if thickness(q)<>0 then shift_up:=num2(cur_size)
+  if thickness(q)!=0 then shift_up:=num2(cur_size)
   else shift_up:=num3(cur_size);
   end
 
@@ -14692,7 +14692,7 @@ if math_type(nucleus(q))=math_char then
       end;
     end;
   delta:=char_italic(cur_f)(cur_i); x:=clean_box(nucleus(q),cur_style);
-  if (math_type(subscr(q))<>empty)and(subtype(q)<>limits) then
+  if (math_type(subscr(q))!=empty)and(subtype(q)!=limits) then
     width(x):=width(x)-delta; {remove italic correction}
   shift_amount(x):=half(height(x)-depth(x)) - axis_height(cur_size);
     {center vertically}
@@ -14764,7 +14764,7 @@ begin restart:@t@>@;@/
 if math_type(subscr(q))=empty then if math_type(supscr(q))=empty then
  if math_type(nucleus(q))=math_char then
   begin p:=link(q);
-  if p<>null then if (type(p)>=ord_noad)and(type(p)<=punct_noad) then
+  if p!=null then if (type(p)>=ord_noad)and(type(p)<=punct_noad) then
     if math_type(nucleus(p))=math_char then
     if fam(nucleus(p))=fam(nucleus(q)) then
       begin math_type(nucleus(q)):=math_text_char;
@@ -14863,9 +14863,9 @@ make_scripts(q,delta)
 begin fetch(nucleus(q));
 if char_exists(cur_i) then
   begin delta:=char_italic(cur_f)(cur_i); p:=new_character(cur_f,qo(cur_c));
-  if (math_type(nucleus(q))=math_text_char)and(space(cur_f)<>0) then
+  if (math_type(nucleus(q))=math_text_char)and(space(cur_f)!=0) then
     delta:=0; {no italic correction in mid-word of text font}
-  if (math_type(subscr(q))=empty)and(delta<>0) then
+  if (math_type(subscr(q))=empty)and(delta!=0) then
     begin link(p):=new_kern(delta); delta:=0;
     end;
   end
@@ -14904,7 +14904,7 @@ else  begin @<Construct a superscript box |x|@>;
   end;
 if new_hlist(q)=null then new_hlist(q):=x
 else  begin p:=new_hlist(q);
-  while link(p)<>null do p:=link(p);
+  while link(p)!=null do p:=link(p);
   link(p):=x;
   end;
 end;
@@ -14969,7 +14969,7 @@ to a node at the current end of the final hlist.
 @<Make a second pass over the mlist, ...@>=
 p:=temp_head; link(p):=null; q:=mlist; r_type:=0; cur_style:=style;
 @<Set up the values of |cur_size| and |cur_mu|, based on |cur_style|@>;
-while q<>null do
+while q!=null do
   begin @<If node |q| is a style node, change the style and |goto delete_q|;
     otherwise if it is not a noad, put it into the hlist,
     advance |q|, and |goto done|; otherwise set |s| to the size
@@ -15081,7 +15081,7 @@ if r_type>0 then {not the first noad}
   othercases confusion("mlist4")
 @:this can't happen mlist4}{\quad mlist4@>
   endcases;
-  if x<>0 then
+  if x!=0 then
     begin y:=math_glue(glue_par(x),cur_mu);
     z:=new_glue(y); glue_ref_count(y):=null; link(p):=z; p:=z;@/
     subtype(z):=x+1; {store a symbolic subtype}
@@ -15093,14 +15093,14 @@ is not an ``infinite'' penalty, and if the node immediately following |q|
 is not a penalty node or a |rel_noad| or absent entirely.
 
 @<Append any |new_hlist| entries for |q|, and any appropriate penalties@>=
-if new_hlist(q)<>null then
+if new_hlist(q)!=null then
   begin link(p):=new_hlist(q);
   repeat p:=link(p);
   until link(p)=null;
   end;
-if penalties then if link(q)<>null then if pen<inf_penalty then
+if penalties then if link(q)!=null then if pen<inf_penalty then
   begin r_type:=type(link(q));
-  if r_type<>penalty_node then if r_type<>rel_noad then
+  if r_type!=penalty_node then if r_type!=rel_noad then
     begin z:=new_penalty(pen); link(p):=z; p:=z;
     end;
   end
@@ -15336,7 +15336,7 @@ push_nest; {enter a new semantic level}
 scan_spec(align_group,false);@/
 @<Scan the preamble and record it in the |preamble| list@>;
 new_save_level(align_group);
-if every_cr<>null then begin_token_list(every_cr,every_cr_text);
+if every_cr!=null then begin_token_list(every_cr,every_cr_text);
 align_peek; {look for \.{\\noalign} or \.{\\omit}}
 end;
 
@@ -15355,7 +15355,7 @@ else if mode>0 then negate(mode)
 no other pieces of mlists present.
 
 @<Check for improper alignment in displayed math@>=
-if (mode=mmode)and((tail<>head)or(incompleat_noad<>null)) then
+if (mode=mmode)and((tail!=head)or(incompleat_noad!=null)) then
   begin print_err("Improper "); print_esc("halign"); print(" inside $$'s");
 @.Improper \\halign...@>
   help3("Displays can use special alignments (like \eqalignno)")@/
@@ -15472,7 +15472,7 @@ loop@+  begin get_preamble_token;
     ("none, so I've put one in; maybe that will work.");
     back_error; goto done1;
     end
-  else if (cur_cmd<>spacer)or(p<>hold_head) then
+  else if (cur_cmd!=spacer)or(p!=hold_head) then
     begin link(p):=get_avail; p:=link(p); info(p):=cur_tok;
     end;
   end;
@@ -15611,7 +15611,7 @@ if align_state<500000 then
 @.interwoven alignment preambles...@>
 p:=link(q);
 @<If the preamble list has been traversed, check that the row has ended@>;
-if extra_info(cur_align)<>span_code then
+if extra_info(cur_align)!=span_code then
   begin unsave; new_save_level(align_group);@/
   @<Package an unset box for the current column and record its width@>;
   @<Copy the tabskip glue between columns@>;
@@ -15627,7 +15627,7 @@ exit: end;
 
 @ @<If the preamble list has been traversed, check that the row has ended@>=
 if (p=null)and(extra_info(cur_align)<cr_code) then
- if cur_loop<>null then @<Lengthen the preamble periodically@>
+ if cur_loop!=null then @<Lengthen the preamble periodically@>
  else  begin print_err("Extra alignment tab has been changed to ");
 @.Extra alignment tab...@>
   print_esc("cr");
@@ -15648,12 +15648,12 @@ end
 
 @ @<Copy the templates from node |cur_loop| into node |p|@>=
 q:=hold_head; r:=u_part(cur_loop);
-while r<>null do
+while r!=null do
   begin link(q):=get_avail; q:=link(q); info(q):=info(r); r:=link(r);
   end;
 link(q):=null; u_part(p):=link(hold_head);
 q:=hold_head; r:=v_part(cur_loop);
-while r<>null do
+while r!=null do
   begin link(q):=get_avail; q:=link(q); info(q):=info(r); r:=link(r);
   end;
 link(q):=null; v_part(p):=link(hold_head)
@@ -15670,7 +15670,7 @@ begin if mode=-hmode then
 else  begin u:=vpackage(link(head),natural,0); w:=height(u);
   end;
 n:=min_quarterword; {this represents a span count of 1}
-if cur_span<>cur_align then @<Update width entry for spanned columns@>
+if cur_span!=cur_align then @<Update width entry for spanned columns@>
 else if w>width(cur_align) then width(cur_align):=w;
 type(u):=unset_node; span_count(u):=n;@/
 @<Determine the stretch order@>;
@@ -15721,7 +15721,7 @@ var p:pointer; {the new unset box}
 begin if mode=-hmode then
   begin p:=hpack(link(head),natural);
   pop_nest; append_to_vlist(p);
-  if cur_head<>cur_tail then
+  if cur_head!=cur_tail then
     begin link(tail):=link(cur_head); tail:=cur_tail;
     end;
   end
@@ -15729,7 +15729,7 @@ else  begin p:=vpack(link(head),natural); pop_nest;
   link(tail):=p; tail:=p; space_factor:=1000;
   end;
 type(p):=unset_node; glue_stretch(p):=0;
-if every_cr<>null then begin_token_list(every_cr,every_cr_text);
+if every_cr!=null then begin_token_list(every_cr,every_cr_text);
 align_peek;
 end; {note that |glue_shrink(p)=0| since |glue_shrink==shift_amount|}
 
@@ -15747,10 +15747,10 @@ var @!p,@!q,@!r,@!s,@!u,@!v: pointer; {registers for the list operations}
 @!n:halfword; {matching span amount}
 @!rule_save:scaled; {temporary storage for |overfull_rule|}
 @!aux_save:memory_word; {temporary storage for |aux|}
-begin if cur_group<>align_group then confusion("align1");
+begin if cur_group!=align_group then confusion("align1");
 @:this can't happen align}{\quad align@>
 unsave; {that |align_group| was for individual entries}
-if cur_group<>align_group then confusion("align0");
+if cur_group!=align_group then confusion("align0");
 unsave; {that |align_group| was for the whole alignment}
 if nest[nest_ptr-1].mode_field=mmode then o:=display_indent
   else o:=0;
@@ -15793,7 +15793,7 @@ repeat flush_list(u_part(q)); flush_list(v_part(q));
 p:=link(link(q));
 if width(q)=null_flag then
   @<Nullify |width(q)| and the tabskip glue following this column@>;
-if info(q)<>end_span then
+if info(q)!=end_span then
   @<Merge the widths in the span nodes of |q| with those of |p|,
     destroying the span nodes of |q|@>;
 type(q):=unset_node; span_count(q):=min_quarterword; height(q):=0;
@@ -15803,7 +15803,7 @@ until q=null
 
 @ @<Nullify |width(q)| and the tabskip glue following this column@>=
 begin width(q):=0; r:=link(q); s:=glue_ptr(r);
-if s<>zero_glue then
+if s!=zero_glue then
   begin add_glue_ref(zero_glue); delete_glue_ref(s);
   glue_ptr(r):=zero_glue;
   end;
@@ -15858,7 +15858,7 @@ pack_begin_line:=0
 
 @ @<Set the glue in all the unset...@>=
 q:=link(head); s:=head;
-while q<>null do
+while q!=null do
   begin if not is_char_node(q) then
     if type(q)=unset_node then
       @<Set the unset box |q| and the unset boxes in it@>
@@ -15872,7 +15872,7 @@ while q<>null do
 begin if is_running(width(q)) then width(q):=width(p);
 if is_running(height(q)) then height(q):=height(p);
 if is_running(depth(q)) then depth(q):=depth(p);
-if o<>0 then
+if o!=0 then
   begin r:=link(q); link(q):=null; q:=hpack(q,natural);
   shift_amount(q):=o; link(q):=r; link(s):=q;
   end;
@@ -15913,7 +15913,7 @@ if mode=-vmode then
 else @<Make the unset node |r| into a |vlist_node| of height |w|,
     setting the glue as if the height were |t|@>;
 shift_amount(r):=0;
-if u<>hold_head then {append blank boxes to account for spanned nodes}
+if u!=hold_head then {append blank boxes to account for spanned nodes}
   begin link(u):=link(r); link(r):=link(hold_head); r:=u;
   end
 
@@ -15990,7 +15990,7 @@ an over-cautious \PASCAL\ runtime system may complain about this.
 aux_save:=aux; p:=link(head); q:=tail; pop_nest;
 if mode=mmode then @<Finish an alignment in a display@>
 else  begin aux:=aux_save; link(tail):=p;
-  if p<>null then tail:=q;
+  if p!=null then tail:=q;
   if mode=vmode then build_page;
   end
 
@@ -16077,7 +16077,7 @@ same number of |mem|~words.
 @<Get ready to start...@>=
 link(temp_head):=link(head);
 if is_char_node(tail) then tail_append(new_penalty(inf_penalty))
-else if type(tail)<>glue_node then tail_append(new_penalty(inf_penalty))
+else if type(tail)!=glue_node then tail_append(new_penalty(inf_penalty))
 else  begin type(tail):=penalty_node; delete_glue_ref(glue_ptr(tail));
   flush_node_list(leader_ptr(tail)); penalty(tail):=inf_penalty;
   end;
@@ -16277,7 +16277,7 @@ introduce infinite shrinkability, the shrinkability will be reset to finite
 and an error message will be issued. A boolean variable |no_shrink_error_yet|
 prevents this error message from appearing more than once per paragraph.
 
-@d check_shrinkage(#)==if (shrink_order(#)<>normal)and(shrink(#)<>0) then
+@d check_shrinkage(#)==if (shrink_order(#)!=normal)and(shrink(#)!=0) then
   begin #:=finite_shrink(#);
   end
 
@@ -16408,7 +16408,7 @@ if abs(pi)>=inf_penalty then
   if pi>0 then return {this breakpoint is inhibited by infinite penalty}
   else pi:=eject_penalty {this breakpoint will be forced}
 
-@ The following code uses the fact that |type(last_active)<>delta_node|.
+@ The following code uses the fact that |type(last_active)!=delta_node|.
 
 @d update_width(#)==@|
   cur_active_width[#]:=cur_active_width[#]+mem[r+#].sc
@@ -16463,7 +16463,7 @@ begin l:=line_number(r);
 if l>old_l then
   begin {now we are no longer in the inner loop}
   if (minimum_demerits<awful_bad)and@|
-      ((old_l<>easy_line)or(r=last_active)) then
+      ((old_l!=easy_line)or(r=last_active)) then
     @<Create new active nodes for the best feasible breaks
       just found@>;
   if r=last_active then return;
@@ -16517,15 +16517,15 @@ Kern nodes do not disappear at a line break unless they are |explicit|.
 @<Compute the values of |break...@>=
 begin no_break_yet:=false; do_all_six(set_break_width_to_background);
 s:=cur_p;
-if break_type>unhyphenated then if cur_p<>null then
+if break_type>unhyphenated then if cur_p!=null then
   @<Compute the discretionary |break_width| values@>;
-while s<>null do
+while s!=null do
   begin if is_char_node(s) then goto done;
   case type(s) of
   glue_node:@<Subtract glue from |break_width|@>;
   penalty_node: do_nothing;
   math_node: break_width[1]:=break_width[1]-width(s);
-  kern_node: if subtype(s)<>explicit then goto done
+  kern_node: if subtype(s)!=explicit then goto done
     else break_width[1]:=break_width[1]-width(s);
   othercases goto done
   endcases;@/
@@ -16563,7 +16563,7 @@ while t>0 do
   begin decr(t); v:=link(v);
   @<Subtract the width of node |v| from |break_width|@>;
   end;
-while s<>null do
+while s!=null do
   begin @<Add the width of node |s| to |break_width|@>;
   s:=link(s);
   end;
@@ -16607,7 +16607,7 @@ else  case type(s) of
 @:this can't happen disc2}{\quad disc2@>
   endcases
 
-@ We use the fact that |type(active)<>delta_node|.
+@ We use the fact that |type(active)!=delta_node|.
 
 @d convert_to_break_width(#)==@|
   mem[prev_r+#].sc:=@|@t\hskip10pt@>mem[prev_r+#].sc
@@ -16630,13 +16630,13 @@ else  begin q:=get_node(delta_node_size); link(q):=r; type(q):=delta_node;@/
   end
 
 @ When the following code is performed, we will have just inserted at
-least one active node before |r|, so |type(prev_r)<>delta_node|.
+least one active node before |r|, so |type(prev_r)!=delta_node|.
 
 @d new_delta_from_break_width(#)==@|mem[q+#].sc:=
     cur_active_width[#]-break_width[#]
 
 @<Insert a delta node to prepare for the next active node@>=
-if r<>last_active then
+if r!=last_active then
   begin q:=get_node(delta_node_size); link(q):=r; type(q):=delta_node;@/
   subtype(q):=0; {the |subtype| is not used}
   do_all_six(new_delta_from_break_width);
@@ -16788,8 +16788,8 @@ test for large width excess and small stretchability, before calling the
 @^inner loop@>
 
 @<Set the value of |b| to the badness for stretching...@>=
-if (cur_active_width[3]<>0)or(cur_active_width[4]<>0)or@|
-  (cur_active_width[5]<>0) then
+if (cur_active_width[3]!=0)or(cur_active_width[4]!=0)or@|
+  (cur_active_width[5]!=0) then
   begin b:=0; fit_class:=decent_fit; {infinite stretch}
   end
 else  begin if shortfall>7230584 then if cur_active_width[2]<1663497 then
@@ -16852,13 +16852,13 @@ if d<=minimal_demerits[fit_class] then
   end
 
 @ @<Print a symbolic description of this feasible break@>=
-begin if printed_node<>cur_p then
+begin if printed_node!=cur_p then
   @<Print the list between |printed_node| and |cur_p|,
     then set |printed_node:=cur_p|@>;
 print_nl("@@");
 @.\AT!@>
 if cur_p=null then print_esc("par")
-else if type(cur_p)<>glue_node then
+else if type(cur_p)!=glue_node then
   begin if type(cur_p)=penalty_node then print_esc("penalty")
   else if type(cur_p)=disc_node then print_esc("discretionary")
   else if type(cur_p)=kern_node then print_esc("kern")
@@ -16890,7 +16890,7 @@ third list, so that the discretionary data will not appear twice.  The
 following code is performed at the very end of |try_break|.
 
 @<Update the value of |printed_node|...@>=
-if cur_p=printed_node then if cur_p<>null then if type(cur_p)=disc_node then
+if cur_p=printed_node then if cur_p!=null then if type(cur_p)=disc_node then
   begin t:=replace_count(cur_p);
   while t>0 do
     begin decr(t); printed_node:=link(printed_node);
@@ -16900,11 +16900,11 @@ if cur_p=printed_node then if cur_p<>null then if type(cur_p)=disc_node then
 @ @<Compute the demerits, |d|, from |r| to |cur_p|@>=
 begin d:=line_penalty+b;
 if abs(d)>=10000 then d:=100000000@+else d:=d*d;
-if pi<>0 then
+if pi!=0 then
   if pi>0 then d:=d+pi*pi
   else if pi>eject_penalty then d:=d-pi*pi;
 if (break_type=hyphenated)and(type(r)=hyphenated) then
-  if cur_p<>null then d:=d+double_hyphen_demerits
+  if cur_p!=null then d:=d+double_hyphen_demerits
   else d:=d+final_hyphen_demerits;
 if abs(fit_class-fitness(r))>1 then d:=d+adj_demerits;
 end
@@ -16937,7 +16937,7 @@ else if type(prev_r)=delta_node then
     end;
   end
 
-@ The following code uses the fact that |type(last_active)<>delta_node|. If the
+@ The following code uses the fact that |type(last_active)!=delta_node|. If the
 active list has just become empty, we do not need to update the
 |active_width| array, since it will be initialized when an active
 node is next inserted.
@@ -16999,7 +16999,7 @@ loop@+  begin if threshold>inf_bad then threshold:=inf_bad;
   @<Create an active breakpoint representing the beginning of the paragraph@>;
   cur_p:=link(temp_head); auto_breaking:=true;@/
   prev_p:=cur_p; {glue at beginning is not a legal breakpoint}
-  while (cur_p<>null)and(link(active)<>last_active) do
+  while (cur_p!=null)and(link(active)!=last_active) do
     @<Call |try_break| if |cur_p| is a legal breakpoint;
     on the second pass, also try to hyphenate the next
     word, if |cur_p| is a glue node;
@@ -17038,14 +17038,14 @@ font_in_short_display:=null_font
 
 @ @<Clean...@>=
 q:=link(active);
-while q<>last_active do
+while q!=last_active do
   begin cur_p:=link(q);
   if type(q)=delta_node then free_node(q,delta_node_size)
   else free_node(q,active_node_size);
   q:=cur_p;
   end;
 q:=passive;
-while q<>null do
+while q!=null do
   begin cur_p:=link(q);
   free_node(q,passive_node_size);
   q:=cur_p;
@@ -17113,7 +17113,7 @@ a breakpoint is legal at |cur_p|, as explained above.
 if auto_breaking then
   begin if is_char_node(prev_p) then try_break(0,unhyphenated)
   else if precedes_break(prev_p) then try_break(0,unhyphenated)
-  else if (type(prev_p)=kern_node)and(subtype(prev_p)<>explicit) then
+  else if (type(prev_p)=kern_node)and(subtype(prev_p)!=explicit) then
     try_break(0,unhyphenated);
   end;
 check_shrinkage(glue_ptr(cur_p)); q:=glue_ptr(cur_p);
@@ -17196,7 +17196,7 @@ help determine what is best.
 
 @ @<Try the final line break at the end of the paragraph...@>=
 begin try_break(eject_penalty,hyphenated);
-if link(active)<>last_active then
+if link(active)!=last_active then
   begin @<Find an active node with fewest demerits@>;
   if looseness=0 then goto done;
   @<Find the best active node for the desired looseness@>;
@@ -17206,7 +17206,7 @@ end
 
 @ @<Find an active node...@>=
 r:=link(active); fewest_demerits:=awful_bad;
-repeat if type(r)<>delta_node then if total_demerits(r)<fewest_demerits then
+repeat if type(r)!=delta_node then if total_demerits(r)<fewest_demerits then
   begin fewest_demerits:=total_demerits(r); best_bet:=r;
   end;
 r:=link(r);
@@ -17220,7 +17220,7 @@ looseness calculation, independently of the other segments.
 
 @<Find the best active node...@>=
 begin r:=link(active); actual_looseness:=0;
-repeat if type(r)<>delta_node then
+repeat if type(r)!=delta_node then
   begin line_diff:=line_number(r)-best_line;
   if ((line_diff<actual_looseness)and(looseness<=line_diff))or@|
   ((line_diff>actual_looseness)and(looseness>=line_diff)) then
@@ -17274,10 +17274,10 @@ repeat @<Justify the line ending at breakpoint |cur_p|, and append it to the
   current vertical list, together with associated penalties and other
   insertions@>;
 incr(cur_line); cur_p:=next_break(cur_p);
-if cur_p<>null then if not post_disc_break then
+if cur_p!=null then if not post_disc_break then
   @<Prune unwanted nodes at the beginning of the next line@>;
 until cur_p=null;
-if (cur_line<>best_line)or(link(temp_head)<>null) then
+if (cur_line!=best_line)or(link(temp_head)!=null) then
   confusion("line breaking");
 @:this can't happen line breaking}{\quad line breaking@>
 prev_graf:=best_line-1;
@@ -17309,10 +17309,10 @@ loop@+  begin q:=link(r);
   {now |q| cannot be |null|}
   if is_char_node(q) then goto done1;
   if non_discardable(q) then goto done1;
-  if type(q)=kern_node then if subtype(q)<>explicit then goto done1;
+  if type(q)=kern_node then if subtype(q)!=explicit then goto done1;
   r:=q; {now |type(q)=glue_node|, |kern_node|, |math_node|, or |penalty_node|}
   end;
-done1: if r<>temp_head then
+done1: if r!=temp_head then
   begin link(r):=null; flush_node_list(link(temp_head));
   link(temp_head):=q;
   end;
@@ -17340,7 +17340,7 @@ list about to be justified.
 
 @<Modify the end of the line...@>=
 q:=cur_break(cur_p); disc_break:=false; post_disc_break:=false;
-if q<>null then {|q| cannot be a |char_node|}
+if q!=null then {|q| cannot be a |char_node|}
   if type(q)=glue_node then
     begin delete_glue_ref(glue_ptr(q));
     glue_ptr(q):=right_skip;
@@ -17353,7 +17353,7 @@ if q<>null then {|q| cannot be a |char_node|}
     else if (type(q)=math_node)or(type(q)=kern_node) then width(q):=0;
     end
 else  begin q:=temp_head;
-  while link(q)<>null do q:=link(q);
+  while link(q)!=null do q:=link(q);
   end;
 @<Put the \(r)\.{\\rightskip} glue after node |q|@>;
 done:
@@ -17362,8 +17362,8 @@ done:
 begin t:=replace_count(q);
 @<Destroy the |t| nodes following |q|, and
    make |r| point to the following node@>;
-if post_break(q)<>null then @<Transplant the post-break list@>;
-if pre_break(q)<>null then @<Transplant the pre-break list@>;
+if post_break(q)!=null then @<Transplant the post-break list@>;
+if pre_break(q)!=null then @<Transplant the pre-break list@>;
 link(q):=r; disc_break:=true;
 end
 
@@ -17383,7 +17383,7 @@ re\-attaching it just before the present node |r|, then resetting |r|.
 
 @<Transplant the post-break list@>=
 begin s:=post_break(q);
-while link(s)<>null do s:=link(s);
+while link(s)!=null do s:=link(s);
 link(s):=r; r:=post_break(q); post_break(q):=null; post_disc_break:=true;
 end
 
@@ -17392,7 +17392,7 @@ re\-attaching it just after the present node |q|, then resetting |q|.
 
 @<Transplant the pre-break list@>=
 begin s:=pre_break(q); link(q):=s;
-while link(s)<>null do s:=link(s);
+while link(s)!=null do s:=link(s);
 pre_break(q):=null; q:=s;
 end
 
@@ -17405,14 +17405,14 @@ justified. It ends with |q| at the beginning of that list, and with
 
 @<Put the \(l)\.{\\leftskip} glue at the left...@>=
 r:=link(q); link(q):=null; q:=link(temp_head); link(temp_head):=r;
-if left_skip<>zero_glue then
+if left_skip!=zero_glue then
   begin r:=new_param_glue(left_skip_code);
   link(r):=q; q:=r;
   end
 
 @ @<Append the new box to the current vertical list...@>=
 append_to_vlist(just_box);
-if adjust_head<>adjust_tail then
+if adjust_head!=adjust_tail then
   begin link(tail):=link(adjust_head); tail:=adjust_tail;
    end;
 adjust_tail:=null
@@ -17443,12 +17443,12 @@ be set to the sum of all relevant penalties for the current line, except
 that the final line is never penalized.
 
 @<Append a penalty node, if a nonzero penalty is appropriate@>=
-if cur_line+1<>best_line then
+if cur_line+1!=best_line then
   begin pen:=inter_line_penalty;
   if cur_line=prev_graf+1 then pen:=pen+club_penalty;
   if cur_line+2=best_line then pen:=pen+final_widow_penalty;
   if disc_break then pen:=pen+broken_penalty;
-  if pen<>0 then
+  if pen!=0 then
     begin r:=new_penalty(pen);
     link(tail):=r; tail:=r;
     end;
@@ -17542,7 +17542,7 @@ second pass, and |cur_p| points to a glue node.
 
 @<Try to hyphenate...@>=
 begin prev_s:=cur_p; s:=link(prev_s);
-if s<>null then
+if s!=null then
   begin @<Skip to node |ha|, or |goto done1| if no hyphenation
     should be attempted@>;
   if l_hyf+r_hyf>63 then goto done1;
@@ -17581,7 +17581,7 @@ loop@+  begin if is_char_node(s) then
     goto continue;
     end
   else goto done1;
-  if lc_code(c)<>0 then
+  if lc_code(c)!=0 then
     if (lc_code(c)=c)or(uc_hyph>0) then goto done2
     else goto done1;
 continue: prev_s:=s; s:=link(prev_s);
@@ -17596,7 +17596,7 @@ ha:=prev_s
 @<Skip to node |hb|, putting letters...@>=
 hn:=0;
 loop@+  begin if is_char_node(s) then
-    begin if font(s)<>hf then goto done3;
+    begin if font(s)!=hf then goto done3;
     hyf_bchar:=character(s); c:=qo(hyf_bchar);
     if lc_code(c)=0 then goto done3;
     if hn=63 then goto done3;
@@ -17620,7 +17620,7 @@ that the entire ligature consists of letters. Note that it is possible
 to get to |done3| with |hn=0| and |hb| not set to any value.
 
 @<Move the characters of a ligature node to |hu| and |hc|...@>=
-begin if font(lig_char(s))<>hf then goto done3;
+begin if font(lig_char(s))!=hf then goto done3;
 j:=hn; q:=lig_ptr(s);@+if q>null then hyf_bchar:=character(q);
 while q>null do
   begin c:=qo(character(q));
@@ -17638,7 +17638,7 @@ if hn<l_hyf+r_hyf then goto done1; {|l_hyf| and |r_hyf| are |>=1|}
 loop@+  begin if not(is_char_node(s)) then
     case type(s) of
     ligature_node: do_nothing;
-    kern_node: if subtype(s)<>normal then goto done4;
+    kern_node: if subtype(s)!=normal then goto done4;
     whatsit_node,glue_node,penalty_node,ins_node,adjust_node,mark_node:
       goto done4;
     othercases goto done1
@@ -17692,11 +17692,11 @@ things can be hooked up after we reconstitute the hyphenated word.
 @<Replace nodes |ha..hb| by a sequence of nodes...@>=
 q:=link(hb); link(hb):=null; r:=link(ha); link(ha):=null; bchar:=hyf_bchar;
 if is_char_node(ha) then
-  if font(ha)<>hf then goto found2
+  if font(ha)!=hf then goto found2
   else begin init_list:=ha; init_lig:=false; hu[0]:=qo(character(ha));
     end
 else if type(ha)=ligature_node then
-  if font(lig_char(ha))<>hf then goto found2
+  if font(lig_char(ha))!=hf then goto found2
   else begin init_list:=lig_ptr(ha); init_lig:=true; init_lft:=(subtype(ha)>1);
     hu[0]:=qo(character(lig_char(ha)));
     if init_list=null then if init_lft then
@@ -17709,8 +17709,8 @@ else begin {no punctuation found; look for left boundary}
    if subtype(r)>1 then goto found2;
   j:=1; s:=ha; init_list:=null; goto common_ending;
   end;
-s:=cur_p; {we have |cur_p<>ha| because |type(cur_p)=glue_node|}
-while link(s)<>ha do s:=link(s);
+s:=cur_p; {we have |cur_p!=ha| because |type(cur_p)=glue_node|}
+while link(s)!=ha do s:=link(s);
 j:=0; goto common_ending;
 found2: s:=ha; j:=0; hu[0]:=256; init_lig:=false; init_list:=null;
 common_ending: flush_node_list(r);
@@ -17856,7 +17856,7 @@ if cur_l=non_char then
   if k=non_address then goto done@+else q:=font_info[k].qqqq;
   end
 else begin q:=char_info(hf)(cur_l);
-  if char_tag(q)<>lig_tag then goto done;
+  if char_tag(q)!=lig_tag then goto done;
   k:=lig_kern_start(hf)(q); q:=font_info[k].qqqq;
   if skip_byte(q)>stop_flag then
     begin k:=lig_kern_restart(hf)(q); q:=font_info[k].qqqq;
@@ -17905,7 +17905,7 @@ done:
 
 @<Append a ligature and/or kern to the translation...@>=
 wrap_lig(rt_hit);
-if w<>0 then
+if w!=0 then
   begin link(t):=new_kern(w); t:=link(t); w:=0;
   end;
 if lig_stack>null then
@@ -17943,7 +17943,7 @@ othercases begin cur_l:=rem_byte(q); ligature_present:=true; {\.{=:}}
     end;
   end
 endcases;
-if op_byte(q)>qi(4) then if op_byte(q)<>qi(7) then goto done;
+if op_byte(q)>qi(4) then if op_byte(q)!=qi(7) then goto done;
 goto continue;
 end
 
@@ -18011,7 +18011,7 @@ or kern. At this point we have |l-1<=i<j| and |i<hn|.
 
 @<Put the \(c)characters |hu[l..i]| and a hyphen into |pre_break(r)|@>=
 minor_tail:=null; pre_break(r):=null; hyf_node:=new_character(hf,hyf_char);
-if hyf_node<>null then
+if hyf_node!=null then
   begin incr(i); c:=hu[i]; hu[i]:=hyf_char; free_avail(hyf_node);
   end;
 while l<=i do
@@ -18023,7 +18023,7 @@ while l<=i do
     while link(minor_tail)>null do minor_tail:=link(minor_tail);
     end;
   end;
-if hyf_node<>null then
+if hyf_node!=null then
   begin hu[i]:=c; {restore the character in the hyphen position}
   l:=i; decr(i);
   end
@@ -18032,7 +18032,7 @@ if hyf_node<>null then
 
 @<Put the \(c)characters |hu[i+1..@,]| into |post_break(r)|...@>=
 minor_tail:=null; post_break(r):=null; c_loc:=0;
-if bchar_label[hf]<>non_address then {put left boundary at beginning of new line}
+if bchar_label[hf]!=non_address then {put left boundary at beginning of new line}
   begin decr(l); c:=hu[l]; c_loc:=l; hu[l]:=256;
   end;
 while l<j do
@@ -18111,7 +18111,7 @@ associated with $p_1\ldots p_k$.
 Comparatively few different number sequences $n_0\ldots n_k$ actually occur,
 since most of the |n|'s are generally zero. Therefore the number sequences
 are encoded in such a way that |trie_op|$(z_k)$ is only one byte long.
-If |trie_op(@t$z_k$@>)<>min_quarterword|, when $p_1\ldots p_k$ has matched
+If |trie_op(@t$z_k$@>)!=min_quarterword|, when $p_1\ldots p_k$ has matched
 the letters in |hc[(l-k+1)..l@,]| of language |t|,
 we perform all of the required operations
 for this pattern by carrying out the following little program: Set
@@ -18146,12 +18146,12 @@ never be fetched.
 for j:=0 to hn do hyf[j]:=0;
 @<Look for the word |hc[1..hn]| in the exception table, and |goto found| (with
   |hyf| containing the hyphens) if an entry is found@>;
-if trie_char(cur_lang+1)<>qi(cur_lang) then return; {no patterns for |cur_lang|}
+if trie_char(cur_lang+1)!=qi(cur_lang) then return; {no patterns for |cur_lang|}
 hc[0]:=0; hc[hn+1]:=0; hc[hn+2]:=256; {insert delimiters}
 for j:=0 to hn-r_hyf+1 do
   begin z:=trie_link(cur_lang+1)+hc[j]; l:=j;
   while hc[l]=qo(trie_char(z)) do
-    begin if trie_op(z)<>min_quarterword then
+    begin if trie_op(z)!=min_quarterword then
       @<Store \(m)maximum values in the |hyf| table@>;
     incr(l); z:=trie_link(z)+hc[l];
     end;
@@ -18240,7 +18240,7 @@ done:
 
 @ @<Insert hyphens as specified...@>=
 s:=hyph_list[h];
-while s<>null do
+while s!=null do
   begin hyf[info(s)]:=1; s:=link(s);
   end
 
@@ -18337,7 +18337,7 @@ end
 if hyph_count=hyph_size then overflow("exception dictionary",hyph_size);
 @:TeX capacity exceeded exception dictionary}{\quad exception dictionary@>
 incr(hyph_count);
-while hyph_word[h]<>0 do
+while hyph_word[h]!=0 do
   begin @<If the string |hyph_word[h]| is less than \(or)or equal to
   |s|, interchange |(hyph_word[h],hyph_list[h])| with |(s,p)|@>;
   if h>0 then decr(h)@+else h:=hyph_size;
@@ -18484,7 +18484,7 @@ arbitrary value, since the algorithm may access it.
 
 The algorithms maintain the condition
 $$\hbox{|trie_c[trie_r[z]]>trie_c[z]|\qquad
-whenever |z<>0| and |trie_r[z]<>0|};$$ in other words, sibling nodes are
+whenever |z!=0| and |trie_r[z]!=0|};$$ in other words, sibling nodes are
 ordered by their |c| fields.
 
 @d trie_root==trie_l[0] {root of the linked trie}
@@ -18698,7 +18698,7 @@ else begin trie_fix(trie_root); {this fixes the non-holes in |trie|}
   repeat s:=trie_link(r); trie[r]:=h; r:=s;
   until r>trie_max;
   end;
-trie_char(0):=qi("?"); {make |trie_char(c)<>c| for all |c|}
+trie_char(0):=qi("?"); {make |trie_char(c)!=c| for all |c|}
 
 @ The fixing-up procedure is, of course, recursive. Since the linked trie
 usually has overlapping subtries, the same data may be moved several
@@ -18801,7 +18801,7 @@ while l<=k do
       make |p| point to it@>;
   q:=p; {now node |q| represents $p_1\ldots p_{l-1}$}
   end;
-if trie_o[q]<>min_quarterword then
+if trie_o[q]!=min_quarterword then
   begin print_err("Duplicate pattern");
 @.Duplicate pattern@>
   help1("(See Appendix H.)"); error;
@@ -18821,7 +18821,7 @@ end
 if hc[1]=0 then hyf[0]:=0;
 if hc[k]=0 then hyf[k]:=0;
 l:=k; v:=min_quarterword;
-loop@+  begin if hyf[l]<>0 then v:=new_trie_op(k-l,hyf[l],v);
+loop@+  begin if hyf[l]!=0 then v:=new_trie_op(k-l,hyf[l],v);
   if l>0 then decr(l)@+else goto done1;
   end;
 done1:
@@ -18840,7 +18840,7 @@ var @!p:trie_pointer; {pointer for initialization}
 @!r,@!s:trie_pointer; {used to clean up the packed |trie|}
 @!h:two_halves; {template used to zero out |trie|'s holes}
 begin @<Get ready to compress the trie@>;
-if trie_root<>0 then
+if trie_root!=0 then
   begin first_fit(trie_root); trie_pack(trie_root);
   end;
 @<Move the data into |trie|@>;
@@ -18870,7 +18870,7 @@ for each node in the list.
 var prev_p:pointer; {lags one step behind |p|}
 @!q:pointer; {temporary variable for list manipulation}
 begin prev_p:=temp_head; link(temp_head):=p;
-while p<>null do
+while p!=null do
   case type(p) of
   hlist_node,vlist_node,rule_node:@<Insert glue for |split_top_skip|
     and set~|p:=null|@>;
@@ -18999,8 +18999,8 @@ if pi<inf_penalty then
 
 @ @<Compute the badness, |b|, using |awful_bad| if the box is too full@>=
 if cur_height<h then
-  if (active_height[3]<>0) or (active_height[4]<>0) or
-    (active_height[5]<>0) then b:=0
+  if (active_height[3]!=0) or (active_height[4]!=0) or
+    (active_height[5]!=0) then b:=0
   else b:=badness(h-cur_height,active_height[2])
 else if cur_height-h>active_height[6] then b:=awful_bad
 else b:=badness(cur_height-h,active_height[6])
@@ -19015,7 +19015,7 @@ else  begin q:=glue_ptr(p);
   active_height[2+stretch_order(q)]:=@|
     active_height[2+stretch_order(q)]+stretch(q);@/
   active_height[6]:=active_height[6]+shrink(q);
-  if (shrink_order(q)<>normal)and(shrink(q)<>0) then
+  if (shrink_order(q)!=normal)and(shrink(q)!=0) then
     begin@t@>@;@/
     print_err("Infinite glue shrinkage found in box being split");@/
 @.Infinite glue shrinkage...@>
@@ -19051,7 +19051,7 @@ var v:pointer; {the box to be split}
 p:pointer; {runs through the vlist}
 q:pointer; {points to where the break occurs}
 begin v:=box(n);
-if split_first_mark<>null then
+if split_first_mark!=null then
   begin delete_token_ref(split_first_mark); split_first_mark:=null;
   delete_token_ref(split_bot_mark); split_bot_mark:=null;
   end;
@@ -19069,7 +19069,7 @@ exit: end;
 if v=null then
   begin vsplit:=null; return;
   end;
-if type(v)<>vlist_node then
+if type(v)!=vlist_node then
   begin print_err(""); print_esc("vsplit"); print(" needs a ");
   print_esc("vbox");
 @:vsplit_}{\.{\\vsplit needs a \\vbox}@>
@@ -19267,7 +19267,7 @@ othercases print_esc("pagedepth")
 endcases;
 
 @ @d print_plus_end(#)==print(#);@+end
-@d print_plus(#)==if page_so_far[#]<>0 then
+@d print_plus(#)==if page_so_far[#]!=0 then
   begin print(" plus "); print_scaled(page_so_far[#]); print_plus_end
 
 @p procedure print_totals;
@@ -19276,13 +19276,13 @@ print_plus(2)("");
 print_plus(3)("fil");
 print_plus(4)("fill");
 print_plus(5)("filll");
-if page_shrink<>0 then
+if page_shrink!=0 then
   begin print(" minus "); print_scaled(page_shrink);
   end;
 end;
 
 @ @<Show the status of the current page@>=
-if page_head<>page_tail then
+if page_head!=page_tail then
   begin print_nl("### current page:");
   if output_active then print(" (held over for next output)");
 @.held over for next output@>
@@ -19293,7 +19293,7 @@ if page_head<>page_tail then
     print_nl(" goal height "); print_scaled(page_goal);
 @.goal height@>
     r:=link(page_ins_head);
-    while r<>page_ins_head do
+    while r!=page_ins_head do
       begin print_ln; print_esc("insert"); t:=qo(subtype(r));
       print_int(t); print(" adds ");
       if count(t)=1000 then t:=height(r)
@@ -19394,7 +19394,7 @@ does not contain an \.{\\hbox}.
 @p procedure ensure_vbox(@!n:eight_bits);
 var p:pointer; {the box register contents}
 begin p:=box(n);
-if p<>null then if type(p)=hlist_node then
+if p!=null then if type(p)=hlist_node then
   begin print_err("Insertions can only be added to a vbox");
 @.Insertions can only...@>
   help3("Tut tut: You're trying to \insert into a")@/
@@ -19438,7 +19438,7 @@ if nest_ptr=0 then tail:=contrib_head {vertical mode}
 else contrib_tail:=contrib_head {other modes}
 
 @ @<Update the values of |last_glue|...@>=
-if last_glue<>max_halfword then delete_glue_ref(last_glue);
+if last_glue!=max_halfword then delete_glue_ref(last_glue);
 last_penalty:=0; last_kern:=0;
 if type(p)=glue_node then
   begin last_glue:=glue_ptr(p); add_glue_ref(last_glue);
@@ -19534,7 +19534,7 @@ else begin q:=glue_ptr(p);
   page_so_far[2+stretch_order(q)]:=@|
     page_so_far[2+stretch_order(q)]+stretch(q);@/
   page_shrink:=page_shrink+shrink(q);
-  if (shrink_order(q)<>normal)and(shrink(q)<>0) then
+  if (shrink_order(q)!=normal)and(shrink(q)!=0) then
     begin@t@>@;@/
     print_err("Infinite glue shrinkage found on current page");@/
 @.Infinite glue shrinkage...@>
@@ -19564,7 +19564,7 @@ if pi<inf_penalty then
     begin best_page_break:=p; best_size:=page_goal;
     least_page_cost:=c;
     r:=link(page_ins_head);
-    while r<>page_ins_head do
+    while r!=page_ins_head do
       begin best_ins_ptr(r):=last_ins_ptr(r);
       r:=link(r);
       end;
@@ -19592,8 +19592,8 @@ end
 
 @ @<Compute the badness, |b|, of the current page...@>=
 if page_total<page_goal then
-  if (page_so_far[3]<>0) or (page_so_far[4]<>0) or@|
-    (page_so_far[5]<>0) then b:=0
+  if (page_so_far[3]!=0) or (page_so_far[4]!=0) or@|
+    (page_so_far[5]!=0) then b:=0
   else b:=badness(page_goal-page_total,page_so_far[2])
 else if page_total-page_goal>page_shrink then b:=awful_bad
 else b:=badness(page_total-page_goal,page_shrink)
@@ -19603,7 +19603,7 @@ begin if page_contents=empty then freeze_page_specs(inserts_only);
 n:=subtype(p); r:=page_ins_head;
 while n>=subtype(link(r)) do r:=link(r);
 n:=qo(n);
-if subtype(r)<>qi(n) then
+if subtype(r)!=qi(n) then
   @<Create a page insertion node with |subtype(r)=qi(n)|, and
     include the glue correction for box |n| in the
     current page state@>;
@@ -19640,7 +19640,7 @@ else h:=x_over_n(height(r),1000)*count(n);
 page_goal:=page_goal-h-width(q);@/
 page_so_far[2+stretch_order(q)]:=@|page_so_far[2+stretch_order(q)]+stretch(q);@/
 page_shrink:=page_shrink+shrink(q);
-if (shrink_order(q)<>normal)and(shrink(q)<>0) then
+if (shrink_order(q)!=normal)and(shrink(q)!=0) then
   begin print_err("Infinite glue shrinkage inserted from "); print_esc("skip");
 @.Infinite glue shrinkage...@>
   print_int(n);
@@ -19664,13 +19664,13 @@ insertion, using the same criteria as in the \.{\\vsplit} operation.
 @<Find the best way to split the insertion...@>=
 begin if count(n)<=0 then w:=max_dimen
 else  begin w:=page_goal-page_total-page_depth;
-  if count(n)<>1000 then w:=x_over_n(w,count(n))*1000;
+  if count(n)!=1000 then w:=x_over_n(w,count(n))*1000;
   end;
 if w>dimen(n)-height(r) then w:=dimen(n)-height(r);
 q:=vert_break(ins_ptr(p),w,depth(p));
 height(r):=height(r)+best_height_plus_depth;
 @!stat if tracing_pages>0 then @<Display the insertion split cost@>;@+tats@;@/
-if count(n)<>1000 then
+if count(n)!=1000 then
   best_height_plus_depth:=x_over_n(best_height_plus_depth,1000)*count(n);
 page_goal:=page_goal-best_height_plus_depth;
 type(r):=split_up; broken_ptr(r):=q; broken_ins(r):=p;
@@ -19696,7 +19696,7 @@ badness will be used to put a completed ``page'' into box 255, with insertions
 appended to their other boxes.
 
 We also set the values of |top_mark|, |first_mark|, and |bot_mark|. The
-program uses the fact that |bot_mark<>null| implies |first_mark<>null|;
+program uses the fact that |bot_mark!=null| implies |first_mark!=null|;
 it also knows that |bot_mark=null| implies |top_mark=first_mark=null|.
 
 The |fire_up| subroutine prepares to output the current page at the best
@@ -19716,18 +19716,18 @@ var p,@!q,@!r,@!s:pointer; {nodes being examined and/or changed}
 @!save_vfuzz: scaled; {saved value of |vfuzz|}
 @!save_split_top_skip: pointer; {saved value of |split_top_skip|}
 begin @<Set the value of |output_penalty|@>;
-if bot_mark<>null then
-  begin if top_mark<>null then delete_token_ref(top_mark);
+if bot_mark!=null then
+  begin if top_mark!=null then delete_token_ref(top_mark);
   top_mark:=bot_mark; add_token_ref(top_mark);
   delete_token_ref(first_mark); first_mark:=null;
   end;
 @<Put the \(o)optimal current page into box 255, update |first_mark| and
   |bot_mark|, append insertions to their boxes, and put the
   remaining nodes back on the contribution list@>;
-if (top_mark<>null)and(first_mark=null) then
+if (top_mark!=null)and(first_mark=null) then
   begin first_mark:=top_mark; add_token_ref(top_mark);
   end;
-if output_routine<>null then
+if output_routine!=null then
   if dead_cycles>=max_dead_cycles then
     @<Explain that too many dead cycles have occurred in a row@>
   else @<Fire up the user's output routine and |return|@>;
@@ -19754,7 +19754,7 @@ save_split_top_skip:=split_top_skip;
 if holding_inserts<=0 then
   @<Prepare all the boxes involved in insertions to act as queues@>;
 q:=hold_head; link(q):=null; prev_p:=page_head; p:=link(prev_p);
-while p<>best_page_break do
+while p!=best_page_break do
   begin if type(p)=ins_node then
     begin if holding_inserts<=0 then
        @<Either insert the material specified by node |p| into the
@@ -19771,7 +19771,7 @@ split_top_skip:=save_split_top_skip;
 @<Delete \(t)the page-insertion nodes@>
 
 @ @<Ensure that box 255 is empty before output@>=
-if box(255)<>null then
+if box(255)!=null then
   begin print_err(""); print_esc("box"); print("255 is not void");
 @:box255}{\.{\\box255 is not void}@>
   help2("You shouldn't use \box255 except in \output routines.")@/
@@ -19784,7 +19784,7 @@ begin if first_mark=null then
   begin first_mark:=mark_ptr(p);
   add_token_ref(first_mark);
   end;
-if bot_mark<>null then delete_token_ref(bot_mark);
+if bot_mark!=null then delete_token_ref(bot_mark);
 bot_mark:=mark_ptr(p); add_token_ref(bot_mark);
 end
 
@@ -19800,7 +19800,7 @@ because the stretch and shrink from the \.{\\skip} registers for inserts
 are not actually present in the box.
 
 @<Break the current page at node |p|, put it...@>=
-if p<>null then
+if p!=null then
   begin if link(contrib_head)=null then
     if nest_ptr=0 then tail:=page_tail
     else contrib_tail:=page_tail;
@@ -19812,9 +19812,9 @@ save_vbadness:=vbadness; vbadness:=inf_bad;
 save_vfuzz:=vfuzz; vfuzz:=max_dimen; {inhibit error messages}
 box(255):=vpackage(link(page_head),best_size,exactly,page_max_depth);
 vbadness:=save_vbadness; vfuzz:=save_vfuzz;
-if last_glue<>max_halfword then delete_glue_ref(last_glue);
+if last_glue!=max_halfword then delete_glue_ref(last_glue);
 @<Start a new current page@>; {this sets |last_glue:=max_halfword|}
-if q<>hold_head then
+if q!=hold_head then
   begin link(page_head):=link(hold_head); page_tail:=q;
   end
 
@@ -19826,12 +19826,12 @@ packaging phase.
 
 @<Prepare all the boxes involved in insertions to act as queues@>=
 begin r:=link(page_ins_head);
-while r<>page_ins_head do
-  begin if best_ins_ptr(r)<>null then
+while r!=page_ins_head do
+  begin if best_ins_ptr(r)!=null then
     begin n:=qo(subtype(r)); ensure_vbox(n);
     if box(n)=null then box(n):=new_null_box;
     p:=box(n)+list_offset;
-    while link(p)<>null do p:=link(p);
+    while link(p)!=null do p:=link(p);
     last_ins_ptr(r):=p;
     end;
   r:=link(r);
@@ -19840,7 +19840,7 @@ end
 
 @ @<Delete \(t)the page-insertion nodes@>=
 r:=link(page_ins_head);
-while r<>page_ins_head do
+while r!=page_ins_head do
   begin q:=link(r); free_node(r,page_ins_node_size); r:=q;
   end;
 link(page_ins_head):=page_ins_head
@@ -19852,14 +19852,14 @@ and pruning (if any) will be carried over to the next page.
 
 @<Either insert the material specified by node |p| into...@>=
 begin r:=link(page_ins_head);
-while subtype(r)<>subtype(p) do r:=link(r);
+while subtype(r)!=subtype(p) do r:=link(r);
 if best_ins_ptr(r)=null then wait:=true
 else  begin wait:=false; s:=last_ins_ptr(r); link(s):=ins_ptr(p);
   if best_ins_ptr(r)=p then
     @<Wrap up the box specified by node |r|, splitting node |p| if
     called for; set |wait:=true| if node |p| holds a remainder after
     splitting@>
-  else  begin while link(s)<>null do s:=link(s);
+  else  begin while link(s)!=null do s:=link(s);
     last_ins_ptr(r):=s;
     end;
   end;
@@ -19869,12 +19869,12 @@ end
 
 @ @<Wrap up the box specified by node |r|, splitting node |p| if...@>=
 begin if type(r)=split_up then
-  if (broken_ins(r)=p)and(broken_ptr(r)<>null) then
-    begin while link(s)<>broken_ptr(r) do s:=link(s);
+  if (broken_ins(r)=p)and(broken_ptr(r)!=null) then
+    begin while link(s)!=broken_ptr(r) do s:=link(s);
     link(s):=null;
     split_top_skip:=split_top_ptr(p);
     ins_ptr(p):=prune_page_top(broken_ptr(r));
-    if ins_ptr(p)<>null then
+    if ins_ptr(p)!=null then
       begin temp_ptr:=vpack(ins_ptr(p),natural);
       height(p):=height(temp_ptr)+depth(temp_ptr);
       free_node(temp_ptr,box_node_size); wait:=true;
@@ -19902,7 +19902,7 @@ p:=prev_p
 specified no output routine.
 
 @<Perform the default output routine@>=
-begin if link(page_head)<>null then
+begin if link(page_head)!=null then
   begin if link(contrib_head)=null then
     if nest_ptr=0 then tail:=page_tail@+else contrib_tail:=page_tail
   else link(page_tail):=link(contrib_head);
@@ -19935,17 +19935,17 @@ end
 in internal vertical mode, and \TeX\ will do the following:
 
 @<Resume the page builder after an output routine has come to an end@>=
-begin if (loc<>null) or 
- ((token_type<>output_text)and(token_type<>backed_up)) then
+begin if (loc!=null) or 
+ ((token_type!=output_text)and(token_type!=backed_up)) then
   @<Recover from an unbalanced output routine@>;
 end_token_list; {conserve stack space in case more outputs are triggered}
 end_graf; unsave; output_active:=false; insert_penalties:=0;@/
 @<Ensure that box 255 is empty after output@>;
-if tail<>head then {current list goes after heldover insertions}
+if tail!=head then {current list goes after heldover insertions}
   begin link(page_tail):=link(head);
   page_tail:=tail;
   end;
-if link(page_head)<>null then {and both go before heldover contributions}
+if link(page_head)!=null then {and both go before heldover contributions}
   begin if link(contrib_head)=null then contrib_tail:=page_tail;
   link(page_tail):=link(contrib_head);
   link(contrib_head):=link(page_head);
@@ -19964,7 +19964,7 @@ until loc=null;
 end {loops forever if reading from a file, since |null=min_halfword<=0|}
 
 @ @<Ensure that box 255 is empty after output@>=
-if box(255)<>null then
+if box(255)!=null then
   begin print_err("Output routine didn't use all of ");
   print_esc("box"); print_int(255);
 @.Output routine didn't use...@>
@@ -20038,7 +20038,7 @@ label big_switch,reswitch,main_loop,main_loop_wrapup,
   main_lig_loop,main_lig_loop+1,main_lig_loop+2,
   append_normal_space,exit;
 var@!t:integer; {general-purpose temporary variable}
-begin if every_job<>null then begin_token_list(every_job,every_job_text);
+begin if every_job!=null then begin_token_list(every_job,every_job_text);
 big_switch: get_x_token;@/
 reswitch: @<Give diagnostic information, if requested@>;
 case abs(mode)+cur_cmd of
@@ -20067,7 +20067,7 @@ ideal place to monitor \TeX's activity.
 @^debugging@>
 
 @<Give diagnostic information, if requested@>=
-if interrupt<>0 then if OK_to_interrupt then
+if interrupt!=0 then if OK_to_interrupt then
   begin back_input; check_interrupt; goto big_switch;
   end;
 @!debug if panicking then check_mem(false);@+@;@+gubed
@@ -20133,7 +20133,7 @@ are inside the individual sections.
 adjust_space_factor;@/
 main_f:=cur_font;
 bchar:=font_bchar[main_f]; false_bchar:=font_false_bchar[main_f];
-if mode>0 then if language<>clang then fix_language;
+if mode>0 then if language!=clang then fix_language;
 fast_get_avail(lig_stack); font(lig_stack):=main_f; cur_l:=qi(cur_chr);
 character(lig_stack):=cur_l;@/
 cur_q:=tail;
@@ -20252,7 +20252,7 @@ lig/kern commands were investigated for every such character.
 At the beginning of this code we have |main_i=char_info(main_f)(cur_l)|.
 
 @<If there's a ligature/kern command...@>=
-if char_tag(main_i)<>lig_tag then goto main_loop_wrapup;
+if char_tag(main_i)!=lig_tag then goto main_loop_wrapup;
 if cur_r=non_char then goto main_loop_wrapup;
 main_k:=lig_kern_start(main_f)(main_i); main_j:=font_info[main_k].qqqq;
 if skip_byte(main_j)<=stop_flag then goto main_lig_loop+2;
@@ -20313,7 +20313,7 @@ othercases begin cur_l:=rem_byte(main_j); ligature_present:=true; {\.{=:}}
   end
 endcases;
 if op_byte(main_j)>qi(4) then
-  if op_byte(main_j)<>qi(7) then goto main_loop_wrapup;
+  if op_byte(main_j)!=qi(7) then goto main_loop_wrapup;
 if cur_l<non_char then goto main_lig_loop;
 main_k:=bchar_label[main_f]; goto main_lig_loop+1;
 end
@@ -20356,11 +20356,11 @@ if main_p=null then
 end
 
 @ @<Declare act...@>=
-procedure app_space; {handle spaces when |space_factor<>1000|}
+procedure app_space; {handle spaces when |space_factor!=1000|}
 var@!q:pointer; {glue node}
-begin if (space_factor>=2000)and(xspace_skip<>zero_glue) then
+begin if (space_factor>=2000)and(xspace_skip!=zero_glue) then
   q:=new_param_glue(xspace_skip_code)
-else  begin if space_skip<>zero_glue then main_p:=space_skip
+else  begin if space_skip!=zero_glue then main_p:=space_skip
   else @<Find the glue specification...@>;
   main_p:=new_spec(main_p);
   @<Modify the glue specification in |main_p| according to the space factor@>;
@@ -20754,10 +20754,10 @@ default values after every paragraph and when internal vertical mode is entered.
 
 @<Declare act...@>=
 procedure normal_paragraph;
-begin if looseness<>0 then eq_word_define(int_base+looseness_code,0);
-if hang_indent<>0 then eq_word_define(dimen_base+hang_indent_code,0);
-if hang_after<>1 then eq_word_define(int_base+hang_after_code,1);
-if par_shape_ptr<>null then eq_define(par_shape_loc,shape_ref,null);
+begin if looseness!=0 then eq_word_define(int_base+looseness_code,0);
+if hang_indent!=0 then eq_word_define(dimen_base+hang_indent_code,0);
+if hang_after!=1 then eq_word_define(int_base+hang_after_code,1);
+if par_shape_ptr!=null then eq_define(par_shape_loc,shape_ref,null);
 end;
 
 @ Now let's turn to the question of how \.{\\hbox} is treated. We actually
@@ -20879,7 +20879,7 @@ var p:pointer; {|ord_noad| for new box in math mode}
 begin if box_context<box_flag then @<Append box |cur_box| to the current list,
     shifted by |box_context|@>
 else if box_context<ship_out_flag then @<Store \(c)|cur_box| in a box register@>
-else if cur_box<>null then
+else if cur_box!=null then
   if box_context>ship_out_flag then @<Append a new leader node that
       uses |cur_box|@>
   else ship_out(cur_box);
@@ -20890,12 +20890,12 @@ current box might include adjustments that should be appended to the
 current vertical list.
 
 @<Append box |cur_box| to the current...@>=
-begin if cur_box<>null then
+begin if cur_box!=null then
   begin shift_amount(cur_box):=box_context;
   if abs(mode)=vmode then
     begin append_to_vlist(cur_box);
-    if adjust_tail<>null then
-      begin if adjust_head<>adjust_tail then
+    if adjust_tail!=null then
+      begin if adjust_head!=adjust_tail then
         begin link(tail):=link(adjust_head); tail:=adjust_tail;
         end;
       adjust_tail:=null;
@@ -20919,7 +20919,7 @@ else geq_define(box_base-box_flag-256+box_context,box_ref,cur_box)
 
 @ @<Append a new leader node ...@>=
 begin @<Get the next non-blank non-relax...@>;
-if ((cur_cmd=hskip)and(abs(mode)<>vmode))or@|
+if ((cur_cmd=hskip)and(abs(mode)!=vmode))or@|
    ((cur_cmd=vskip)and(abs(mode)=vmode)) then
   begin append_glue; subtype(tail):=box_context-(leader_flag-a_leaders);
   leader_ptr(tail):=cur_box;
@@ -20959,7 +20959,7 @@ endcases;@/
 box_end(box_context); {in simple cases, we use the box immediately}
 exit:end;
 
-@ Note that the condition |not is_char_node(tail)| implies that |head<>tail|,
+@ Note that the condition |not is_char_node(tail)| implies that |head!=tail|,
 since |head| is a one-word node.
 
 @<If the current list ends with a box node, delete it...@>=
@@ -21023,10 +21023,10 @@ else  begin if k=vmode then scan_spec(vbox_group,true)
 push_nest; mode:=-k;
 if k=vmode then
   begin prev_depth:=ignore_depth;
-  if every_vbox<>null then begin_token_list(every_vbox,every_vbox_text);
+  if every_vbox!=null then begin_token_list(every_vbox,every_vbox_text);
   end
 else  begin space_factor:=1000;
-  if every_hbox<>null then begin_token_list(every_hbox,every_hbox_text);
+  if every_hbox!=null then begin_token_list(every_hbox,every_hbox_text);
   end;
 return;
 end
@@ -21082,7 +21082,7 @@ the \.{\\vtop} height is zero.
 
 @<Readjust the height...@>=
 begin h:=0; p:=list_ptr(cur_box);
-if p<>null then if type(p)<=rule_node then h:=height(p);
+if p!=null then if type(p)<=rule_node then h:=height(p);
 depth(cur_box):=depth(cur_box)-h+height(cur_box); height(cur_box):=h;
 end
 
@@ -21116,7 +21116,7 @@ end;
 @#
 procedure new_graf(@!indented:boolean);
 begin prev_graf:=0;
-if (mode=vmode)or(head<>tail) then
+if (mode=vmode)or(head!=tail) then
   tail_append(new_param_glue(par_skip_code));
 push_nest; mode:=hmode; space_factor:=1000; set_cur_lang; clang:=cur_lang;
 prev_graf:=(norm_min(left_hyphen_min)*@'100+norm_min(right_hyphen_min))
@@ -21124,7 +21124,7 @@ prev_graf:=(norm_min(left_hyphen_min)*@'100+norm_min(right_hyphen_min))
 if indented then
   begin tail:=new_null_box; link(head):=tail; width(tail):=par_indent;@+
   end;
-if every_par<>null then begin_token_list(every_par,every_par_text);
+if every_par!=null then begin_token_list(every_par,every_par_text);
 if nest_ptr=1 then build_page; {put |par_skip| glue on current page}
 end;
 
@@ -21162,7 +21162,7 @@ hmode+stop,hmode+vskip,hmode+hrule,hmode+un_vbox,hmode+halign: head_for_vmode;
 @ @<Declare act...@>=
 procedure head_for_vmode;
 begin if mode<0 then
-  if cur_cmd<>hrule then off_save
+  if cur_cmd!=hrule then off_save
   else  begin print_err("You can't use `");
     print_esc("hrule"); print("' here except with leaders");
 @.You can't use \\hrule...@>
@@ -21287,13 +21287,13 @@ else  begin if not is_char_node(tail) then if type(tail)=cur_chr then
 exit:end;
 
 @ @<Apologize for inability to do the operation...@>=
-begin if (cur_chr<>glue_node)or(last_glue<>max_halfword) then
+begin if (cur_chr!=glue_node)or(last_glue!=max_halfword) then
   begin you_cant;
   help2("Sorry...I usually can't take things from the current page.")@/
     ("Try `I\vskip-\lastskip' instead.");
   if cur_chr=kern_node then help_line[0]:=
     ("Try `I\kern-\lastkern' instead.")
-  else if cur_chr<>glue_node then help_line[0]:=@|
+  else if cur_chr!=glue_node then help_line[0]:=@|
     ("Perhaps you can make the output routine do it.");
   error;
   end;
@@ -21336,8 +21336,8 @@ var p:pointer; {the box}
 @!c:box_code..copy_code; {should we copy?}
 begin c:=cur_chr; scan_eight_bit_int; p:=box(cur_val);
 if p=null then return;
-if (abs(mode)=mmode)or((abs(mode)=vmode)and(type(p)<>vlist_node))or@|
-   ((abs(mode)=hmode)and(type(p)<>hlist_node)) then
+if (abs(mode)=mmode)or((abs(mode)=vmode)and(type(p)!=vlist_node))or@|
+   ((abs(mode)=hmode)and(type(p)!=hlist_node)) then
   begin print_err("Incompatible list can't be unboxed");
 @.Incompatible list...@>
   help3("Sorry, Pandora. (You sneaky devil.)")@/
@@ -21349,7 +21349,7 @@ if c=copy_code then link(tail):=copy_node_list(list_ptr(p))
 else  begin link(tail):=list_ptr(p); box(cur_val):=null;
   free_node(p,box_node_size);
   end;
-while link(tail)<>null do tail:=link(tail);
+while link(tail)!=null do tail:=link(tail);
 exit:end;
 
 @ @<Forbidden...@>=vmode+ital_corr,
@@ -21367,7 +21367,7 @@ procedure append_italic_correction;
 label exit;
 var p:pointer; {|char_node| at the tail of the current list}
 @!f:internal_font_number; {the font in the |char_node|}
-begin if tail<>head then
+begin if tail!=head then
   begin if is_char_node(tail) then p:=tail
   else if type(tail)=ligature_node then p:=lig_char(tail)
   else return;
@@ -21461,9 +21461,9 @@ end
 
 @<Prune the current list, if necessary...@>=
 q:=head; p:=link(q); n:=0;
-while p<>null do
+while p!=null do
   begin if not is_char_node(p) then if type(p)>rule_node then
-    if type(p)<>kern_node then if type(p)<>ligature_node then
+    if type(p)!=kern_node then if type(p)!=ligature_node then
       begin print_err("Improper discretionary list");
 @.Improper discretionary list@>
       help1("Discretionary lists must contain only boxes and kerns.");@/
@@ -21501,14 +21501,14 @@ var s,@!t: real; {amount of slant}
 @!a,@!h,@!x,@!w,@!delta:scaled; {heights and widths, as explained above}
 @!i:four_quarters; {character information}
 begin scan_char_num; f:=cur_font; p:=new_character(f,cur_val);
-if p<>null then
+if p!=null then
   begin x:=x_height(f); s:=slant(f)/float_constant(65536);
 @^real division@>
   a:=char_width(f)(char_info(f)(character(p)));@/
   do_assignments;@/
   @<Create a character node |q| for the next character,
     but set |q:=null| if problems arise@>;
-  if q<>null then @<Append the accent with appropriate kerns,
+  if q!=null then @<Append the accent with appropriate kerns,
       then set |p:=q|@>;
   link(tail):=p; tail:=p; space_factor:=1000;
   end;
@@ -21535,7 +21535,7 @@ begin t:=slant(f)/float_constant(65536);
 @^real division@>
 i:=char_info(f)(character(q));
 w:=char_width(f)(i); h:=char_height(f)(height_depth(i));
-if h<>x then {the accent must be shifted up or down}
+if h!=x then {the accent must be shifted up or down}
   begin p:=hpack(p,natural); shift_amount(p):=x-h;
   end;
 delta:=round((w-a)/float_constant(2)+h*t-x*s);
@@ -21636,12 +21636,12 @@ we must defeat such hacks.
 @<Declare act...@>=
 procedure do_endv;
 begin base_ptr:=input_ptr; input_stack[base_ptr]:=cur_input;
-while (input_stack[base_ptr].index_field<>v_template) and
+while (input_stack[base_ptr].index_field!=v_template) and
       (input_stack[base_ptr].loc_field=null) and
       (input_stack[base_ptr].state_field=token_list) do decr(base_ptr);
-if (input_stack[base_ptr].index_field<>v_template) or
-      (input_stack[base_ptr].loc_field<>null) or
-      (input_stack[base_ptr].state_field<>token_list) then
+if (input_stack[base_ptr].index_field!=v_template) or
+      (input_stack[base_ptr].loc_field!=null) or
+      (input_stack[base_ptr].state_field!=token_list) then
   fatal_error("(interwoven alignment preambles are not allowed)");
 @.interwoven alignment preambles...@>
  if cur_group=align_group then
@@ -21719,7 +21719,7 @@ end;
 
 @ @<Go into ordinary math mode@>=
 begin push_math(math_shift_group); eq_word_define(int_base+cur_fam_code,-1);
-if every_math<>null then begin_token_list(every_math,every_math_text);
+if every_math!=null then begin_token_list(every_math,every_math_text);
 end
 
 @ We get into ordinary math mode from display math mode when `\.{\\eqno}' or
@@ -21774,14 +21774,14 @@ eq_word_define(int_base+cur_fam_code,-1);@/
 eq_word_define(dimen_base+pre_display_size_code,w);
 eq_word_define(dimen_base+display_width_code,l);
 eq_word_define(dimen_base+display_indent_code,s);
-if every_display<>null then begin_token_list(every_display,every_display_text);
+if every_display!=null then begin_token_list(every_display,every_display_text);
 if nest_ptr=1 then build_page;
 end
 
 @ @<Calculate the natural width, |w|, by which...@>=
 v:=shift_amount(just_box)+2*quad(cur_font); w:=-max_dimen;
 p:=list_ptr(just_box);
-while p<>null do
+while p!=null do
   begin @<Let |d| be the natural width of node |p|;
     if the node is ``visible,'' |goto found|;
     if the node is glue that stretches or shrinks, set |v:=max_dimen|@>;
@@ -21822,12 +21822,12 @@ machines.
 begin q:=glue_ptr(p); d:=width(q);
 if glue_sign(just_box)=stretching then
   begin if (glue_order(just_box)=stretch_order(q))and@|
-     (stretch(q)<>0) then
+     (stretch(q)!=0) then
     v:=max_dimen;
   end
 else if glue_sign(just_box)=shrinking then
   begin if (glue_order(just_box)=shrink_order(q))and@|
-     (shrink(q)<>0) then
+     (shrink(q)!=0) then
     v:=max_dimen;
   end;
 if subtype(p)>=a_leaders then goto found;
@@ -21838,7 +21838,7 @@ calculate the length and offset of line number |prev_graf+2|.
 
 @<Calculate the length, |l|, ...@>=
 if par_shape_ptr=null then
-  if (hang_indent<>0)and@|
+  if (hang_indent!=0)and@|
    (((hang_after>=0)and(prev_graf+2>hang_after))or@|
     (prev_graf+1<-hang_after)) then
     begin l:=hsize-abs(hang_indent);
@@ -22023,7 +22023,7 @@ mmode+limit_switch: math_limit_switch;
 @ @<Declare act...@>=
 procedure math_limit_switch;
 label exit;
-begin if head<>tail then if type(tail)=op_noad then
+begin if head!=tail then if type(tail)=op_noad then
   begin subtype(tail):=cur_chr; return;
   end;
 print_err("Limit controls must follow a math operator");
@@ -22111,7 +22111,7 @@ end
 @ @<Cases of |main_control| that build...@>=
 mmode+vcenter: begin scan_spec(vcenter_group,false); normal_paragraph;
   push_nest; mode:=-vmode; prev_depth:=ignore_depth;
-  if every_vbox<>null then begin_token_list(every_vbox,every_vbox_text);
+  if every_vbox!=null then begin_token_list(every_vbox,every_vbox_text);
   end;
 
 @ @<Cases of |handle...@>=
@@ -22184,18 +22184,18 @@ procedure sub_sup;
 var t:small_number; {type of previous sub/superscript}
 @!p:pointer; {field to be filled by |scan_math|}
 begin t:=empty; p:=null;
-if tail<>head then if scripts_allowed(tail) then
+if tail!=head then if scripts_allowed(tail) then
   begin p:=supscr(tail)+cur_cmd-sup_mark; {|supscr| or |subscr|}
   t:=math_type(p);
   end;
-if (p=null)or(t<>empty) then @<Insert a dummy noad to be sub/superscripted@>;
+if (p=null)or(t!=empty) then @<Insert a dummy noad to be sub/superscripted@>;
 scan_math(p);
 end;
 
 @ @<Insert a dummy...@>=
 begin tail_append(new_noad);
 p:=supscr(tail)+cur_cmd-sup_mark; {|supscr| or |subscr|}
-if t<>empty then
+if t!=empty then
   begin if cur_cmd=sup_mark then
     begin print_err("Double superscript");
 @.Double superscript@>
@@ -22253,7 +22253,7 @@ mmode+above: math_fraction;
 procedure math_fraction;
 var c:small_number; {the type of generalized fraction we are scanning}
 begin c:=cur_chr;
-if incompleat_noad<>null then
+if incompleat_noad!=null then
   @<Ignore the fraction operation and complain about this ambiguous case@>
 else  begin incompleat_noad:=get_node(fraction_noad_size);
   type(incompleat_noad):=fraction_noad;
@@ -22303,7 +22303,7 @@ current mlist; this |right_noad| has not yet been appended.
 @<Declare the function called |fin_mlist|@>=
 function fin_mlist(@!p:pointer):pointer;
 var q:pointer; {the mlist to return}
-begin if incompleat_noad<>null then @<Compleat the incompleat noad@>
+begin if incompleat_noad!=null then @<Compleat the incompleat noad@>
 else  begin link(tail):=p; q:=link(head);
   end;
 pop_nest; fin_mlist:=q;
@@ -22314,7 +22314,7 @@ begin math_type(denominator(incompleat_noad)):=sub_mlist;
 info(denominator(incompleat_noad)):=link(head);
 if p=null then q:=incompleat_noad
 else  begin q:=info(numerator(incompleat_noad));
-  if type(q)<>left_noad then confusion("right");
+  if type(q)!=left_noad then confusion("right");
 @:this can't happen right}{\quad right@>
   info(numerator(incompleat_noad)):=link(q);
   link(q):=incompleat_noad; link(incompleat_noad):=p;
@@ -22329,7 +22329,7 @@ surround an accent that is the nucleus of an Ord atom.
 @<Cases of |handle...@>=
 math_group: begin unsave; decr(save_ptr);@/
   math_type(saved(0)):=sub_mlist; p:=fin_mlist(null); info(saved(0)):=p;
-  if p<>null then if link(p)=null then
+  if p!=null then if link(p)=null then
    if type(p)=ord_noad then
     begin if math_type(subscr(p))=empty then
      if math_type(supscr(p))=empty then
@@ -22342,7 +22342,7 @@ math_group: begin unsave; decr(save_ptr);@/
   end;
 
 @ @<Replace the tail...@>=
-begin q:=head; while link(q)<>tail do q:=link(q);
+begin q:=head; while link(q)!=tail do q:=link(q);
 link(q):=p; free_node(tail,noad_size); tail:=p;
 end
 
@@ -22369,7 +22369,7 @@ procedure math_left_right;
 var t:small_number; {|left_noad| or |right_noad|}
 @!p:pointer; {new noad}
 begin t:=cur_chr;
-if (t=right_noad)and(cur_group<>math_left_group) then
+if (t=right_noad)and(cur_group!=math_left_group) then
   @<Try to recover from mismatched \.{\\right}@>
 else  begin p:=new_noad; type(p):=t;
   scan_delimiter(delimiter(p),false);
@@ -22462,7 +22462,7 @@ space above that display.
 begin tail_append(new_math(math_surround,before));
 cur_mlist:=p; cur_style:=text_style; mlist_penalties:=(mode>0); mlist_to_hlist;
 link(tail):=link(temp_head);
-while link(tail)<>null do tail:=link(tail);
+while link(tail)!=null do tail:=link(tail);
 tail_append(new_math(math_surround,after));
 space_factor:=1000; unsave;
 end
@@ -22472,7 +22472,7 @@ a display has been scanned.
 
 @<Check that another \.\$ follows@>=
 begin get_x_token;
-if cur_cmd<>math_shift then
+if cur_cmd!=math_shift then
   begin print_err("Display math should end with $$");
 @.Display math...with \$\$@>
   help2("The `$' that I just saw supposedly matches a previous `$$'.")@/
@@ -22525,7 +22525,7 @@ resume_after_display
 
 @ @<Declare act...@>=
 procedure resume_after_display;
-begin if cur_group<>math_shift_group then confusion("display");
+begin if cur_group!=math_shift_group then confusion("display");
 @:this can't happen display}{\quad display@>
 unsave; prev_graf:=prev_graf+3;
 push_nest; mode:=hmode; space_factor:=1000; set_cur_lang; clang:=cur_lang;
@@ -22539,9 +22539,9 @@ end;
 by causing its width to be zero.
 
 @<Squeeze the equation as much as possible...@>=
-begin if (e<>0)and((w-total_shrink[normal]+q<=z)or@|
-   (total_shrink[fil]<>0)or(total_shrink[fill]<>0)or
-   (total_shrink[filll]<>0)) then
+begin if (e!=0)and((w-total_shrink[normal]+q<=z)or@|
+   (total_shrink[fil]!=0)or(total_shrink[fill]!=0)or
+   (total_shrink[filll]!=0)) then
   begin free_node(b,box_node_size);
   b:=hpack(p,z-q,exactly);
   end
@@ -22566,7 +22566,7 @@ user put glue there to control the spacing precisely.
 d:=half(z-w);
 if (e>0)and(d<2*e) then {too close}
   begin d:=half(z-w-e);
-  if p<>null then if not is_char_node(p) then if type(p)=glue_node then d:=0;
+  if p!=null then if not is_char_node(p) then if type(p)=glue_node then d:=0;
   end
 
 @ If the equation number is set on a line by itself, either before or
@@ -22590,7 +22590,7 @@ if l and(e=0) then {it follows that |type(a)=hlist_node|}
 else tail_append(new_param_glue(g1))
 
 @ @<Append the display and perhaps also the equation number@>=
-if e<>0 then
+if e!=0 then
   begin r:=new_kern(z-w-e-d);
   if l then
     begin link(a):=r; link(r):=b; b:=a; d:=0;
@@ -22602,13 +22602,13 @@ if e<>0 then
 shift_amount(b):=s+d; append_to_vlist(b)
 
 @ @<Append the glue or equation number following the display@>=
-if (a<>null)and(e=0)and not l then
+if (a!=null)and(e=0)and not l then
   begin tail_append(new_penalty(inf_penalty));
   shift_amount(a):=s+z-width(a);
   append_to_vlist(a);
   g2:=0;
   end;
-if t<>adjust_head then {migrating material comes after equation number}
+if t!=adjust_head then {migrating material comes after equation number}
   begin link(tail):=link(adjust_head); tail:=t;
   end;
 tail_append(new_penalty(post_display_penalty));
@@ -22621,13 +22621,13 @@ resulting list, and with |aux_save| holding the |prev_depth| value.
 
 @<Finish an alignment in a display@>=
 begin do_assignments;
-if cur_cmd<>math_shift then @<Pontificate about improper alignment in display@>
+if cur_cmd!=math_shift then @<Pontificate about improper alignment in display@>
 else @<Check that another \.\$ follows@>;
 pop_nest;
 tail_append(new_penalty(pre_display_penalty));
 tail_append(new_param_glue(above_display_skip_code));
 link(tail):=p;
-if p<>null then tail:=q;
+if p!=null then tail:=q;
 tail_append(new_penalty(post_display_penalty));
 tail_append(new_param_glue(below_display_skip_code));
 prev_depth:=aux_save.sc; resume_after_display;
@@ -22757,7 +22757,7 @@ back_error; return;
 end
 
 @ @<Discard the prefixes...@>=
-if (cur_cmd<>def)and(a mod 4<>0) then
+if (cur_cmd!=def)and(a mod 4!=0) then
   begin print_err("You can't use `"); print_esc("long"); print("' or `");
   print_esc("outer"); print("' with `");
 @.You can't use \\long...@>
@@ -22774,7 +22774,7 @@ since the following routines test for the \.{\\global} prefix as follows.
 @d word_define(#)==if global then geq_word_define(#)@+else eq_word_define(#)
 
 @<Adjust \(f)for the setting of \.{\\globaldefs}@>=
-if global_defs<>0 then
+if global_defs!=0 then
   if global_defs<0 then
     begin if global then a:=a-4;
     end
@@ -22789,7 +22789,7 @@ control sequence for a token that is not redefinable.
 procedure get_r_token;
 label restart;
 begin restart: repeat get_token;
-until cur_tok<>space_token;
+until cur_tok!=space_token;
 if (cur_cs=0)or(cur_cs>frozen_control_sequence) then
   begin print_err("Missing control sequence inserted");
 @.Missing control...@>
@@ -22833,14 +22833,14 @@ primitive("futurelet",let,normal+1);@/
 @!@:future_let_}{\.{\\futurelet} primitive@>
 
 @ @<Cases of |print_cmd_chr|...@>=
-let: if chr_code<>normal then print_esc("futurelet")@+else print_esc("let");
+let: if chr_code!=normal then print_esc("futurelet")@+else print_esc("let");
 
 @ @<Assignments@>=
 let:  begin n:=cur_chr;
   get_r_token; p:=cur_cs;
   if n=normal then
     begin repeat get_token;
-    until cur_cmd<>spacer;
+    until cur_cmd!=spacer;
     if cur_tok=other_token+"=" then
       begin get_token;
       if cur_cmd=spacer then get_token;
@@ -22949,7 +22949,7 @@ toks_register,assign_toks: begin q:=cur_cs;
   else p:=cur_chr; {|p=every_par_loc| or |output_routine_loc| or \dots}
   scan_optional_equals;
   @<Get the next non-blank non-relax non-call token@>;
-  if cur_cmd<>left_brace then @<If the right-hand side is a token parameter
+  if cur_cmd!=left_brace then @<If the right-hand side is a token parameter
       or token register, finish the assignment and |goto done|@>;
   back_input; cur_cs:=q; q:=scan_toks(false,false);
   if link(def_ref)=null then {empty list: revert to the default}
@@ -23108,12 +23108,12 @@ exit: end;
 |assign_int..assign_mu_glue| correspond to each other nicely.
 
 @<Compute the register location |l| and its type |p|...@>=
-begin if q<>register then
+begin if q!=register then
   begin get_x_token;
   if (cur_cmd>=assign_int)and(cur_cmd<=assign_mu_glue) then
     begin l:=cur_chr; p:=cur_cmd-assign_int; goto found;
     end;
-  if cur_cmd<>register then
+  if cur_cmd!=register then
     begin print_err("You can't use `"); print_cmd_chr(cur_cmd,cur_chr);
 @.You can't use x after ...@>
     print("' after "); print_cmd_chr(q,0);
@@ -23146,12 +23146,12 @@ delete_glue_ref(cur_val);
 width(q):=width(q)+width(r);
 if stretch(q)=0 then stretch_order(q):=normal;
 if stretch_order(q)=stretch_order(r) then stretch(q):=stretch(q)+stretch(r)
-else if (stretch_order(q)<stretch_order(r))and(stretch(r)<>0) then
+else if (stretch_order(q)<stretch_order(r))and(stretch(r)!=0) then
   begin stretch(q):=stretch(r); stretch_order(q):=stretch_order(r);
   end;
 if shrink(q)=0 then shrink_order(q):=normal;
 if shrink_order(q)=shrink_order(r) then shrink(q):=shrink(q)+shrink(r)
-else if (shrink_order(q)<shrink_order(r))and(shrink(r)<>0) then
+else if (shrink_order(q)<shrink_order(r))and(shrink(r)!=0) then
   begin shrink(q):=shrink(r); shrink_order(q):=shrink_order(r);
   end;
 cur_val:=q;
@@ -23212,7 +23212,7 @@ set_box_dimen:alter_box_dimen;
 @ @<Declare subprocedures for |prefixed_command|@>=
 procedure alter_aux;
 var c:halfword; {|hmode| or |vmode|}
-begin if cur_chr<>abs(mode) then report_illegal_case
+begin if cur_chr!=abs(mode) then report_illegal_case
 else  begin c:=cur_chr; scan_optional_equals;
   if c=vmode then
     begin scan_normal_dimen; prev_depth:=cur_val;
@@ -23233,7 +23233,7 @@ end;
 procedure alter_prev_graf;
 var p:0..nest_size; {index into |nest|}
 begin nest[nest_ptr]:=cur_list; p:=nest_ptr;
-while abs(nest[p].mode_field)<>vmode do decr(p);
+while abs(nest[p].mode_field)!=vmode do decr(p);
 scan_optional_equals; scan_int;
 if cur_val<0 then
   begin print_err("Bad "); print_esc("prevgraf");
@@ -23266,7 +23266,7 @@ var c:small_number; {|width_offset| or |height_offset| or |depth_offset|}
 @!b:eight_bits; {box number}
 begin c:=cur_chr; scan_eight_bit_int; b:=cur_val; scan_optional_equals;
 scan_normal_dimen;
-if box(b)<>null then mem[box(b)+c].sc:=cur_val;
+if box(b)!=null then mem[box(b)+c].sc:=cur_val;
 end;
 
 @ Paragraph shapes are set up in the obvious way.
@@ -23421,7 +23421,7 @@ for f:=font_base+1 to font_ptr do
 
 @ @<Cases of |print_cmd_chr|...@>=
 set_font:begin print("select font "); slow_print(font_name[chr_code]);
-  if font_size[chr_code]<>font_dsize[chr_code] then
+  if font_size[chr_code]!=font_dsize[chr_code] then
     begin print(" at "); print_scaled(font_size[chr_code]);
     print("pt");
     end;
@@ -23471,7 +23471,7 @@ any_mode(after_assignment):begin get_token; after_token:=cur_tok;
   end;
 
 @ @<Insert a token saved by \.{\\afterassignment}, if any@>=
-if after_token<>0 then
+if after_token!=0 then
   begin cur_tok:=after_token; back_input; after_token:=0;
   end
 
@@ -23511,10 +23511,10 @@ procedure open_or_close_in;
 var c:0..1; {1 for \.{\\openin}, 0 for \.{\\closein}}
 @!n:0..15; {stream number}
 begin c:=cur_chr; scan_four_bit_int; n:=cur_val;
-if read_open[n]<>closed then
+if read_open[n]!=closed then
   begin a_close(read_file[n]); read_open[n]:=closed;
   end;
-if c<>0 then
+if c!=0 then
   begin scan_optional_equals; scan_file_name;
   if cur_ext="" then cur_ext:=".tex";
   pack_cur_name;
@@ -23570,7 +23570,7 @@ give a verbose explanation only once.
 
 @ @<Print string |s| as an error message@>=
 begin print_err(""); slow_print(s);
-if err_help<>null then use_err_help:=true
+if err_help!=null then use_err_help:=true
 else if long_help_seen then help1("(That was another \errmessage.)")
 else  begin if interaction<error_stop_mode then long_help_seen:=true;
   help4("This error message was generated by an \errmessage")@/
@@ -23612,7 +23612,7 @@ var b:pointer; {|lc_code_base| or |uc_code_base|}
 @!t:halfword; {token}
 @!c:eight_bits; {character code}
 begin b:=cur_chr; p:=scan_toks(false,false); p:=link(def_ref);
-while p<>null do
+while p!=null do
   begin @<Change the case of the token in |p|, if a change is appropriate@>;
   p:=link(p);
   end;
@@ -23628,7 +23628,7 @@ We also change active characters, using the fact that
 t:=info(p);
 if t<cs_token_flag+single_base then
   begin c:=t mod 256;
-  if equiv(b+c)<>0 then info(p):=t-c+equiv(b+c);
+  if equiv(b+c)!=0 then info(p):=t-c+equiv(b+c);
   end
 
 @ We come finally to the last pieces missing from |main_control|, namely the
@@ -23696,7 +23696,7 @@ end;
 begin get_token;
 if interaction=error_stop_mode then wake_up_terminal;
 print_nl("> ");
-if cur_cs<>0 then
+if cur_cs!=0 then
   begin sprint_cs(cur_cs); print_char("=");
   end;
 print_meaning; goto common_ending;
@@ -23817,7 +23817,7 @@ This condition implies that |cur_level=level_one|, hence
 the |xeq_level| array is constant and it need not be dumped.
 
 @<If dumping is not allowed, abort@>=
-if save_ptr<>0 then
+if save_ptr!=0 then
   begin print_err("You can't dump inside a group");
 @.You can't dump...@>
   help1("`{...\dump}' is a no-no."); succumb;
@@ -23871,17 +23871,17 @@ the same strings. (And it is, of course, a good thing that they do.)
 
 @<Undump constants for consistency check@>=
 x:=fmt_file^.int;
-if x<>@$ then goto bad_fmt; {check that strings are the same}
+if x!=@$ then goto bad_fmt; {check that strings are the same}
 undump_int(x);
-if x<>mem_bot then goto bad_fmt;
+if x!=mem_bot then goto bad_fmt;
 undump_int(x);
-if x<>mem_top then goto bad_fmt;
+if x!=mem_top then goto bad_fmt;
 undump_int(x);
-if x<>eqtb_size then goto bad_fmt;
+if x!=eqtb_size then goto bad_fmt;
 undump_int(x);
-if x<>hash_prime then goto bad_fmt;
+if x!=hash_prime then goto bad_fmt;
 undump_int(x);
-if x<>hyph_size then goto bad_fmt
+if x!=hyph_size then goto bad_fmt
 
 @ @d dump_four_ASCII==
   w.b0:=qi(so(str_pool[k])); w.b1:=qi(so(str_pool[k+1]));
@@ -23938,7 +23938,7 @@ dump_int(hi_mem_min); dump_int(avail);
 for k:=hi_mem_min to mem_end do dump_wd(mem[k]);
 x:=x+mem_end+1-hi_mem_min;
 p:=avail;
-while p<>null do
+while p!=null do
   begin decr(dyn_used); p:=link(p);
   end;
 dump_int(var_used); dump_int(dyn_used);
@@ -23952,7 +23952,7 @@ undump(lo_mem_stat_max+1)(lo_mem_max)(rover);
 p:=mem_bot; q:=rover;
 repeat for k:=p to q+1 do undump_wd(mem[k]);
 p:=q+node_size(q);
-if (p>lo_mem_max)or((q>=rlink(q))and(rlink(q)<>rover)) then goto bad_fmt;
+if (p>lo_mem_max)or((q>=rlink(q))and(rlink(q)!=rover)) then goto bad_fmt;
 q:=rlink(q);
 until q=rover;
 for k:=p to lo_mem_max do undump_wd(mem[k]);
@@ -23997,8 +23997,8 @@ while j<int_base-1 do
 l:=int_base; goto done1; {|j=int_base-1|}
 found1: incr(j); l:=j;
 while j<int_base-1 do
-  begin if (equiv(j)<>equiv(j+1))or(eq_type(j)<>eq_type(j+1))or@|
-    (eq_level(j)<>eq_level(j+1)) then goto done1;
+  begin if (equiv(j)!=equiv(j+1))or(eq_type(j)!=eq_type(j+1))or@|
+    (eq_level(j)!=eq_level(j+1)) then goto done1;
   incr(j);
   end;
 done1:dump_int(l-k);
@@ -24017,7 +24017,7 @@ while j<eqtb_size do
 l:=eqtb_size+1; goto done2; {|j=eqtb_size|}
 found2: incr(j); l:=j;
 while j<eqtb_size do
-  begin if eqtb[j].int<>eqtb[j+1].int then goto done2;
+  begin if eqtb[j].int!=eqtb[j+1].int then goto done2;
   incr(j);
   end;
 done2:dump_int(l-k);
@@ -24040,13 +24040,13 @@ k:=k+x;
 until k>eqtb_size
 
 @ A different scheme is used to compress the hash table, since its lower
-region is usually sparse. When |text(p)<>0| for |p<=hash_used|, we output
+region is usually sparse. When |text(p)!=0| for |p<=hash_used|, we output
 two words, |p| and |hash[p]|. The hash table is, of course, densely packed
 for |p>=hash_used|, so the remaining entries are output in a~block.
 
 @<Dump the hash table@>=
 dump_int(hash_used); cs_count:=frozen_control_sequence-1-hash_used;
-for p:=hash_base to hash_used do if text(p)<>0 then
+for p:=hash_base to hash_used do if text(p)!=0 then
   begin dump_int(p); dump_hh(hash[p]); incr(cs_count);
   end;
 for p:=hash_used+1 to undefined_control_sequence-1 do dump_hh(hash[p]);
@@ -24068,7 +24068,7 @@ for k:=null_font to font_ptr do
   @<Dump the array info for internal font number |k|@>;
 print_ln; print_int(fmem_ptr-7); print(" words of font info for ");
 print_int(font_ptr-font_base); print(" preloaded font");
-if font_ptr<>font_base+1 then print_char("s")
+if font_ptr!=font_base+1 then print_char("s")
 
 @ @<Undump the font information@>=
 undump_size(7)(font_mem_size)('font mem size')(fmem_ptr);
@@ -24103,7 +24103,7 @@ dump_int(font_bchar[k]);
 dump_int(font_false_bchar[k]);@/
 print_nl("\font"); print_esc(font_id_text(k)); print_char("=");
 print_file_name(font_name[k],font_area[k],"");
-if font_size[k]<>font_dsize[k] then
+if font_size[k]!=font_dsize[k] then
   begin print(" at "); print_scaled(font_size[k]); print("pt");
   end;
 end
@@ -24136,11 +24136,11 @@ end
 
 @ @<Dump the hyphenation tables@>=
 dump_int(hyph_count);
-for k:=0 to hyph_size do if hyph_word[k]<>0 then
+for k:=0 to hyph_size do if hyph_word[k]!=0 then
   begin dump_int(k); dump_int(hyph_word[k]); dump_int(hyph_list[k]);
   end;
 print_ln; print_int(hyph_count); print(" hyphenation exception");
-if hyph_count<>1 then print_char("s");
+if hyph_count!=1 then print_char("s");
 if trie_not_ready then init_trie;
 dump_int(trie_max);
 for k:=0 to trie_max do dump_hh(trie[k]);
@@ -24153,7 +24153,7 @@ for k:=1 to trie_op_ptr do
 print_nl("Hyphenation trie of length "); print_int(trie_max);
 @.Hyphenation trie...@>
 print(" has "); print_int(trie_op_ptr); print(" op");
-if trie_op_ptr<>1 then print_char("s");
+if trie_op_ptr!=1 then print_char("s");
 print(" out of "); print_int(trie_op_size);
 for k:=255 downto 0 do if trie_used[k]>min_quarterword then
   begin print_nl("  "); print_int(qo(trie_used[k]));
@@ -24197,7 +24197,7 @@ tracing_stats:=0
 undump(batch_mode)(error_stop_mode)(interaction);
 undump(0)(str_ptr)(format_ident);
 undump_int(x);
-if (x<>69069)or eof(fmt_file) then goto bad_fmt
+if (x!=69069)or eof(fmt_file) then goto bad_fmt
 
 @ @<Create the |format_ident|...@>=
 selector:=new_string;
@@ -24346,7 +24346,7 @@ if log_opened then
   wlog_ln('Here is how much of TeX''s memory',' you used:');
 @.Here is how much...@>
   wlog(' ',str_ptr-init_str_ptr:1,' string');
-  if str_ptr<>init_str_ptr+1 then wlog('s');
+  if str_ptr!=init_str_ptr+1 then wlog('s');
   wlog_ln(' out of ', max_strings-init_str_ptr:1);@/
   wlog_ln(' ',pool_ptr-init_pool_ptr:1,' string characters out of ',
     pool_size-init_pool_ptr:1);@/
@@ -24356,10 +24356,10 @@ if log_opened then
     hash_size:1);@/
   wlog(' ',fmem_ptr:1,' words of font info for ',
     font_ptr-font_base:1,' font');
-  if font_ptr<>font_base+1 then wlog('s');
+  if font_ptr!=font_base+1 then wlog('s');
   wlog_ln(', out of ',font_mem_size:1,' for ',font_max-font_base:1);@/
   wlog(' ',hyph_count:1,' hyphenation exception');
-  if hyph_count<>1 then wlog('s');
+  if hyph_count!=1 then wlog('s');
   wlog_ln(' out of ',hyph_size:1);@/
   wlog_ln(' ',max_in_stack:1,'i,',max_nest_stack:1,'n,',@|
     max_param_stack:1,'p,',@|
@@ -24379,7 +24379,7 @@ been scanned and |its_all_over|\kern-2pt.
 procedure final_cleanup;
 label exit;
 var c:small_number; {0 for \.{\\end}, 1 for \.{\\dump}}
-begin c:=cur_chr; if c<>1 then new_line_char:=-1;
+begin c:=cur_chr; if c!=1 then new_line_char:=-1;
 if job_name=0 then open_log_file;
 while input_ptr>0 do
   if state=token_list then end_token_list@+else end_file_reading;
@@ -24392,10 +24392,10 @@ if cur_level>level_one then
 @:end_}{\.{(\\end occurred...)}@>
   print_int(cur_level-level_one); print_char(")");
   end;
-while cond_ptr<>null do
+while cond_ptr!=null do
   begin print_nl("("); print_esc("end occurred ");
   print("when "); print_cmd_chr(if_test,cur_if);
-  if if_line<>0 then
+  if if_line!=0 then
     begin print(" on line "); print_int(if_line);
     end;
   print(" was incomplete)");
@@ -24403,7 +24403,7 @@ while cond_ptr<>null do
   cur_if:=subtype(cond_ptr); temp_ptr:=cond_ptr;
   cond_ptr:=link(cond_ptr); free_node(temp_ptr,if_node_size);
   end;
-if history<>spotless then
+if history!=spotless then
  if ((history=warning_issued)or(interaction<error_stop_mode)) then
   if selector=term_and_log then
   begin selector:=term_only;
@@ -24413,8 +24413,8 @@ if history<>spotless then
   end;
 if c=1 then
   begin @!init for c:=top_mark_code to split_bot_mark_code do
-    if cur_mark[c]<>null then delete_token_ref(cur_mark[c]);
-  if last_glue<>max_halfword then delete_glue_ref(last_glue);
+    if cur_mark[c]!=null then delete_token_ref(cur_mark[c]);
+  if last_glue!=max_halfword then delete_glue_ref(last_glue);
   store_fmt_file; return;@+tini@/
   print_nl("(\dump is performed only by INITEX)"); return;
 @:dump_}{\.{\\dump...only by INITEX}@>
@@ -24439,7 +24439,7 @@ But when we finish this part of the program, \TeX\ is ready to call on the
 @<Get the first line...@>=
 begin @<Initialize the input routines@>;
 if (format_ident=0)or(buffer[loc]="&") then
-  begin if format_ident<>0 then initialize; {erase preloaded format}
+  begin if format_ident!=0 then initialize; {erase preloaded format}
   if not open_fmt_file then goto final_end;
   if not load_fmt_file then
     begin w_close(fmt_file); goto final_end;
@@ -24452,7 +24452,7 @@ else  buffer[limit]:=end_line_char;
 fix_date_and_time;@/
 @<Compute the magic offset@>;
 @<Initialize the print |selector|...@>;
-if (loc<limit)and(cat_code(buffer[loc])<>escape) then start_input;
+if (loc<limit)and(cat_code(buffer[loc])!=escape) then start_input;
   {\.{\\input} assumed}
 end
 
@@ -24685,7 +24685,7 @@ involved, and also inserts a |write_stream| number.
 @<Declare procedures needed in |do_ext...@>=
 procedure new_write_whatsit(@!w:small_number);
 begin new_whatsit(cur_chr,w);
-if w<>write_node_size then scan_four_bit_int
+if w!=write_node_size then scan_four_bit_int
 else  begin scan_int;
   if cur_val<0 then cur_val:=17
   else if cur_val>15 then cur_val:=16;
@@ -24881,7 +24881,7 @@ q:=get_avail; info(q):=left_brace_token+"{"; ins_list(q);
 old_mode:=mode; mode:=0;
   {disable \.{\\prevdepth}, \.{\\spacefactor}, \.{\\lastskip}, \.{\\prevgraf}}
 cur_cs:=write_loc; q:=scan_toks(false,true); {expand macros, etc.}
-get_token;@+if cur_tok<>end_write_token then
+get_token;@+if cur_tok!=end_write_token then
   @<Recover from an unbalanced write command@>;
 mode:=old_mode;
 end_token_list {conserve stack space}
@@ -24959,7 +24959,7 @@ var @!l:ASCII_code; {the new current language}
 begin if language<=0 then l:=0
 else if language>255 then l:=0
 else l:=language;
-if l<>clang then
+if l!=clang then
   begin new_whatsit(language_node,small_node_size);
   what_lang(tail):=l; clang:=l;@/
   what_lhm(tail):=norm_min(left_hyphen_min);
@@ -24968,7 +24968,7 @@ if l<>clang then
 end;
 
 @ @<Implement \.{\\setlanguage}@>=
-if abs(mode)<>hmode then report_illegal_case
+if abs(mode)!=hmode then report_illegal_case
 else begin new_whatsit(language_node,small_node_size);
   scan_int;
   if cur_val<=0 then clang:=0

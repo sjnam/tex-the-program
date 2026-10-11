@@ -357,7 +357,7 @@ $$\vbox{\halign{\ignorespaces#\hfil\cr
 \KW{case} |x| \KW{of}\cr
 1: $\langle\,$|x=1|일 때의 코드$\,\rangle$;\cr
 3: $\langle\,$|x=3|일 때의 코드$\,\rangle$;\cr
-\KW{othercases} $\langle\,$|x<>1|이고 |x<>3|일 때의 코드$\,\rangle$\cr
+\KW{othercases} $\langle\,$|x!=1|이고 |x!=3|일 때의 코드$\,\rangle$\cr
 \KW{endcases}\cr}}$$
 대부분의 \PASCAL\ 컴파일러가 이런저런 기본 경우 장치를 넣어 언어의 이 구멍을 막아 왔기
 때문이다. 이를테면 \ph\ 컴파일러는 `\KW{others}:'를 기본 레이블로 허용하고, 다른
@@ -762,7 +762,7 @@ type @!byte_file struct { // 이진 자료를 담은 파일
 이름이 |name_of_file|로 지정된 파일을 열 수 있다고 가정한다.
 @^system dependencies@>
 
-보충: 원본에서 |name_of_file|은 \KW{packed} \KW{array}~|[1..file_name_size]| \KW{of}
+보충: 원본에서 |name_of_file|은 \KW{packed} \KW{array}~$[1..file\_name\_size]$ \KW{of}
 \KW{char}다. \GO/에서도 1부터 시작하는 바이트 배열로 둔다.
 
 @<전역 변수@>=
@@ -780,7 +780,7 @@ $$\vbox{\halign{#\hfil\qquad&#\hfil\cr
 
 `\.{/O}' 매개변수는 무언가 잘못되었을 때 운영체제에게 자기 오류 메시지를 내지 말라고 지시한다.
 지정한 이름의 파일을 찾을 수 없거나 다른 까닭으로 열 수 없으면(이를테면 누군가 같은
-파일에 쓰려 하고 있을 수도 있다), |reset|이나 |rewrite|가 실패한 뒤에 |@!erstat(f)<>0|이
+파일에 쓰려 하고 있을 수도 있다), |reset|이나 |rewrite|가 실패한 뒤에 |@!erstat(f)!=0|이
 된다. 그래서 \TeX은 알맞은 바로잡기 조치를 할 수 있다.
 @^PASCAL H@>
 @^system dependencies@>
@@ -989,7 +989,7 @@ var @!max_buf_stack int32 // |buffer|에서 쓰인 가장 큰 첨자
 파일의 다음 줄을 나타내는 |ASCII_code| 수들은 |buffer[first]|, |buffer[first+1]|, \dots,
 |buffer[last-1]|에 들어가고, 전역 변수 |last|는 |first|에 그 줄의 길이를 더한 값이 된다.
 줄 끝의 공백들은 지운다. 그러므로 |last=first|이거나(이때 그 줄은 완전히 비어 있었다)
-|buffer[last-1]<>" "|이다.
+|buffer[last-1]!=" "|이다.
 
 그러나 |input_ln|의 보통 동작으로 |last>=buf_size|가 될 것 같으면 넘침 오류를 낸다. 이렇게
 해서 \TeX의 다른 부분들은 배열 |buffer|의 경계를 넘어설 걱정 없이 |buffer[last+1]|의 내용을
@@ -1611,7 +1611,7 @@ func print_ln() { // 줄의 끝을 찍는다
 @ 프로시저 |print_char|는 문자 하나를 원하는 곳으로 보낸다. 이때 배열 |xchr|를 써서 그 문자를
 |input_ln|과 어울리는 외부 문자로 바꾼다. 찍는 것은 모두 |print_ln|이나 |print_char|를 거친다.
 
-보충: 원본의 `\ignorespaces|if @<문자 |s|가 현재의 줄바꿈 문자다@> then|'처럼 이름 있는 절을
+보충: 원본의 `\ignorespaces\.{if @@<문자 |s|가 현재의 줄바꿈 문자다@@> then}'처럼 이름 있는 절을
 식으로 쓰는 곳이 몇 군데 있다. \.{gtangle}은 이름 있는 절을 펼칠 때 그 앞뒤에서 줄을 바꾸는데,
 \GO/는 줄 끝의 `\.)' 뒤에 쌍반점을 넣으므로 |if| 문의 조건 자리에서는 이것이 문법 오류가 된다.
 그래서 이런 곳에서는 절의 값을 먼저 지역 변수(여기서는 |is_nl|)에 받아 두고 그 변수를 검사한다.
@@ -9579,7 +9579,7 @@ for m = 0; m <= n; m++ {
 }
 goto exit
 
-@ 다음 코드가 작동할 때, 우리는 |s|부터 |r|의 앞 노드까지의 토큰들을 맞추었고 |cur_tok<>info(r)|임을
+@ 다음 코드가 작동할 때, 우리는 |s|부터 |r|의 앞 노드까지의 토큰들을 맞추었고 |cur_tok!=info(r)|임을
 알게 된 것이다. 이제 흥미로운 상황이 생긴다. 매개변수를 `\.{ab}' 같은 문자열로 구분해야 하는데 `\.{aa}'를
 훑었다면, `\.a' 하나를 현재 매개변수에 보태고 `\.b'를 다시 찾아야 한다. 프로그램은 그런 부분적 맞춤을,
 그리고 아주 복잡할 수도 있는 다른 경우들을 고려해야 한다. 그러나 대개는 |s=r|이어서 아무것도 할 필요가
@@ -12120,7 +12120,7 @@ func pack_buffered_name(n small_number, a, b int32) {
 @ 다음은 |pack_buffered_name|을 쓰는 유일한 곳이다. 프로그램의 이 부분은 ``처녀'' \TeX이 예비 초기화를 막
 마치고 움직이기 시작하려 할 때나, 사용자가 처음의 `\.{**}' 재촉 기호 뒤에 `\.\&'를 쳐서 다른 포맷 파일로
 바꿀 때 작동한다. 버퍼에는 입력의 첫 줄이 |buffer[loc..(last-1)]|에 들어 있는데, |loc<last|이고
-|buffer[loc]<>" "|다.
+|buffer[loc]!=" "|다.
 
 @<|open_fmt_file|이라는 함수를 선언한다@>=
 func open_fmt_file() bool {
@@ -12262,7 +12262,7 @@ job_name = 0
 name_in_progress = false
 log_opened = false
 
-@ 다음은 |job_name<>0|이라고 가정하고 출력 파일 이름을 만들어 내는 루틴이다. 이 루틴은 |cur_area|와
+@ 다음은 |job_name!=0|이라고 가정하고 출력 파일 이름을 만들어 내는 루틴이다. 이 루틴은 |cur_area|와
 |cur_ext|의 현재 설정을 무시하고 바꾼다.
 
 @<함수들@>=
@@ -18632,7 +18632,7 @@ $a_3$ 사이에 있는 $\delta_2$다. 배열 |background|에는 $\gamma$가 들�
 줄이기를 위한 레지스터 하나만 관리한다. 사용자가 무한 줄어듦을 넣으려 하면 줄어듦을 유한하게 다시 정하고 오류 메시지를
 낸다. 불 변수 |no_shrink_error_yet|은 이 오류 메시지가 문단마다 한 번보다 많이 나타나지 않게 한다.
 
-보충: 원본의 매크로 |check_shrinkage(#)|는 `|if (shrink_order(#)<>normal)and(shrink(#)<>0) then #:=finite_shrink(#)|'으로
+보충: 원본의 매크로 |check_shrinkage(#)|는 `|if (shrink_order(#)!=normal)and(shrink(#)!=0) then #:=finite_shrink(#)|'으로
 펼쳐진다. 그 인자가 \.{\\leftskip}과 \.{\\rightskip}의 |eqtb| 항목이거나 |glue_ptr(cur_p)|여서 \GO/에서는 대입할 곳이 저마다
 다르므로, 쓰는 자리마다 펼쳐 쓴다.
 
@@ -18760,7 +18760,7 @@ if abs(pi) >= inf_penalty {
 	}
 }
 
-@ 다음 코드는 |type(last_active)<>delta_node|라는 사실을 이용한다.
+@ 다음 코드는 |type(last_active)!=delta_node|라는 사실을 이용한다.
 
 @<노드 |r|이 델타 노드이면...@>=
 @^inner loop@>
@@ -18942,7 +18942,7 @@ if is_char_node(s) {
 	}
 }
 
-@ 여기서는 |type(active)<>delta_node|라는 사실을 이용한다.
+@ 여기서는 |type(active)!=delta_node|라는 사실을 이용한다.
 
 @<|cur_p|에서의 나눔을 준비하는...@>=
 if type_(prev_r) == delta_node { // 기존의 델타 노드를 고친다
@@ -18962,7 +18962,7 @@ if type_(prev_r) == delta_node { // 기존의 델타 노드를 고친다
 	set_link(prev_r, q); prev_prev_r = prev_r; prev_r = q
 }
 
-@ 다음 코드를 수행할 때는 |r| 앞에 활성 노드를 적어도 하나 방금 넣었으므로 |type(prev_r)<>delta_node|다.
+@ 다음 코드를 수행할 때는 |r| 앞에 활성 노드를 적어도 하나 방금 넣었으므로 |type(prev_r)!=delta_node|다.
 
 @<다음 활성 노드를 준비하는...@>=
 if r != last_active {
@@ -19285,7 +19285,7 @@ if prev_r == active {
 	}
 }
 
-@ 다음 코드는 |type(last_active)<>delta_node|라는 사실을 이용한다. 활성 목록이 방금 비었으면 배열 |active_width|를 갱신할
+@ 다음 코드는 |type(last_active)!=delta_node|라는 사실을 이용한다. 활성 목록이 방금 비었으면 배열 |active_width|를 갱신할
 필요가 없다. 다음에 활성 노드를 넣을 때 초기화될 것이기 때문이다.
 
 @<첫 활성 노드가 지워졌으므로...@>=
@@ -20084,7 +20084,7 @@ if is_char_node(ha) {
 	}
 	j = 1; s = ha; init_list = null; goto common_ending
 }
-s = cur_p // |type(cur_p)=glue_node|이므로 |cur_p<>ha|다
+s = cur_p // |type(cur_p)=glue_node|이므로 |cur_p!=ha|다
 for link(s) != ha {
 	s = link(s)
 }
@@ -20512,7 +20512,7 @@ University, 1983)에서 논의한다. \TeX은 그저 패턴에서 출발해서 �
 
 실제로 나타나는 수 나열 $n_0\ldots n_k$는 비교적 몇 가지 안 된다. 대부분의 |n|은 대개 0이기 때문이다. 그래서 수 나열은
 |trie_op|$(z_k)$가 한 바이트 길이가 되도록 부호화한다. 언어 |t|에서 $p_1\ldots p_k$가 |hc[(l-k+1)..l@,]|의 글자들과 맞았고
-|trie_op(@t$z_k$@>)<>min_quarterword|이면, 다음 작은 프로그램을 수행해서 이 패턴에 필요한 연산을 모두 한다.
+|trie_op(@t$z_k$@>)!=min_quarterword|이면, 다음 작은 프로그램을 수행해서 이 패턴에 필요한 연산을 모두 한다.
 먼저 |v:=trie_op(@t$z_k$@>)|로 한다. 그런 다음 |v:=v+op_start[t]|,
 |hyf[l-hyf_distance[v]]:=@tmax@>(hyf[l-hyf_distance[v]], hyf_num[v])|, |v:=hyf_next[v]|로 한다. 필요하면
 |v=min_quarterword|가 될 때까지 되풀이한다.
@@ -20918,7 +20918,7 @@ trie_op_ptr = 0
 0으로 나타낸다. 트라이를 초기화하려면 그냥 |trie_l[0]|과 |trie_ptr|를 0으로 하면 된다. 알고리즘이 |trie_c[0]|에 접근할 수도
 있으므로 거기에도 아무 값이나 넣어 둔다.
 
-알고리즘은 $$\hbox{|z<>0|이고 |trie_r[z]<>0|일 때마다 |trie_c[trie_r[z]]>trie_c[z]|}$$라는 조건을 지킨다. 다시 말해 형제 노드들은
+알고리즘은 $$\hbox{|z!=0|이고 |trie_r[z]!=0|일 때마다 |trie_c[trie_r[z]]>trie_c[z]|}$$라는 조건을 지킨다. 다시 말해 형제 노드들은
 |c| 필드 순서로 놓인다.
 
 @<전역 변수@>=
@@ -21133,7 +21133,7 @@ if trie_root() == 0 { // 패턴이 하나도 주어지지 않았다
 		}
 	}
 }
-set_trie_char(0, qi('?')) // 모든 |c|에 대해 |trie_char(c)<>c|가 되게 한다
+set_trie_char(0, qi('?')) // 모든 |c|에 대해 |trie_char(c)!=c|가 되게 한다
 
 @ 바로잡는 프로시저는 물론 재귀적이다. 연결 트라이에는 대개 겹치는 부분 트라이가 있으므로 같은 자료를 여러 번 옮길 수도
 있다. 그러나 그래도 해가 없고, 많아야 압축하지 않은 트라이를 만드는 데 든 만큼의 일만 한다.
@@ -22205,7 +22205,7 @@ end_diagnostic(false)
 @ 다음 쪽 나눔 앞에 나타날 수 있는 만큼의 내용을 다 보고 나면, 쪽 조립기는 결정을 내린다. 나쁨이 가장 작은 나눔을 써서 완성된
 ``쪽''을 상자 255에 넣고, 삽입물들은 저마다 다른 상자에 덧붙인다.
 
-표시 |top_mark|, |first_mark|, |bot_mark|의 값도 정한다. 프로그램은 |bot_mark<>null|이면 |first_mark<>null|이라는 사실을 이용하고,
+표시 |top_mark|, |first_mark|, |bot_mark|의 값도 정한다. 프로그램은 |bot_mark!=null|이면 |first_mark!=null|이라는 사실을 이용하고,
 |bot_mark=null|이면 |top_mark=first_mark=null|이라는 것도 안다.
 
 서브루틴 |fire_up|은 현재 쪽을 가장 좋은 곳에서 출력할 준비를 한 다음, 사용자의 출력 루틴이 있으면 그것을 작동시키고, 없으면
@@ -22906,7 +22906,7 @@ if main_p == null {
 }
 
 @ @<|main_control|이 쓰는 동작...@>=
-func app_space() { // |space_factor<>1000|일 때 공백을 다룬다
+func app_space() { // |space_factor!=1000|일 때 공백을 다룬다
 	var q pointer // 글루 노드
 	if space_factor() >= 2000 && xspace_skip() != zero_glue {
 		q = new_param_glue(xspace_skip_code)
@@ -23509,7 +23509,7 @@ func begin_box(box_context int32) {
 	box_end(box_context) // 단순한 경우에는 상자를 바로 쓴다
 }
 
-@ 조건 |not is_char_node(tail)|은 |head<>tail|을 뜻한다는 것에 주의하라. 머리 |head|는 한 낱말짜리 노드이기 때문이다. 현재 목록이
+@ 조건 |not is_char_node(tail)|은 |head!=tail|을 뜻한다는 것에 주의하라. 머리 |head|는 한 낱말짜리 노드이기 때문이다. 현재 목록이
 상자 노드로 끝나지 않으면 |cur_box:=null|로 한다.
 
 @<현재 목록이 상자 노드로 끝나면...@>=
@@ -26922,7 +26922,7 @@ for {
 	}
 }
 
-@ 해시 표를 압축하는 데는 다른 방식을 쓴다. 그 아래쪽 영역은 대개 성기기 때문이다. 그래서 |p<=hash_used|에 대해 |text(p)<>0|이면 두 낱말,
+@ 해시 표를 압축하는 데는 다른 방식을 쓴다. 그 아래쪽 영역은 대개 성기기 때문이다. 그래서 |p<=hash_used|에 대해 |text(p)!=0|이면 두 낱말,
 곧 |p|와 |hash[p]|를 출력한다. 그리고 |p>=hash_used|에서는 해시 표가 물론 촘촘히 차 있으므로 나머지 항목은 한 덩어리로 출력한다.
 
 @<해시 표를 덤프한다@>=
