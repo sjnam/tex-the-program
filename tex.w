@@ -938,13 +938,12 @@ var @!maxBufStack int32 // |buffer|에서 쓰인 가장 큰 첨자
 
 @<함수들@>=
 func inputLn(f *alphaFile, bypassEoln bool) bool { // 다음 줄을 입력하거나 |false|를 돌려준다
-	var lastNonblank int32 // 줄 끝의 공백을 지운 |last|
 	last = first // 마태복음 19:30 참조
 	c, err := f.r.ReadByte()
 	if err != nil {
 		return false
 	}
-	lastNonblank = first
+	lastNonblank := first // 줄 끝의 공백을 지운 |last|
 	for err == nil && c != '\n' {
 		@<문자 |c|를 |buffer|에 넣고 다음 문자를 읽는다@>
 	}
@@ -1695,7 +1694,6 @@ func printNl(s any) { // 문자열 |s|를 줄의 처음에 찍는다
 
 @<기본 인쇄...@>=
 func printEsc(s any) { // 탈출 문자를 찍고 나서 |s|를 찍는다
-	var c int32 // 탈출 문자의 코드
 	@<변수 |c|를 현재의 탈출 문자로 놓는다@>
 	if c >= 0 {
 		if c < 256 {
@@ -1829,8 +1827,7 @@ func printRomanInt(n int32) {
 
 @<함수들@>=
 func printCurrentString() { // 아직 만들지 않은 문자열을 찍는다
-	var j poolPointer // 현재 문자 코드를 가리킨다
-	j = strStart[strPtr]
+	j := strStart[strPtr] // 현재 문자 코드를 가리킨다
 	for j < poolPtr {
 		printChar(so(strPool[j]))
 		j++
@@ -1890,10 +1887,10 @@ $$\vbox{\halign{#\hfil\cr
 
 @<전역 변수@>=
 const (
-	@!batchMode = 0 // 멈추지 않고 터미널 출력도 하지 않는다
-	@!nonstopMode = 1 // 멈추지 않는다
-	@!scrollMode = 2 // 오류에서 멈추지 않는다
-	@!errorStopMode = 3 // 기회가 있을 때마다 멈추어 사용자와 대화한다
+	@!batchMode = iota // 멈추지 않고 터미널 출력도 하지 않는다
+	@!nonstopMode // 멈추지 않는다
+	@!scrollMode // 오류에서 멈추지 않는다
+	@!errorStopMode // 기회가 있을 때마다 멈추어 사용자와 대화한다
 )
 
 func printErr(s any) {
@@ -1942,10 +1939,10 @@ if interaction == batchMode {
 
 @<전역 변수@>=
 const (
-	@!spotless = 0 // 아직 아무 잘못도 없을 때의 |history| 값
-	@!warningIssued = 1 // |beginDiagnostic|을 불렀을 때의 |history| 값
-	@!errorMessageIssued = 2 // |reportError|를 불렀을 때의 |history| 값
-	@!fatalErrorStop = 3 // 너무 일찍 끝났을 때의 |history| 값
+	@!spotless = iota // 아직 아무 잘못도 없을 때의 |history| 값
+	@!warningIssued // |beginDiagnostic|을 불렀을 때의 |history| 값
+	@!errorMessageIssued // |reportError|를 불렀을 때의 |history| 값
+	@!fatalErrorStop // 너무 일찍 끝났을 때의 |history| 값
 )
 
 var @!deletionsAllowed bool // |reportError|가 |getToken|을 불러도 안전한가?
@@ -2575,16 +2572,15 @@ func xOverN(x scaled, n int32) (xOverN scaled) {
 @<함수들@>=
 func xnOverD(x scaled, n, d int32) (xnOverD scaled) {
 	var positive bool // |x>=0|이었나?
-	var t, u, v nonnegativeInteger // 중간 양들
 	if x >= 0 {
 		positive = true
 	} else {
 		x = -x
 		positive = false
 	}
-	t = (x % 0o100000) * n
-	u = (x/0o100000)*n + (t / 0o100000)
-	v = (u%d)*0o100000 + (t % 0o100000)
+	t := (x % 0o100000) * n // 중간 양들
+	u := (x/0o100000)*n + (t / 0o100000)
+	v := (u%d)*0o100000 + (t % 0o100000)
 	if u/d >= 0o100000 {
 		arithError = true
 	} else {
@@ -3234,10 +3230,9 @@ goto found
 
 @<함수들@>=
 func freeNode(p pointer, s halfword) { // 가변 크기 노드의 해방
-	var q pointer // |llink(rover)|
 	setNodeSize(p, s)
 	setLink(p, emptyFlag)
-	q = llink(rover)
+	q := llink(rover) // |llink(rover)|
 	setLlink(p, q)
 	setRlink(p, rover) // 두 연결을 다 놓는다
 	setLlink(rover, p)
@@ -3253,12 +3248,11 @@ func freeNode(p pointer, s halfword) { // 가변 크기 노드의 해방
 
 @<함수들@>=
 func sortAvail() { // 쓸 수 있는 가변 크기 노드들을 위치 순으로 정렬한다
-	var p, q, r pointer // |mem|의 첨자들
-	var oldRover pointer // |rover|의 처음 설정
-	p = getNode(0o10000000000) // 이웃한 빈 영역들을 합친다
+	var q, r pointer // |mem|의 첨자들
+	p := getNode(0o10000000000) // 이웃한 빈 영역들을 합친다
 	p = rlink(rover)
 	setRlink(rover, maxHalfword)
-	oldRover = rover
+	oldRover := rover // |rover|의 처음 설정
 	for p != oldRover {
 		@<|p|를 |rover|의 목록에 정렬해 넣고 |p|를 나아가게 한다@>
 	}
@@ -3427,8 +3421,7 @@ func setGlueSet(p pointer, v glueRatio) { mem[p+glueOffset].gr = v }
 
 @<함수들@>=
 func newNullBox() pointer { // 새 상자 노드를 만든다
-	var p pointer // 새 노드
-	p = getNode(boxNodeSize)
+	p := getNode(boxNodeSize) // 새 노드
 	setType(p, hlistNode)
 	setSubtype(p, minQuarterword)
 	setWidth(p, 0)
@@ -3466,8 +3459,7 @@ func isRunning(d scaled) bool { return d == nullFlag } // 흐르는 치수인지
 
 @<함수들@>=
 func newRule() pointer {
-	var p pointer // 새 노드
-	p = getNode(ruleNodeSize)
+	p := getNode(ruleNodeSize) // 새 노드
 	setType(p, ruleNode)
 	setSubtype(p, 0) // |subtype|은 쓰이지 않는다
 	setWidth(p, nullFlag)
@@ -3542,8 +3534,7 @@ func setLigPtr(p pointer, v pointer) { setLink(ligChar(p), v) }
 
 @<함수들@>=
 func newLigature(f, c quarterword, q pointer) pointer {
-	var p pointer // 새 노드
-	p = getNode(smallNodeSize)
+	p := getNode(smallNodeSize) // 새 노드
 	setType(p, ligatureNode)
 	setFontField(ligChar(p), f)
 	setCharacter(ligChar(p), c)
@@ -3553,8 +3544,7 @@ func newLigature(f, c quarterword, q pointer) pointer {
 }
 
 func newLigItem(c quarterword) pointer {
-	var p pointer // 새 노드
-	p = getNode(smallNodeSize)
+	p := getNode(smallNodeSize) // 새 노드
 	setCharacter(p, c)
 	setLigPtr(p, null)
 	return p
@@ -3586,8 +3576,7 @@ func setPostBreak(p pointer, v pointer)       { setRlink(p, v) }
 
 @<함수들@>=
 func newDisc() pointer { // 빈 |discNode|를 만든다
-	var p pointer // 새 노드
-	p = getNode(smallNodeSize)
+	p := getNode(smallNodeSize) // 새 노드
 	setType(p, discNode)
 	setReplaceCount(p, 0)
 	setPreBreak(p, null)
@@ -3624,8 +3613,7 @@ const (
 
 @<함수들@>=
 func newMath(w scaled, s smallNumber) pointer {
-	var p pointer // 새 노드
-	p = getNode(smallNodeSize)
+	p := getNode(smallNodeSize) // 새 노드
 	setType(p, mathNode)
 	setSubtype(p, s)
 	setWidth(p, w)
@@ -3710,8 +3698,7 @@ type @!glueOrd = int32 // 무한대의 0, 1, 2, 3제곱; |normal..filll|
 
 @<함수들@>=
 func newSpec(p pointer) pointer { // 글루 명세를 복제한다
-	var q pointer // 새 명세
-	q = getNode(glueSpecSize)
+	q := getNode(glueSpecSize) // 새 명세
 	mem[q] = mem[p]
 	setGlueRefCount(q, null)
 	setWidth(q, width(p))
@@ -3725,13 +3712,11 @@ func newSpec(p pointer) pointer { // 글루 명세를 복제한다
 
 @<함수들@>=
 func newParamGlue(n smallNumber) pointer {
-	var p pointer // 새 노드
-	var q pointer // 글루 명세
-	p = getNode(smallNodeSize)
+	p := getNode(smallNodeSize) // 새 노드
 	setType(p, glueNode)
 	setSubtype(p, n+1)
 	setLeaderPtr(p, null)
-	q = @<글루 매개변수 번호 |n|의 현재 |mem| 등가물@>
+	q := @<글루 매개변수 번호 |n|의 현재 |mem| 등가물@> // 글루 명세
 	setGluePtr(p, q)
 	setGlueRefCount(q, glueRefCount(q)+1)
 	return p
@@ -3742,8 +3727,7 @@ func newParamGlue(n smallNumber) pointer {
 
 @<함수들@>=
 func newGlue(q pointer) pointer {
-	var p pointer // 새 노드
-	p = getNode(smallNodeSize)
+	p := getNode(smallNodeSize) // 새 노드
 	setType(p, glueNode)
 	setSubtype(p, normal)
 	setLeaderPtr(p, null)
@@ -3761,10 +3745,9 @@ func newGlue(q pointer) pointer {
 
 @<함수들@>=
 func newSkipParam(n smallNumber) pointer {
-	var p pointer // 새 노드
 	tempPtr = @<글루 매개변수 번호 |n|의...@>
 	tempPtr = newSpec(tempPtr)
-	p = newGlue(tempPtr)
+	p := newGlue(tempPtr) // 새 노드
 	setGlueRefCount(tempPtr, null)
 	setSubtype(p, n+1)
 	return p
@@ -3788,8 +3771,7 @@ const (
 
 @<함수들@>=
 func newKern(w scaled) pointer {
-	var p pointer // 새 노드
-	p = getNode(smallNodeSize)
+	p := getNode(smallNodeSize) // 새 노드
 	setType(p, kernNode)
 	setSubtype(p, normal)
 	setWidth(p, w)
@@ -3815,8 +3797,7 @@ func setPenalty(p pointer, v int32) { mem[p+1].sc = v }
 
 @<함수들@>=
 func newPenalty(m int32) pointer {
-	var p pointer // 새 노드
-	p = getNode(smallNodeSize)
+	p := getNode(smallNodeSize) // 새 노드
 	setType(p, penaltyNode)
 	setSubtype(p, 0) // |subtype|은 쓰이지 않는다
 	setPenalty(p, m)
@@ -4714,12 +4695,10 @@ func addGlueRef(p pointer)  { setGlueRefCount(p, glueRefCount(p)+1) } // 글루 
 @<함수들@>=
 func copyNodeList(p pointer) pointer { // |p|에서 시작하는 노드 목록의 복제를 만들고
 	// 새 목록을 가리키는 포인터를 돌려준다
-	var h pointer // 베낀 목록의 임시 머리
-	var q pointer // 새 목록에서 앞의 위치
 	var r pointer // 새 목록을 위해 지금 만들고 있는 노드
 	var words int32 // 아직 베낄 낱말의 수; |0..5|
-	h = getAvail()
-	q = h
+	h := getAvail() // 베낀 목록의 임시 머리
+	q := h // 새 목록에서 앞의 위치
 	for p != null {
 		@<노드 |p|의 사본을 노드 |r|에 만든다@>
 		setLink(q, r)
@@ -6256,7 +6235,7 @@ printChar('=')
 printInt(eqtb[n].sc)
 
 @ @<변수 |c|를 현재의...@>=
-c = escapeChar()
+c := escapeChar() // 탈출 문자의 코드
 
 @ @<문자 |s|가 현재의...@>=
 s == newLineChar()
@@ -6940,10 +6919,10 @@ func saveIndex(p int32) halfword          { return saveStack[p].hh.rh } // |eqtb
 func setSaveIndex(p int32, v halfword)   { saveStack[p].hh.rh = v }
 
 const (
-	@!restoreOldValue = 0 // 값을 나중에 되살려야 할 때의 |saveType|
-	@!restoreZero = 1 // 정의되지 않은 항목을 되살려야 할 때의 |saveType|
-	@!insertToken = 2 // 토큰을 나중에 쓰려고 저장할 때의 |saveType|
-	@!levelBoundary = 3 // 그룹의 시작에 해당하는 |saveType|
+	@!restoreOldValue = iota // 값을 나중에 되살려야 할 때의 |saveType|
+	@!restoreZero // 정의되지 않은 항목을 되살려야 할 때의 |saveType|
+	@!insertToken // 토큰을 나중에 쓰려고 저장할 때의 |saveType|
+	@!levelBoundary // 그룹의 시작에 해당하는 |saveType|
 )
 
 @ 다음은 여러 종류의 그룹을 구별하는 데 쓰는 그룹 코드들이다. 이 코드들 덕분에 \TeX은 그룹이 끝날 때
@@ -7777,11 +7756,11 @@ var @!lineStack [maxInOpen + 1]int32
 
 @<전역 변수@>=
 const (
-	@!skipping = 1 // 조건부 텍스트를 지나갈 때의 |scannerStatus|
-	@!defining = 2 // 매크로 정의를 읽을 때의 |scannerStatus|
-	@!matching = 3 // 매크로 인자를 읽을 때의 |scannerStatus|
-	@!aligning = 4 // 정렬 서문을 읽을 때의 |scannerStatus|
-	@!absorbing = 5 // 균형 잡힌 텍스트를 읽을 때의 |scannerStatus|
+	@!skipping = iota + 1 // 조건부 텍스트를 지나갈 때의 |scannerStatus|
+	@!defining // 매크로 정의를 읽을 때의 |scannerStatus|
+	@!matching // 매크로 인자를 읽을 때의 |scannerStatus|
+	@!aligning // 정렬 서문을 읽을 때의 |scannerStatus|
+	@!absorbing // 균형 잡힌 텍스트를 읽을 때의 |scannerStatus|
 )
 
 var @!scannerStatus int32 // 하위 파일이 지금 끝나도 되나? |normal..absorbing|
@@ -8278,11 +8257,10 @@ func endTokenList() { // 토큰 목록 입력 수준을 떠난다
 
 @<함수들@>=
 func backInput() { // 입력 토큰 하나를 되돌린다
-	var p pointer // 길이가 1인 토큰 목록
 	for state == tokenList && loc == null && tokenType() != vTemplate {
 		endTokenList() // 스택 공간을 아낀다
 	}
-	p = getAvail()
+	p := getAvail() // 길이가 1인 토큰 목록
 	setInfo(p, curTok)
 	if curTok < rightBraceLimit {
 		if curTok < leftBraceLimit {
@@ -9079,15 +9057,12 @@ func expand() {
 	var t halfword // ``뒤에 펼쳐지는'' 토큰
 	var p, q, r pointer // 목록을 다루기 위해
 	var j int32 // |buffer|의 첨자; |0..bufSize|
-	var cvBackup int32 // 전역 양 |curVal|을 저장한다
-	var cvlBackup, radixBackup, coBackup smallNumber // |curValLevel| 따위를 저장한다
-	var backupBackup pointer // |link(backupHead)|를 저장한다
 	var saveScannerStatus smallNumber // |scannerStatus|를 잠시 저장한다
-	cvBackup = curVal
-	cvlBackup = curValLevel
-	radixBackup = radix
-	coBackup = curOrder
-	backupBackup = link(backupHead)
+	cvBackup := curVal // 전역 양 |curVal|을 저장한다
+	cvlBackup := curValLevel // |curValLevel| 따위를 저장한다
+	radixBackup := radix
+	coBackup := curOrder
+	backupBackup := link(backupHead) // |link(backupHead)|를 저장한다
 	if curCmd < call {
 		@<매크로가 아닌 것을 펼친다@>
 	} else if curCmd < endTemplate {
@@ -9354,11 +9329,11 @@ func xToken() { // 처음의 |getNext|가 없는 |getXToken|
 
 @<전역 변수@>=
 const (
-	@!topMarkCode = 0 // 앞 쪽 나눔에서 효력이 있는 표시
-	@!firstMarkCode = 1 // |topMark|와 |botMark| 사이의 첫 표시
-	@!botMarkCode = 2 // 현재 쪽 나눔에서 효력이 있는 표시
-	@!splitFirstMarkCode = 3 // \.{\\vsplit}이 찾은 첫 표시
-	@!splitBotMarkCode = 4 // \.{\\vsplit}이 찾은 마지막 표시
+	@!topMarkCode = iota // 앞 쪽 나눔에서 효력이 있는 표시
+	@!firstMarkCode // |topMark|와 |botMark| 사이의 첫 표시
+	@!botMarkCode // 현재 쪽 나눔에서 효력이 있는 표시
+	@!splitFirstMarkCode // \.{\\vsplit}이 찾은 첫 표시
+	@!splitBotMarkCode // \.{\\vsplit}이 찾은 마지막 표시
 )
 
 func topMark() pointer         { return curMark[topMarkCode] }
@@ -9905,12 +9880,12 @@ func muError() {
 
 @<전역 변수@>=
 const (
-	@!intVal = 0 // 정수 값
-	@!dimenVal = 1 // 치수 값
-	@!glueVal = 2 // 글루 명세
-	@!muVal = 3 // 수식 글루 명세
-	@!identVal = 4 // 글꼴 식별자
-	@!tokVal = 5 // 토큰 목록
+	@!intVal = iota // 정수 값
+	@!dimenVal // 치수 값
+	@!glueVal // 글루 명세
+	@!muVal // 수식 글루 명세
+	@!identVal // 글꼴 식별자
+	@!tokVal // 토큰 목록
 )
 
 var @!curVal int32 // 수 훑기 루틴이 돌려주는 값
@@ -9951,9 +9926,8 @@ case register:
 
 @<함수들@>=
 func scanSomethingInternal(level smallNumber, negative bool) { // 내부 매개변수를 가져온다
-	var m halfword // 피연산자 토큰의 |chrCode| 부분
 	var p int32 // |nest|의 첨자; |0..nestSize|
-	m = curChr
+	m := curChr // 피연산자 토큰의 |chrCode| 부분
 	switch curCmd {
 	case defCode: @<어떤 표에서 문자 코드를 가져온다@>
 	case toksRegister, assignToks, defFamily, setFont, defFont:
@@ -10856,9 +10830,7 @@ arithError = false
 @<함수들@>=
 func scanGlue(level smallNumber) { // |curVal|을 글루 명세 포인터로 놓는다
 	var negative bool // 답의 부호를 바꾸어야 하나?
-	var q pointer // 새 글루 명세
-	var mu bool // |level=muVal|인가?
-	mu = (level == muVal)
+	mu := (level == muVal) // |level=muVal|인가?
 	@<공백도 부호도 아닌...@>
 	if curCmd >= minInternal && curCmd <= maxInternal {
 		scanSomethingInternal(level, negative)
@@ -10884,7 +10856,7 @@ func scanGlue(level smallNumber) { // |curVal|을 글루 명세 포인터로 놓
 }
 
 @ @<너비가 |curVal|인...@>=
-q = newSpec(zeroGlue)
+q := newSpec(zeroGlue) // 새 글루 명세
 setWidth(q, curVal)
 if scanKeyword("plus") {
 @.plus@>
@@ -10955,11 +10927,10 @@ func strToks(b poolPointer) pointer { // |strPool[b..poolPtr-1]|을 토큰 목�
 	var p pointer // 토큰 목록의 꼬리
 	var q pointer // |storeNewToken|으로 토큰 목록에 보탤 새 노드
 	var t halfword // 덧붙일 토큰
-	var k poolPointer // |strPool|의 첨자
 	strRoom(1)
 	p = tempHead
 	setLink(p, null)
-	k = b
+	k := b // |strPool|의 첨자
 	for k < poolPtr {
 		t = so(strPool[k])
 		if t == ' ' {
@@ -11052,12 +11023,12 @@ primitive("jobname", convert, jobNameCode)
 
 @ @<정의@>=
 const (
-	@!numberCode = 0 // \.{\\number}의 명령 코드
-	@!romanNumeralCode = 1 // \.{\\romannumeral}의 명령 코드
-	@!stringCode = 2 // \.{\\string}의 명령 코드
-	@!meaningCode = 3 // \.{\\meaning}의 명령 코드
-	@!fontNameCode = 4 // \.{\\fontname}의 명령 코드
-	@!jobNameCode = 5 // \.{\\jobname}의 명령 코드
+	@!numberCode = iota // \.{\\number}의 명령 코드
+	@!romanNumeralCode // \.{\\romannumeral}의 명령 코드
+	@!stringCode // \.{\\string}의 명령 코드
+	@!meaningCode // \.{\\meaning}의 명령 코드
+	@!fontNameCode // \.{\\fontname}의 명령 코드
+	@!jobNameCode // \.{\\jobname}의 명령 코드
 )
 
 @ @<원시 명령의 이름을 찍는...@>=
@@ -11076,15 +11047,12 @@ case convert:
 
 @<함수들@>=
 func convToks() {
-	var oldSetting int32 // |selector| 설정을 담는다; |0..maxSelector|
-	var c int32 // 원하는 변환의 종류; |numberCode..jobNameCode|
 	var saveScannerStatus smallNumber // 들어올 때의 |scannerStatus|
-	var b poolPointer // 임시 문자열의 바닥
-	c = curChr
+	c := curChr // 원하는 변환의 종류; |numberCode..jobNameCode|
 	@<명령 |c|의 인자를 훑는다@>
-	oldSetting = selector
+	oldSetting := selector // |selector| 설정을 담는다; |0..maxSelector|
 	selector = newString
-	b = poolPtr
+	b := poolPtr // 임시 문자열의 바닥
 	@<명령 |c|의 결과를 찍는다@>
 	selector = oldSetting
 	setLink(garbage, strToks(b))
@@ -11488,23 +11456,23 @@ primitive("ifcase", ifTest, ifCaseCode)
 
 @ @<정의@>=
 const (
-	@!ifCharCode = 0 // `\.{\\if}'
-	@!ifCatCode = 1 // `\.{\\ifcat}'
-	@!ifIntCode = 2 // `\.{\\ifnum}'
-	@!ifDimCode = 3 // `\.{\\ifdim}'
-	@!ifOddCode = 4 // `\.{\\ifodd}'
-	@!ifVmodeCode = 5 // `\.{\\ifvmode}'
-	@!ifHmodeCode = 6 // `\.{\\ifhmode}'
-	@!ifMmodeCode = 7 // `\.{\\ifmmode}'
-	@!ifInnerCode = 8 // `\.{\\ifinner}'
-	@!ifVoidCode = 9 // `\.{\\ifvoid}'
-	@!ifHboxCode = 10 // `\.{\\ifhbox}'
-	@!ifVboxCode = 11 // `\.{\\ifvbox}'
-	@!ifxCode = 12 // `\.{\\ifx}'
-	@!ifEOFCode = 13 // `\.{\\ifeof}'
-	@!ifTrueCode = 14 // `\.{\\iftrue}'
-	@!ifFalseCode = 15 // `\.{\\iffalse}'
-	@!ifCaseCode = 16 // `\.{\\ifcase}'
+	@!ifCharCode = iota // `\.{\\if}'
+	@!ifCatCode // `\.{\\ifcat}'
+	@!ifIntCode // `\.{\\ifnum}'
+	@!ifDimCode // `\.{\\ifdim}'
+	@!ifOddCode // `\.{\\ifodd}'
+	@!ifVmodeCode // `\.{\\ifvmode}'
+	@!ifHmodeCode // `\.{\\ifhmode}'
+	@!ifMmodeCode // `\.{\\ifmmode}'
+	@!ifInnerCode // `\.{\\ifinner}'
+	@!ifVoidCode // `\.{\\ifvoid}'
+	@!ifHboxCode // `\.{\\ifhbox}'
+	@!ifVboxCode // `\.{\\ifvbox}'
+	@!ifxCode // `\.{\\ifx}'
+	@!ifEOFCode // `\.{\\ifeof}'
+	@!ifTrueCode // `\.{\\iftrue}'
+	@!ifFalseCode // `\.{\\iffalse}'
+	@!ifCaseCode // `\.{\\ifcase}'
 )
 
 @ @<원시 명령의 이름을 찍는...@>=
@@ -12409,11 +12377,10 @@ outputFileName = 0
 
 @<함수들@>=
 func openLogFile() {
-	var oldSetting int32 // 앞의 |selector| 설정; |0..maxSelector|
 	var k int32 // |months|와 |buffer|의 첨자; |0..bufSize|
 	var l int32 // 첫 입력 줄의 끝; |0..bufSize|
 	var months string // 달 이름의 약어들
-	oldSetting = selector
+	oldSetting := selector // 앞의 |selector| 설정; |0..maxSelector|
 	if jobName == 0 {
 		jobName = str("texput")
 	}
@@ -13448,12 +13415,10 @@ func scanFontIdent() {
 
 @<글꼴에 관련된 것을...@>=
 func findFontDimen(writing bool) { // |curVal|을 |fontInfo|의 위치로 놓는다
-	var f internalFontNumber
-	var n int32 // 매개변수 번호
 	scanInt()
-	n = curVal
+	n := curVal // 매개변수 번호
 	scanFontIdent()
-	f = curVal
+	f := curVal // 관련된 글꼴
 	if n <= 0 {
 		curVal = fmemPtr
 	} else {
@@ -14200,12 +14165,12 @@ $$2_y\,7_d\,1_d\,(\,8_z\,2_y\,8_z\,)\,1$$
 
 @<정의@>=
 const (
-	@!yHere = 1 // 움직임 항목이 |y| 명령을 가리킬 때의 |info|
-	@!zHere = 2 // 움직임 항목이 |z| 명령을 가리킬 때의 |info|
-	@!yzOK = 3 // 제약 없는 \ID{down} 명령에 해당하는 |info|
-	@!yOK = 4 // |z|가 될 수 없는 \ID{down}에 해당하는 |info|
-	@!zOK = 5 // |y|가 될 수 없는 \ID{down}에 해당하는 |info|
-	@!dFixed = 6 // 바뀔 수 없는 \ID{down}에 해당하는 |info|
+	@!yHere = iota + 1 // 움직임 항목이 |y| 명령을 가리킬 때의 |info|
+	@!zHere // 움직임 항목이 |z| 명령을 가리킬 때의 |info|
+	@!yzOK // 제약 없는 \ID{down} 명령에 해당하는 |info|
+	@!yOK // |z|가 될 수 없는 \ID{down}에 해당하는 |info|
+	@!zOK // |y|가 될 수 없는 \ID{down}에 해당하는 |info|
+	@!dFixed // 바뀔 수 없는 \ID{down}에 해당하는 |info|
 )
 
 @ 프로시저 |movement|가 레이블 |found|에 이르면 |info(p)|의 값은 |yHere|나 |zHere|다. 이를테면 그것이 |yHere|면
@@ -15896,8 +15861,7 @@ nullDelimiter.b3 = minQuarterword
 
 @<함수들@>=
 func newNoad() pointer {
-	var p pointer
-	p = getNode(noadSize)
+	p := getNode(noadSize)
 	setType(p, ordNoad)
 	setSubtype(p, normal)
 	mem[nucleus(p)].hh = emptyField
@@ -15953,8 +15917,7 @@ const (
 )
 
 func newStyle(s smallNumber) pointer { // 모양 노드를 만든다
-	var p pointer // 새 노드
-	p = getNode(styleNodeSize)
+	p := getNode(styleNodeSize) // 새 노드
 	setType(p, styleNode)
 	setSubtype(p, s)
 	setWidth(p, 0)
@@ -15978,8 +15941,7 @@ func scriptScriptMlist(p pointer) pointer { return link(p + 2) } // 첨자의 �
 func setScriptScriptMlist(p pointer, v pointer) { setLink(p+2, v) }
 
 func newChoice() pointer { // 선택 노드를 만든다
-	var p pointer // 새 노드
-	p = getNode(styleNodeSize)
+	p := getNode(styleNodeSize) // 새 노드
 	setType(p, choiceNode)
 	setSubtype(p, 0) // |subtype|은 쓰이지 않는다
 	setDisplayMlist(p, null)
@@ -16018,8 +15980,7 @@ func printFamAndChar(p pointer) { // 가족과 문자를 찍는다
 }
 
 func printDelimiter(p pointer) { // 구분자를 24비트 십육진 값으로 찍는다
-	var a int32 // 누산기
-	a = smallFam(p)*256 + qo(smallChar(p))
+	a := smallFam(p)*256 + qo(smallChar(p)) // 누산기
 	a = a*0x1000 + largeFam(p)*256 + qo(largeChar(p))
 	if a < 0 {
 		printInt(a) // 이런 일은 결코 일어나지 않아야 한다
@@ -16285,8 +16246,7 @@ curMu = xOverN(mathQuad(curSize), 18)
 
 @<함수들@>=
 func fractionRule(t scaled) pointer { // 분수 괘선을 만든다
-	var p pointer // 새 노드
-	p = newRule()
+	p := newRule() // 새 노드
 	setHeight(p, t)
 	setDepth(p, 0)
 	return p
@@ -16297,9 +16257,9 @@ func fractionRule(t scaled) pointer { // 분수 괘선을 만든다
 
 @<함수들@>=
 func overbar(b pointer, k, t scaled) pointer {
-	var p, q pointer // 만들고 있는 노드들
-	p = newKern(k); setLink(p, b)
-	q = fractionRule(t); setLink(q, p)
+	p := newKern(k) // 만들고 있는 노드들
+	setLink(p, b)
+	q := fractionRule(t); setLink(q, p)
 	p = newKern(t); setLink(p, q)
 	return vpack(p, natural, additional)
 }
@@ -16394,13 +16354,11 @@ again:
 
 @<|varDelimiter|의 하위...@>=
 func charBox(f internalFontNumber, c quarterword) pointer {
-	var q fourQuarters
-	var hd eightBits // |heightDepth| 바이트
-	var b, p pointer // 새 상자와 그 문자 노드
-	q = charInfo(f, c); hd = heightDepth(q)
-	b = newNullBox(); setWidth(b, charWidth(f, q)+charItalic(f, q))
+	q := charInfo(f, c); hd := heightDepth(q) // |heightDepth| 바이트
+	b := newNullBox() // 새 상자
+	setWidth(b, charWidth(f, q)+charItalic(f, q))
 	setHeight(b, charHeight(f, hd)); setDepth(b, charDepth(f, hd))
-	p = getAvail(); setCharacter(p, c); setFontField(p, f); setListPtr(b, p)
+	p := getAvail(); setCharacter(p, c); setFontField(p, f); setListPtr(b, p) // 그 문자 노드
 	return b
 }
 
@@ -16417,8 +16375,8 @@ if charTag(q) == extTag {
 
 @<|varDelimiter|의 하위...@>=
 func stackIntoBox(b pointer, f internalFontNumber, c quarterword) {
-	var p pointer // |b|에 넣을 새 노드
-	p = charBox(f, c); setLink(p, listPtr(b)); setListPtr(b, p)
+	p := charBox(f, c) // |b|에 넣을 새 노드
+	setLink(p, listPtr(b)); setListPtr(b, p)
 	setHeight(b, height(p))
 }
 
@@ -16426,9 +16384,7 @@ func stackIntoBox(b pointer, f internalFontNumber, c quarterword) {
 
 @<|varDelimiter|의 하위...@>=
 func heightPlusDepth(f internalFontNumber, c quarterword) scaled {
-	var q fourQuarters
-	var hd eightBits // |heightDepth| 바이트
-	q = charInfo(f, c); hd = heightDepth(q)
+	q := charInfo(f, c); hd := heightDepth(q) // |heightDepth| 바이트
 	return charHeight(f, hd) + charDepth(f, hd)
 }
 
@@ -16520,14 +16476,12 @@ func rebox(b pointer, w scaled) pointer {
 func muMult(n int32, f scaled, x scaled) scaled { return nxPlusY(n, x, xnOverD(x, f, 0o200000)) }
 
 func mathGlue(g pointer, m scaled) pointer {
-	var p pointer // 새 글루 명세
-	var n int32 // |m|의 정수 부분
-	var f scaled // |m|의 소수 부분
-	n = xOverN(m, 0o200000); f = remainder
+	n := xOverN(m, 0o200000) // |m|의 정수 부분
+	f := remainder // |m|의 소수 부분
 	if f < 0 {
 		n--; f += 0o200000
 	}
-	p = getNode(glueSpecSize)
+	p := getNode(glueSpecSize) // 새 글루 명세
 	setWidth(p, muMult(n, f, width(g))) // \.{mu}를 \.{pt}로 바꾼다
 	setStretchOrder(p, stretchOrder(g))
 	if stretchOrder(p) == normal {
@@ -16862,27 +16816,23 @@ func makeOver(q pointer) {
 
 @ @<수식 구성 프로시저들@>=
 func makeUnder(q pointer) {
-	var p, x, y pointer // 상자를 만드는 임시 레지스터들
-	var delta scaled // 전체 높이와 깊이의 합
-	x = cleanBox(nucleus(q), curStyle)
-	p = newKern(3 * defaultRuleThickness()); setLink(x, p)
+	x := cleanBox(nucleus(q), curStyle) // 상자를 만드는 임시 레지스터들
+	p := newKern(3 * defaultRuleThickness()); setLink(x, p)
 	setLink(p, fractionRule(defaultRuleThickness()))
-	y = vpack(x, natural, additional)
-	delta = height(y) + depth(y) + defaultRuleThickness()
+	y := vpack(x, natural, additional)
+	delta := height(y) + depth(y) + defaultRuleThickness() // 전체 높이와 깊이의 합
 	setHeight(y, height(x)); setDepth(y, delta-height(y))
 	setInfo(nucleus(q), y); setMathType(nucleus(q), subBox)
 }
 
 @ @<수식 구성 프로시저들@>=
 func makeVcenter(q pointer) {
-	var v pointer // 세로로 가운데 맞출 상자
-	var delta scaled // 그 높이와 깊이의 합
-	v = info(nucleus(q))
+	v := info(nucleus(q)) // 세로로 가운데 맞출 상자
 	if typ(v) != vlistNode {
 		confusion("vcenter")
 	}
 @:this can't happen vcenter}{\quad vcenter@>
-	delta = height(v) + depth(v)
+	delta := height(v) + depth(v) // 그 높이와 깊이의 합
 	setHeight(v, axisHeight(curSize)+half(delta))
 	setDepth(v, delta-height(v))
 }
@@ -16894,17 +16844,16 @@ func makeVcenter(q pointer) {
 
 @<수식 구성 프로시저들@>=
 func makeRadical(q pointer) {
-	var x, y pointer // 상자를 만드는 임시 레지스터들
-	var delta, clr scaled // 계산에 쓰는 치수들
-	x = cleanBox(nucleus(q), crampedStyle(curStyle))
+	var clr scaled // 계산에 쓰는 치수들
+	x := cleanBox(nucleus(q), crampedStyle(curStyle)) // 상자를 만드는 임시 레지스터들
 	if curStyle < textStyle { // 따로 세운 모양
 		clr = defaultRuleThickness() + (abs(mathXHeight(curSize)) / 4)
 	} else {
 		clr = defaultRuleThickness(); clr += (abs(clr) / 4)
 	}
-	y = varDelimiter(leftDelimiter(q), curSize, height(x)+depth(x)+clr+
+	y := varDelimiter(leftDelimiter(q), curSize, height(x)+depth(x)+clr+
 		defaultRuleThickness())
-	delta = depth(y) - (height(x) + depth(x) + clr)
+	delta := depth(y) - (height(x) + depth(x) + clr)
 	if delta > 0 {
 		clr += half(delta) // 실제 틈을 늘린다
 	}
@@ -17014,7 +16963,7 @@ x = cleanBox(nucleus(q), curStyle); delta = delta + height(x) - h; h = height(x)
 
 @<수식 구성 프로시저들@>=
 func makeFraction(q pointer) {
-	var p, v, x, y, z pointer // 상자를 만드는 임시 레지스터들
+	var p, y pointer // 상자를 만드는 임시 레지스터들
 	var delta, delta1, delta2, shiftUp, shiftDown, clr scaled // 상자 계산에 쓰는 치수들
 	if thickness(q) == defaultCode {
 		setThickness(q, defaultRuleThickness())
@@ -17032,8 +16981,8 @@ func makeFraction(q pointer) {
 @ 분자와 분모를 너비가 같은 상자 |x|와 |z|에 넣고, 기준선에서 이들을 옮길 기본 양 |shiftUp|과 |shiftDown|을 계산한다.
 
 @<분자와 분모를 너비가...@>=
-x = cleanBox(numerator(q), numStyle(curStyle))
-z = cleanBox(denominator(q), denomStyle(curStyle))
+x := cleanBox(numerator(q), numStyle(curStyle))
+z := cleanBox(denominator(q), denomStyle(curStyle))
 if width(x) < width(z) {
 	x = rebox(x, width(z))
 } else {
@@ -17113,7 +17062,7 @@ if delta2 > 0 {
 }
 
 @ @<|shiftUp|과 |shiftDown|에 따라 분수의...@>=
-v = newNullBox(); setType(v, vlistNode)
+v := newNullBox(); setType(v, vlistNode)
 setHeight(v, shiftUp+height(x)); setDepth(v, depth(z)+shiftDown)
 setWidth(v, width(x)) // 이것은 |width(z)|와도 같다
 if thickness(q) == 0 {
@@ -17361,10 +17310,10 @@ if charExists(curI) {
 
 @<수식 구성 프로시저들@>=
 func makeScripts(q pointer, delta scaled) {
-	var p, x, y, z pointer // 상자를 만드는 임시 레지스터들
+	var x, y, z pointer // 상자를 만드는 임시 레지스터들
 	var shiftUp, shiftDown, clr scaled // 계산에 쓰는 치수들
 	var t smallNumber // 하위 크기 코드
-	p = newHlist(q)
+	p := newHlist(q)
 	if isCharNode(p) {
 		shiftUp = 0; shiftDown = 0
 	} else {
@@ -17491,16 +17440,15 @@ default: confusion("mlist3")
 
 @<수식 구성 프로시저들@>=
 func makeLeftRight(q pointer, style smallNumber, maxD, maxH scaled) smallNumber {
-	var delta, delta1, delta2 scaled // 계산에 쓰는 치수들
 	if style < scriptStyle {
 		curSize = textSize
 	} else {
 		curSize = 16 * ((style - textStyle) / 2)
 	}
-	delta2 = maxD + axisHeight(curSize)
-	delta1 = maxH + maxD - delta2
+	delta2 := maxD + axisHeight(curSize) // 계산에 쓰는 치수들
+	delta1 := maxH + maxD - delta2
 	delta1 = max(delta1, delta2) // |delta1|은 축으로부터의 최대 거리다
-	delta = (delta1 / 500) * delimiterFactor()
+	delta := (delta1 / 500) * delimiterFactor()
 	delta2 = delta1 + delta1 - delimiterShortfall()
 	delta = max(delta, delta2)
 	setNewHlist(q, varDelimiter(delimiter(q), curSize, delta))
@@ -17750,8 +17698,7 @@ curHead = null; curTail = null
 
 @<함수들@>=
 func pushAlignment() {
-	var p pointer // 새 정렬 스택 노드
-	p = getNode(alignStackNodeSize)
+	p := getNode(alignStackNodeSize) // 새 정렬 스택 노드
 	setLink(p, alignPtr); setInfo(p, curAlign)
 	setLlink(p, preamble()); setRlink(p, curSpan)
 	mem[p+2].sc = curLoop; mem[p+3].sc = alignState
@@ -17761,9 +17708,8 @@ func pushAlignment() {
 }
 
 func popAlignment() {
-	var p pointer // 맨 위의 정렬 스택 노드
 	freeAvail(curHead)
-	p = alignPtr
+	p := alignPtr // 맨 위의 정렬 스택 노드
 	curTail = link(p + 4); curHead = info(p + 4)
 	alignState = mem[p+3].sc; curLoop = mem[p+2].sc
 	curSpan = rlink(p); setPreamble(llink(p))
@@ -18073,8 +18019,7 @@ setInfo(omitTemplate, endTemplateToken) // |link(omitTemplate)=null|
 
 @<함수들@>=
 func finCol() bool {
-	var p pointer // 현재 정렬 기록 다음의 정렬 기록
-	var q, r pointer // 목록을 다루는 임시 포인터들
+	var r pointer // 목록을 다루는 임시 포인터들
 	var s pointer // 새 걸침 노드
 	var u pointer // 새 미정 상자
 	var w scaled // 자연 너비
@@ -18083,13 +18028,13 @@ func finCol() bool {
 	if curAlign == null {
 		confusion("endv")
 	}
-	q = link(curAlign); if q == null { confusion("endv") }
+	q := link(curAlign); if q == null { confusion("endv") }
 @:this can't happen endv}{\quad endv@>
 	if alignState < 500000 {
 		fatalError("(interwoven alignment preambles are not allowed)")
 	}
 @.interwoven alignment preambles...@>
-	p = link(q)
+	p := link(q) // 현재 정렬 기록 다음의 정렬 기록
 	@<서문 목록을 다 지나왔으면 행이 끝났는지 검사한다@>
 	if extraInfo(curAlign) != spanCode {
 		unsave(); newSaveLevel(alignGroup)
@@ -18231,12 +18176,11 @@ func finRow() {
 
 @<함수들@>=
 func finAlign() {
-	var p, q, r, s, u, v pointer // 목록 연산을 위한 레지스터들
+	var p, r, s, u, v pointer // 목록 연산을 위한 레지스터들
 	var t, w scaled // 열의 너비
 	var o scaled // 미정 상자를 옮길 양
 	var n halfword // 맞추어 볼 걸침의 양
 	var ruleSave scaled // |overfullRule|을 잠시 담아 둔다
-	var auxSave memoryWord // |aux|를 잠시 담아 둔다
 	if curGroup != alignGroup {
 		confusion("align1")
 	}
@@ -18277,7 +18221,7 @@ w_{1j}-t_1-w_1)$로 바꾼다. 그러면 $w_2=w_{22}$다. 그런 다음 모든 $
 정렬 기록들은 여기서 가짜 미정 상자로 바뀐다.
 
 @<서문 목록을 지나가며...@>=
-q = link(preamble())
+q := link(preamble())
 for {
 	flushList(uPart(q)); flushList(vPart(q))
 	p = link(link(q))
@@ -18507,7 +18451,8 @@ setHeight(r, w); setType(r, vlistNode)
 제한된 가로 모드에서는 |aux|의 |clang| 부분이 정의되어 있지 않지만, 그것을 통째로 베껴 두었다가 되돌려도 해가 없다.
 
 @<현재 목록을 그 환경에...@>=
-auxSave = aux; p = link(head); q = tail; popNest()
+auxSave := aux // |aux|를 잠시 담아 둔다
+p = link(head); q = tail; popNest()
 if mode == mmode {
 	@<따로 세운 수식 안의 정렬을 마무리한다@>
 } else {
@@ -18836,7 +18781,6 @@ var @!noShrinkErrorYet bool // 무한 줄어듦에 대해 불평했는가?
 
 @ @<|lineBreak|의 하위...@>=
 func finiteShrink(p pointer) pointer { // 무한 줄어듦에서 회복한다
-	var q pointer // 새 글루 명세
 	if noShrinkErrorYet {
 		noShrinkErrorYet = false
 		if stat && tracingParagraphs() > 0 {
@@ -18854,7 +18798,8 @@ func finiteShrink(p pointer) pointer { // 무한 줄어듦에서 회복한다
 			beginDiagnostic()
 		}
 	}
-	q = newSpec(p); setShrinkOrder(q, normal)
+	q := newSpec(p) // 새 글루 명세
+	setShrinkOrder(q, normal)
 	deleteGlueRef(p); return q
 }
 
@@ -21054,10 +20999,9 @@ var @!trieOpPtr int32 // 지금까지 저장한 연산의 수; |0..trieOpSize|
 
 @<하이픈 넣기 패턴을 전처리하는...@>=
 func newTrieOp(d, n smallNumber, v quarterword) quarterword {
-	var h int32 // 시험 해시 자리; |-trieOpSize..trieOpSize|
 	var u quarterword // 시험 연산 코드
 	var l int32 // 저장된 자료를 가리킨다; |0..trieOpSize|
-	h = abs(n+313*d+361*v+1009*curLang)%(trieOpSize+trieOpSize) - trieOpSize
+	h := abs(n+313*d+361*v+1009*curLang)%(trieOpSize+trieOpSize) - trieOpSize // 시험 해시 자리; |-trieOpSize..trieOpSize|
 	for {
 		l = trieOpHash[trieOpSize+h]
 		if l == 0 { // 새 연산을 위한 빈 자리를 찾았다
@@ -21144,9 +21088,8 @@ var @!trieHash [trieSize + 1]triePointer // 동치인 부분 트라이를 찾아
 
 @<하이픈 넣기 패턴을 전처리하는...@>=
 func trieNode(p triePointer) triePointer { // 표준 꼴로 바꾼다
-	var h triePointer // 시험 해시 자리
 	var q triePointer // 시험 트라이 노드
-	h = abs(int32(trieC[p])+1009*trieO[p]+2718*trieL[p]+3142*trieR[p]) % trieSize
+	h := abs(int32(trieC[p])+1009*trieO[p]+2718*trieL[p]+3142*trieR[p]) % trieSize // 시험 해시 자리
 	for {
 		q = trieHash[h]
 		if q == 0 {
@@ -21343,8 +21286,7 @@ setTrieChar(0, qi('?')) // 모든 |c|에 대해 |trieChar(c)!=c|가 되게 한�
 func trieFix(p triePointer) { // |p|와 그 형제들을 |trie|로 옮긴다
 	var q triePointer // 재귀 호출에서 저장할 필요가 없는 지역 변수
 	var c asciiCode // 저장할 필요가 없는 또 하나
-	var z triePointer // |trie| 참조; 이 지역 변수는 저장해야 한다
-	z = trieRef[p]
+	z := trieRef[p] // |trie| 참조; 이 지역 변수는 저장해야 한다
 	for {
 		q = trieL[p]; c = so(trieC[p])
 		setTrieLink(z+c, trieRef[q]); setTrieChar(z+c, qi(c)); setTrieOp(z+c, trieO[p])
@@ -22078,8 +22020,7 @@ func boxError(n eightBits) {
 
 @<함수들@>=
 func ensureVbox(n eightBits) {
-	var p pointer // 상자 레지스터의 내용
-	p = box(n)
+	p := box(n) // 상자 레지스터의 내용
 	if p != null && typ(p) == hlistNode {
 		printErr("Insertions can only be added to a vbox")
 @.Insertions can only...@>
@@ -22459,9 +22400,6 @@ func fireUp(c pointer) {
 	var prevP pointer // |p|의 앞 노드
 	var n int32 // 삽입 상자 번호; |minQuarterword..255|
 	var wait bool // 지금 삽입물을 다음으로 미루어야 하는가?
-	var saveVbadness int32 // |vbadness|의 저장된 값
-	var saveVfuzz scaled // |vfuzz|의 저장된 값
-	var saveSplitTopSkip pointer // |splitTopSkip|의 저장된 값
 	@<|outputPenalty|의 값을 정한다@>
 	if botMark() != null {
 		if topMark() != null {
@@ -22503,7 +22441,7 @@ if c == bestPageBreak {
 }
 @<출력 전에 상자 255가 비었는지 확인한다@>
 insertPenalties = 0 // 이것은 미룬 삽입물의 수를 셀 것이다
-saveSplitTopSkip = splitTopSkip()
+saveSplitTopSkip := splitTopSkip() // |splitTopSkip|의 저장된 값
 if holdingInserts() <= 0 {
 	@<삽입물에 관련된 모든 상자를 큐처럼 쓰도록 준비한다@>
 }
@@ -22562,8 +22500,10 @@ if p != null {
 	setLink(contribHead, p)
 	setLink(prevP, null)
 }
-saveVbadness = vbadness(); setVbadness(infBad)
-saveVfuzz = vfuzz(); setVfuzz(maxDimen) // 오류 메시지를 억누른다
+saveVbadness := vbadness() // |vbadness|의 저장된 값
+setVbadness(infBad)
+saveVfuzz := vfuzz() // |vfuzz|의 저장된 값
+setVfuzz(maxDimen) // 오류 메시지를 억누른다
 setBoxReg(255, vpackage(link(pageHead), bestSize, exactly, pageMaxDepth))
 setVbadness(saveVbadness); setVfuzz(saveVfuzz)
 if lastGlue != maxHalfword {
@@ -23323,12 +23263,12 @@ case vmode + kern, hmode + kern, mmode + kern, mmode + mkern: appendKern()
 
 @<정의@>=
 const (
-	@!filCode = 0 // \.{\\hfil}과 \.{\\vfil}을 나타낸다
-	@!fillCode = 1 // \.{\\hfill}과 \.{\\vfill}을 나타낸다
-	@!ssCode = 2 // \.{\\hss}와 \.{\\vss}를 나타낸다
-	@!filNegCode = 3 // \.{\\hfilneg}과 \.{\\vfilneg}을 나타낸다
-	@!skipCode = 4 // \.{\\hskip}과 \.{\\vskip}을 나타낸다
-	@!mskipCode = 5 // \.{\\mskip}을 나타낸다
+	@!filCode = iota // \.{\\hfil}과 \.{\\vfil}을 나타낸다
+	@!fillCode // \.{\\hfill}과 \.{\\vfill}을 나타낸다
+	@!ssCode // \.{\\hss}와 \.{\\vss}를 나타낸다
+	@!filNegCode // \.{\\hfilneg}과 \.{\\vfilneg}을 나타낸다
+	@!skipCode // \.{\\hskip}과 \.{\\vskip}을 나타낸다
+	@!mskipCode // \.{\\mskip}을 나타낸다
 )
 
 @ 앞 절의 원시 명령들을 해시 표에 넣는다.
@@ -23387,8 +23327,7 @@ case mkern: printEsc("mkern")
 
 @<|mainControl|이 쓰는 동작...@>=
 func appendGlue() {
-	var s smallNumber // 건너뛰기 명령의 변경자
-	s = curChr
+	s := curChr // 건너뛰기 명령의 변경자
 	switch s {
 	case filCode: curVal = filGlue
 	case fillCode: curVal = fillGlue
@@ -23408,8 +23347,8 @@ func appendGlue() {
 
 @ @<|mainControl|이 쓰는 동작...@>=
 func appendKern() {
-	var s quarterword // 커닝 노드의 |subtype|
-	s = curChr; scanDimen(s == muGlue, false, false)
+	s := curChr // 커닝 노드의 |subtype|
+	scanDimen(s == muGlue, false, false)
 	tailAppend(newKern(curVal)); setSubtype(tail, s)
 }
 
@@ -23857,8 +23796,8 @@ case vtopGroup: endGraf(); packageBox(vtopCode)
 func packageBox(c smallNumber) {
 	var h scaled // 상자의 높이
 	var p pointer // 상자의 첫 노드
-	var d scaled // 최대 깊이
-	d = boxMaxDepth(); unsave(); savePtr -= 3
+	d := boxMaxDepth() // 최대 깊이
+	unsave(); savePtr -= 3
 	if mode == -hmode {
 		curBox = hpack(link(head), saved(2), saved(1))
 	} else {
@@ -24161,9 +24100,8 @@ case vmode + unVbox, hmode + unHbox, mmode + unHbox: unpackage()
 
 @ @<|mainControl|이 쓰는 동작...@>=
 func unpackage() {
-	var p pointer // 상자
-	var c int32 // 베껴야 하는가? |boxCode..copyCode|
-	c = curChr; scanEightBitInt(); p = box(curVal)
+	c := curChr // 베껴야 하는가? |boxCode..copyCode|
+	scanEightBitInt(); p := box(curVal) // 상자
 	if p == null {
 		return
 	}
@@ -24328,11 +24266,11 @@ $\delta={1\over2}(w-a)+h\cdot t-x\cdot s$만큼 옮기는 효과를 내는 커�
 @<|mainControl|이 쓰는 동작...@>=
 func makeAccent() {
 	var s, t float64 // 기울기의 양
-	var p, q, r pointer // 문자, 상자, 커닝 노드
+	var q, r pointer // 문자, 상자, 커닝 노드
 	var f internalFontNumber // 관련된 글꼴
 	var a, h, x, w, delta scaled // 위에서 설명한 높이와 너비
 	var i fourQuarters // 문자 정보
-	scanCharNum(); f = curFont(); p = newCharacter(f, curVal)
+	scanCharNum(); f = curFont(); p := newCharacter(f, curVal)
 	if p != null {
 		x = xHeight(f); s = float64(slant(f)) / floatConstant(65536)
 @^real division@>
@@ -24999,8 +24937,7 @@ case mathChoiceGroup: buildChoices()
 @ @<|mainControl|이 쓰는 동작...@>=
 @<|finMlist|라는 함수를 선언한다@>@;
 func buildChoices() {
-	var p pointer // 현재 수식 목록
-	unsave(); p = finMlist(null)
+	unsave(); p := finMlist(null) // 현재 수식 목록
 	switch saved(-1) {
 	case 0: setDisplayMlist(tail, p)
 	case 1: setTextMlist(tail, p)
@@ -25054,10 +24991,10 @@ if t != empty {
 
 @<정의@>=
 const (
-	@!aboveCode = 0 // `\.{\\above}'
-	@!overCode = 1 // `\.{\\over}'
-	@!atopCode = 2 // `\.{\\atop}'
-	@!delimitedCode = 3 // `\.{\\abovewithdelims}' 따위
+	@!aboveCode = iota // `\.{\\above}'
+	@!overCode // `\.{\\over}'
+	@!atopCode // `\.{\\atop}'
+	@!delimitedCode // `\.{\\abovewithdelims}' 따위
 )
 
 @ 앞 절의 원시 명령들을 해시 표에 넣는다.
@@ -25092,8 +25029,7 @@ case mmode + above: mathFraction()
 
 @ @<|mainControl|이 쓰는 동작...@>=
 func mathFraction() {
-	var c smallNumber // 훑고 있는 일반화된 분수의 형
-	c = curChr
+	c := curChr // 훑고 있는 일반화된 분수의 형
 	if incompleatNoad() != null {
 		@<분수 연산을 무시하고 이 모호한 경우에 대해 불평한다@>
 	} else {
@@ -25208,9 +25144,8 @@ case mmode + leftRight: mathLeftRight()
 
 @ @<|mainControl|이 쓰는 동작...@>=
 func mathLeftRight() {
-	var t smallNumber // |leftNoad|나 |rightNoad|
 	var p pointer // 새 노드
-	t = curChr
+	t := curChr // |leftNoad|나 |rightNoad|
 	if t == rightNoad && curGroup != mathLeftGroup {
 		@<짝이 맞지 않는 \.{\\right}에서 회복해 본다@>
 	} else {
@@ -25248,13 +25183,13 @@ case mmode + mathShift:
 func afterMath() {
 	var l bool // `\.{\\eqno}' 대신 `\.{\\leqno}'인가
 	var danger bool // 기호 글꼴이 넉넉하지 않은가
-	var m int32 // |mmode|나 |-mmode|
 	var p pointer // 수식
 	var a pointer // 수식 번호를 담은 상자
 	@<따로 세운 수식을 마무리하는 지역 변수@>@;
 	danger = false
 	@<수식 기호 글꼴이 갖추어졌는지 확인한다@>
-	m = mode; l = false; p = finMlist(null) // 이것이 둥지를 꺼낸다
+	m := mode // |mmode|나 |-mmode|
+	l = false; p = finMlist(null) // 이것이 둥지를 꺼낸다
 	if mode == -m { // 수식 번호의 끝
 		@<\.\$가 하나 더 오는지 확인한다@>
 		curMlist = p; curStyle = textStyle; mlistPenalties = false
@@ -25732,13 +25667,13 @@ case let:
 
 @<정의@>=
 const (
-	@!charDefCode = 0 // \.{\\chardef}의 |shorthandDef|
-	@!mathCharDefCode = 1 // \.{\\mathchardef}의 |shorthandDef|
-	@!countDefCode = 2 // \.{\\countdef}의 |shorthandDef|
-	@!dimenDefCode = 3 // \.{\\dimendef}의 |shorthandDef|
-	@!skipDefCode = 4 // \.{\\skipdef}의 |shorthandDef|
-	@!muSkipDefCode = 5 // \.{\\muskipdef}의 |shorthandDef|
-	@!toksDefCode = 6 // \.{\\toksdef}의 |shorthandDef|
+	@!charDefCode = iota // \.{\\chardef}의 |shorthandDef|
+	@!mathCharDefCode // \.{\\mathchardef}의 |shorthandDef|
+	@!countDefCode // \.{\\countdef}의 |shorthandDef|
+	@!dimenDefCode // \.{\\dimendef}의 |shorthandDef|
+	@!skipDefCode // \.{\\skipdef}의 |shorthandDef|
+	@!muSkipDefCode // \.{\\muskipdef}의 |shorthandDef|
+	@!toksDefCode // \.{\\toksdef}의 |shorthandDef|
 )
 
 @ 앞 절의 원시 명령들을 해시 표에 넣는다.
@@ -26143,8 +26078,7 @@ func alterAux() {
 
 @ @<|prefixedCommand|의 하위...@>=
 func alterPrevGraf() {
-	var p int32 // |nest|의 첨자; |0..nestSize|
-	nest[nestPtr] = curList(); p = nestPtr
+	nest[nestPtr] = curList(); p := nestPtr // |nest|의 첨자; |0..nestSize|
 	for abs(nest[p].modeField) != vmode {
 		p--
 	}
@@ -26161,15 +26095,15 @@ func alterPrevGraf() {
 
 @ @<|prefixedCommand|의 하위...@>=
 func alterPageSoFar() {
-	var c int32 // |pageSoFar|의 첨자; |0..7|
-	c = curChr; scanOptionalEquals(); scanNormalDimen()
+	c := curChr // |pageSoFar|의 첨자; |0..7|
+	scanOptionalEquals(); scanNormalDimen()
 	pageSoFar[c] = curVal
 }
 
 @ @<|prefixedCommand|의 하위...@>=
 func alterInteger() {
-	var c int32 // \.{\\deadcycles}이면 0, \.{\\insertpenalties}이면 1
-	c = curChr; scanOptionalEquals(); scanInt()
+	c := curChr // \.{\\deadcycles}이면 0, \.{\\insertpenalties}이면 1
+	scanOptionalEquals(); scanInt()
 	if c == 0 {
 		deadCycles = curVal
 	} else {
@@ -26179,9 +26113,9 @@ func alterInteger() {
 
 @ @<|prefixedCommand|의 하위...@>=
 func alterBoxDimen() {
-	var c smallNumber // |widthOffset|나 |heightOffset|나 |depthOffset|
 	var b eightBits // 상자 번호
-	c = curChr; scanEightBitInt(); b = curVal; scanOptionalEquals()
+	c := curChr // |widthOffset|나 |heightOffset|나 |depthOffset|
+	scanEightBitInt(); b = curVal; scanOptionalEquals()
 	scanNormalDimen()
 	if box(b) != null {
 		mem[box(b)+c].sc = curVal
@@ -26444,9 +26378,8 @@ case vmode + inStream, hmode + inStream, mmode + inStream: openOrCloseIn()
 
 @ @<|mainControl|이 쓰는 동작...@>=
 func openOrCloseIn() {
-	var c int32 // \.{\\openin}이면 1, \.{\\closein}이면 0
-	var n int32 // 스트림 번호; |0..15|
-	c = curChr; scanFourBitInt(); n = curVal
+	c := curChr // \.{\\openin}이면 1, \.{\\closein}이면 0
+	scanFourBitInt(); n := curVal // 스트림 번호; |0..15|
 	if readOpen[n] != closed {
 		aClose(&readFile[n]); readOpen[n] = closed
 	}
@@ -26479,14 +26412,13 @@ case message:
 
 @ @<|mainControl|이 쓰는 동작...@>=
 func issueMessage() {
-	var oldSetting int32 // |selector| 설정을 담아 둔다; |0..maxSelector|
-	var c int32 // \.{\\message}와 \.{\\errmessage}를 구별한다; |0..1|
-	var s strNumber // 메시지
-	c = curChr; setLink(garbage, scanToks(false, true))
-	oldSetting = selector; selector = newString
+	c := curChr // \.{\\message}와 \.{\\errmessage}를 구별한다; |0..1|
+	setLink(garbage, scanToks(false, true))
+	oldSetting := selector // |selector| 설정을 담아 둔다; |0..maxSelector|
+	selector = newString
 	tokenShow(defRef); selector = oldSetting
 	flushList(defRef)
-	strRoom(1); s = makeString()
+	strRoom(1); s := makeString() // 메시지
 	if c == 0 {
 		@<문자열 |s|를 터미널에 찍는다@>
 	} else {
@@ -26554,11 +26486,11 @@ case caseShift:
 
 @ @<|mainControl|이 쓰는 동작...@>=
 func shiftCase() {
-	var b pointer // |lcCodeBase|나 |ucCodeBase|
 	var p pointer // 토큰 목록을 훑는다
 	var t halfword // 토큰
 	var c eightBits // 문자 코드
-	b = curChr; p = scanToks(false, false); p = link(defRef)
+	b := curChr // |lcCodeBase|나 |ucCodeBase|
+	p = scanToks(false, false); p = link(defRef)
 	for p != null {
 		@<알맞으면 |p|에 있는 토큰의 대소문자를 바꾼다@>
 		p = link(p)
@@ -26586,10 +26518,10 @@ case vmode + xray, hmode + xray, mmode + xray: showWhatever()
 
 @ @<정의@>=
 const (
-	@!showCode = 0 // \.{\\show}
-	@!showBoxCode = 1 // \.{\\showbox}
-	@!showTheCode = 2 // \.{\\showthe}
-	@!showListsCode = 3 // \.{\\showlists}
+	@!showCode = iota // \.{\\show}
+	@!showBoxCode // \.{\\showbox}
+	@!showTheCode // \.{\\showthe}
+	@!showListsCode // \.{\\showlists}
 )
 
 @ 앞 절의 원시 명령들을 해시 표에 넣는다.
@@ -27586,8 +27518,7 @@ wlogLn(" ", maxInStack, "i,", maxNestStack, "n,", maxParamStack, "p,",
 
 @<마지막 순간의...@>=
 func finalCleanup() {
-	var c smallNumber // \.{\\end}이면 0, \.{\\dump}이면 1
-	c = curChr
+	c := curChr // \.{\\end}이면 0, \.{\\dump}이면 1
 	if c != 1 {
 		setNewLineChar(-1)
 	}
@@ -27896,8 +27827,8 @@ func doExtension() {
 
 @<|doExtension|에 필요한...@>=
 func newWhatsit(s smallNumber, w smallNumber) {
-	var p pointer // 새 노드
-	p = getNode(w); setType(p, whatsitNode); setSubtype(p, s)
+	p := getNode(w) // 새 노드
+	setType(p, whatsitNode); setSubtype(p, s)
 	setLink(tail, p); tail = p
 }
 
@@ -28039,10 +27970,10 @@ outWhat(p)
 
 @<|hlistOut|과 |vlistOut|에 필요한...@>=
 func specialOut(p pointer) {
-	var oldSetting int32 // 찍기 |selector|를 담아 둔다; |0..maxSelector|
 	var k poolPointer // |strPool|의 첨자
 	synchH(); synchV()
-	oldSetting = selector; selector = newString
+	oldSetting := selector // 찍기 |selector|를 담아 둔다; |0..maxSelector|
+	selector = newString
 	showTokenList(link(writeTokens(p)), null, poolSize-poolPtr)
 	selector = oldSetting
 	strRoom(1)
@@ -28069,12 +28000,9 @@ setEqType(endWrite, outerCall); setEquiv(endWrite, null)
 
 @ @<|hlistOut|과 |vlistOut|에 필요한...@>=
 func writeOut(p pointer) {
-	var oldSetting int32 // 찍기 |selector|를 담아 둔다; |0..maxSelector|
-	var oldMode int32 // 저장된 |mode|
-	var j smallNumber // 쓰기 스트림 번호
-	var q, r pointer // 목록을 다루는 임시 변수
 	@<토큰 목록의 매크로를 펼치고 |link(defRef)|가 그 결과를 가리키게 한다@>
-	oldSetting = selector; j = writeStream(p)
+	oldSetting := selector // 찍기 |selector|를 담아 둔다; |0..maxSelector|
+	j := writeStream(p) // 쓰기 스트림 번호
 	if writeOpen[j] {
 		selector = j
 	} else { // 파일이 열려 있지 않으면 터미널에 쓴다
@@ -28099,11 +28027,13 @@ const @!endWriteToken = csTokenFlag + endWrite
 `\.\{$\langle\,$토큰 목록$\,\rangle$\.{\} \\endwrite}'를 만든 다음 그것을 훑는다.
 
 @<토큰 목록의 매크로를 펼치고...@>=
-q = getAvail(); setInfo(q, rightBraceToken+'}')
-r = getAvail(); setLink(q, r); setInfo(r, endWriteToken); insList(q)
+q := getAvail() // 목록을 다루는 임시 변수
+setInfo(q, rightBraceToken+'}')
+r := getAvail(); setLink(q, r); setInfo(r, endWriteToken); insList(q)
 beginTokenList(writeTokens(p), writeText)
 q = getAvail(); setInfo(q, leftBraceToken+'{'); insList(q)
-oldMode = mode; mode = 0
+oldMode := mode // 저장된 |mode|
+mode = 0
 // \.{\\prevdepth}, \.{\\spacefactor}, \.{\\lastskip}, \.{\\prevgraf}를 끈다
 curCs = writeLoc; q = scanToks(false, true) // 매크로 따위를 펼친다
 getToken()
