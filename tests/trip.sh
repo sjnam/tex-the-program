@@ -29,13 +29,13 @@ cp "$DIST/trip.tex" .
 cp "$TOP/tex.w" "$TOP/go.mod" .
 gtangle tex.w >/dev/null 2>&1
 perl -0pi -e '
-  s/(\n\tmem_max = )30000/${1}3000/  or die "mem_max";
-  s/(\n\tmem_min = )0 /${1}1 /        or die "mem_min";
-  s/(\n\tmem_bot = )0 /${1}1 /        or die "mem_bot";
-  s/(\n\tmem_top = )30000/${1}3000/  or die "mem_top";
-  s/(\n\terror_line      = )72/${1}64/ or die "error_line";
-  s/(\n\thalf_error_line = )42/${1}32/ or die "half_error_line";
-  s/(\n\tmax_print_line = )79/${1}72/  or die "max_print_line";
+  s/(\n\tmemMax\s*=\s*)30000/${1}3000/        or die "memMax";
+  s/(\n\tmemMin\s*=\s*)0 /${1}1 /             or die "memMin";
+  s/(\n\tmemBot\s*=\s*)0 /${1}1 /             or die "memBot";
+  s/(\n\tmemTop\s*=\s*)30000/${1}3000/        or die "memTop";
+  s/(\n\terrorLine\s*=\s*)72/${1}64/          or die "errorLine";
+  s/(\n\thalfErrorLine\s*=\s*)42/${1}32/      or die "halfErrorLine";
+  s/(\n\tmaxPrintLine\s*=\s*)79/${1}72/       or die "maxPrintLine";
 ' tex.go
 go build -o triptex .
 

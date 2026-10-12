@@ -13,7 +13,7 @@ Check the ``constant'' values for consistency	``상수'' 값들이 서로 맞는
 Report overflow of the input buffer, and abort	입력 버퍼의 넘침을 알리고 그만둔다
 Make the first 256 strings	처음 256개의 문자열을 만든다
 Character |k| cannot be printed	문자 |k|를 찍을 수 없다
-Read the other strings from the \.{TEX.POOL} file and return |true|, or give an error message and return |false|	나머지 문자열을 |pool_literals|에서 넣고 |true|나 |false|를 돌려준다
+Read the other strings from the \.{TEX.POOL} file and return |true|, or give an error message and return |false|	나머지 문자열을 |poolLiterals|에서 넣고 |true|나 |false|를 돌려준다
 Read one string, but return |false| if the string memory space is getting too tight for comfort	문자열 하나를 넣되, 자리가 빠듯하면 |false|를 돌려준다
 Initialize the output routines	출력 루틴들을 초기화한다
 Character |s| is the current new-line character	문자 |s|가 현재의 줄바꿈 문자다
@@ -27,7 +27,7 @@ Print the help information and |goto continue|	도움말 정보를 찍고 |goto 
 Introduce new material from the terminal and |return|	터미널에서 새 재료를 끼워 넣고 |return|한다
 Change the interaction level and |return|	대화 수준을 바꾸고 |return|한다
 Print the menu of available options	쓸 수 있는 선택지들의 차림표를 찍는다
-Declare the procedure called |show_token_list|	|show_token_list|라는 프로시저를 선언한다
+Declare the procedure called |show_token_list|	|showTokenList|라는 프로시저를 선언한다
 Declare the procedure called |runaway|	|runaway|라는 프로시저를 선언한다
 Try to allocate within node |p| and its physical successors, and |goto found| if allocation was possible	노드 |p|와 그 뒤의 빈 노드들에서 할당해 보고 |goto found|
 Grow more variable-size memory and |goto restart|	가변 크기 메모리를 늘리고 |goto restart|
@@ -41,12 +41,12 @@ Check variable-size |avail| list	가변 크기 |avail| 목록을 검사한다
 Check flags of unavailable nodes	쓸 수 없는 노드들의 표시를 검사한다
 Print newly busy locations	새로 바빠진 위치들을 찍는다
 Search |eqtb| for equivalents equal to |p|	|eqtb|에서 |p|와 같은 등가물을 찾는다
-Search |save_stack| for equivalents that point to |p|	|save_stack|에서 |p|를 가리키는 등가물을 찾는다
-Search |hyph_list| for pointers to |p|	|hyph_list|에서 |p|를 가리키는 포인터를 찾는다
+Search |save_stack| for equivalents that point to |p|	|saveStack|에서 |p|를 가리키는 등가물을 찾는다
+Search |hyph_list| for pointers to |p|	|hyphList|에서 |p|를 가리키는 포인터를 찾는다
 Print the font identifier for |font(p)|	|font(p)|의 글꼴 식별자를 찍는다
 Print a short indication of the contents of node |p|	노드 |p|의 내용을 짧게 나타내어 찍는다
 Declare procedures needed for displaying the elements of mlists	수식 목록의 원소들을 보이는 데 필요한 프로시저들을 선언한다
-Declare the procedure called |print_skip_param|	|print_skip_param|이라는 프로시저를 선언한다
+Declare the procedure called |print_skip_param|	|printSkipParam|이라는 프로시저를 선언한다
 Display node |p|	노드 |p|를 보인다
 Display box |p|	상자 |p|를 보인다
 Display rule |p|	괘선 |p|를 보인다
@@ -60,13 +60,13 @@ Display penalty |p|	벌점 |p|를 보인다
 Display discretionary |p|	선택적 나눔 노드 |p|를 보인다
 Display mark |p|	표시 |p|를 보인다
 Display adjustment |p|	조정 |p|를 보인다
-Cases of |show_node_list| that arise in mlists only	수식 목록에서만 생기는 |show_node_list|의 경우들
+Cases of |show_node_list| that arise in mlists only	수식 목록에서만 생기는 |showNodeList|의 경우들
 Display special fields of the unset node |p|	미정 노드 |p|의 특별한 필드들을 보인다
-Display the value of |glue_set(p)|	|glue_set(p)|의 값을 보인다
+Display the value of |glue_set(p)|	|glueSet(p)|의 값을 보인다
 Display leaders |p|	리더 |p|를 보인다
-Assign the values |depth_threshold:=show_box_depth| and |breadth_max:=show_box_breadth|	|depth_threshold|와 |breadth_max|의 값을 정한다
+Assign the values |depth_threshold:=show_box_depth| and |breadth_max:=show_box_breadth|	|depthThreshold|와 |breadthMax|의 값을 정한다
 Wipe out the whatsit node |p| and |goto done|	whatsit 노드 |p|를 지우고 |goto done|
-Cases of |flush_node_list| that arise in mlists only	수식 목록에서만 생기는 |flush_node_list|의 경우들
+Cases of |flush_node_list| that arise in mlists only	수식 목록에서만 생기는 |flushNodeList|의 경우들
 Make a copy of node |p| in node |r|	노드 |p|의 사본을 노드 |r|에 만든다
 Case statement to copy different types and set |words| to the number of initial words not yet copied	형에 따라 베끼고 |words|를 정하는 |case| 문
 Make a partial copy of the whatsit node |p| and make |r| point to it; set |words| to the number of initial words not yet copied	whatsit 노드 |p|의 부분 사본 |r|를 만들고 |words|를 정한다
@@ -79,16 +79,16 @@ Show equivalent |n|, in region 4	등가물 |n|을 보인다, 영역 4
 Show equivalent |n|, in region 5	등가물 |n|을 보인다, 영역 5
 Show equivalent |n|, in region 6	등가물 |n|을 보인다, 영역 6
 Put each of \TeX's primitives into the hash table	\TeX의 원시 명령을 저마다 해시 표에 넣는다
-Cases of |print_cmd_chr| for symbolic printing of primitives	원시 명령의 이름을 찍는 |print_cmd_chr|의 경우들
+Cases of |print_cmd_chr| for symbolic printing of primitives	원시 명령의 이름을 찍는 |printCmdChr|의 경우들
 Show the font identifier in |eqtb[n]|	|eqtb[n]|의 글꼴 식별자를 보인다
 Show the halfword code in |eqtb[n]|	|eqtb[n]|의 하프워드 코드를 보인다
-Declare the procedure called |print_cmd_chr|	|print_cmd_chr|라는 프로시저를 선언한다
+Declare the procedure called |print_cmd_chr|	|printCmdChr|라는 프로시저를 선언한다
 Compute the hash code |h|	해시 코드 |h|를 계산한다
 Insert a new control sequence after |p|, then make |p| point to it	|p| 뒤에 새 제어 시퀀스를 넣고 |p|가 그것을 가리키게 한다
-Declare the procedure called |restore_trace|	|restore_trace|라는 프로시저를 선언한다
-Clear off top level from |save_stack|	|save_stack|에서 맨 위 수준을 치운다
+Declare the procedure called |restore_trace|	|restoreTrace|라는 프로시저를 선언한다
+Clear off top level from |save_stack|	|saveStack|에서 맨 위 수준을 치운다
 Insert token |p| into \TeX's input	토큰 |p|를 \TeX의 입력에 끼워 넣는다
-Store \(s)|save_stack[save_ptr]| in |eqtb[p]|, unless |eqtb[p]| holds a global value	|eqtb[p]|가 전역 값이 아니면 |save_stack[save_ptr]|를 거기 넣는다
+Store \(s)|save_stack[save_ptr]| in |eqtb[p]|, unless |eqtb[p]| holds a global value	|eqtb[p]|가 전역 값이 아니면 |saveStack[savePtr]|를 거기 넣는다
 Do magic computation	마법 같은 계산을 한다
 Display token |p|, and |return| if there are problems	토큰 |p|를 보이되, 문제가 있으면 |return|한다
 Display the token $(|m|,|c|)$	토큰 $(|m|,|c|)$를 보인다
@@ -110,24 +110,24 @@ Insert the \(v)\<v_j> template and |goto restart|	\<v_j> 틀을 끼워 넣고 |g
 Change state if necessary, and |goto switch| if the current character should be ignored, or |goto reswitch| if the current character changes to another	필요하면 상태를 바꾸고, 무시할 문자면 |goto switch|, 다른 문자로 바뀌면 |goto reswitch|
 Move to next line of file, or |goto restart| if there is no next line, or |return| if a \.{\\read} line has finished	파일의 다음 줄로 옮겨 가거나, 다음 줄이 없으면 |goto restart|, \.{\\read} 줄이 끝났으면 |return|
 Cases where character is ignored	문자를 무시하는 경우들
-Scan a control sequence and set |state:=skip_blanks| or |mid_line|	제어 시퀀스를 훑고 |state=skip_blanks|나 |mid_line|으로 놓는다
-Process an active-character control sequence and set |state:=mid_line|	능동 문자 제어 시퀀스를 처리하고 |state=mid_line|으로 놓는다
-If this |sup_mark| starts an expanded character like~\.{\^\^A} or~\.{\^\^df}, then |goto reswitch|, otherwise set |state:=mid_line|	이 |sup_mark|가 \.{\^\^A}나 \.{\^\^df} 같은 펼친 문자를 시작하면 |goto reswitch|, 아니면 |state=mid_line|
+Scan a control sequence and set |state:=skip_blanks| or |mid_line|	제어 시퀀스를 훑고 |state=skipBlanks|나 |midLine|으로 놓는다
+Process an active-character control sequence and set |state:=mid_line|	능동 문자 제어 시퀀스를 처리하고 |state=midLine|으로 놓는다
+If this |sup_mark| starts an expanded character like~\.{\^\^A} or~\.{\^\^df}, then |goto reswitch|, otherwise set |state:=mid_line|	이 |supMark|가 \.{\^\^A}나 \.{\^\^df} 같은 펼친 문자를 시작하면 |goto reswitch|, 아니면 |state=midLine|
 Decry the invalid character and |goto restart|	잘못된 문자를 꾸짖고 |goto restart|
 Handle situations involving spaces, braces, changes of state	공백, 중괄호, 상태 변화가 얽힌 상황을 다룬다
-Enter |skip_blanks| state, emit a space	|skip_blanks| 상태에 들어가고 공백을 내보낸다
+Enter |skip_blanks| state, emit a space	|skipBlanks| 상태에 들어가고 공백을 내보낸다
 Finish line, emit a space	줄을 끝내고 공백을 내보낸다
 Finish line, |goto switch|	줄을 끝내고 |goto switch|
 Finish line, emit a \.{\\par}	줄을 끝내고 \.{\\par}를 내보낸다
 Scan ahead in the buffer until finding a nonletter; ...	버퍼에서 글자가 아닌 것을 찾을 때까지 앞서 훑는다
-If an expanded code is present, reduce it and |goto start_cs|	펼친 코드가 있으면 줄이고 |goto start_cs|
+If an expanded code is present, reduce it and |goto start_cs|	펼친 코드가 있으면 줄이고 |goto startCs|
 Get the next token, suppressing expansion	펼치기를 억누르고 다음 토큰을 얻는다
 Insert macro parameter and |goto restart|	매크로 매개변수를 끼워 넣고 |goto restart|
 Read next line of file into |buffer|, or |goto restart| if the file has ended	파일의 다음 줄을 |buffer|에 읽거나, 파일이 끝났으면 |goto restart|
-Declare the procedure called |macro_call|	|macro_call|이라는 프로시저를 선언한다
-Declare the procedure called |insert_relax|	|insert_relax|라는 프로시저를 선언한다
+Declare the procedure called |macro_call|	|macroCall|이라는 프로시저를 선언한다
+Declare the procedure called |insert_relax|	|insertRelax|라는 프로시저를 선언한다
 Expand a nonmacro	매크로가 아닌 것을 펼친다
-Insert a token containing |frozen_endv|	|frozen_endv|를 담은 토큰을 끼워 넣는다
+Insert a token containing |frozen_endv|	|frozenEndv|를 담은 토큰을 끼워 넣는다
 Insert the \(a)appropriate mark text into the scanner	알맞은 표시 텍스트를 훑개에 끼워 넣는다
 Expand the token after the next token	다음 토큰 뒤의 토큰을 펼친다
 Suppress expansion of the next token	다음 토큰의 펼치기를 억누른다
@@ -136,7 +136,7 @@ Terminate the current conditional and skip to \.{\\fi}	현재 조건문을 끝�
 Initiate or terminate input from a file	파일에서 입력을 시작하거나 끝낸다
 Complain about an undefined macro	정의되지 않은 매크로를 불평한다
 Complain about missing \.{\\endcsname}	\.{\\endcsname}이 빠졌다고 불평한다
-Look up the characters of list |r| in the hash table, and set |cur_cs|	목록 |r|의 문자들을 해시 표에서 찾아 |cur_cs|를 정한다
+Look up the characters of list |r| in the hash table, and set |cur_cs|	목록 |r|의 문자들을 해시 표에서 찾아 |curCs|를 정한다
 Show the text of the macro being expanded	펼치는 매크로의 텍스트를 보인다
 Scan the parameters and make |link(r)| point to the macro body; but |return| if an illegal \.{\\par} is detected	매개변수들을 훑고 |link(r)|이 매크로 몸체를 가리키게 한다
 Feed the macro body and its parameters to the scanner	매크로 몸체와 그 매개변수들을 훑개에 먹인다
@@ -154,42 +154,42 @@ Get the next non-blank non-call token	공백도 호출도 아닌 다음 토큰�
 Declare procedures that scan restricted classes of integers	제한된 종류의 정수를 훑는 프로시저들을 선언한다
 Declare procedures that scan font-related stuff	글꼴에 관련된 것을 훑는 프로시저들을 선언한다
 Fetch a character code from some table	어떤 표에서 문자 코드를 가져온다
-Fetch a token list or font identifier, provided that |level=tok_val|	|level=tok_val|이면 토큰 목록이나 글꼴 식별자를 가져온다
-Fetch the |space_factor| or the |prev_depth|	|space_factor|나 |prev_depth|를 가져온다
-Fetch the |prev_graf|	|prev_graf|를 가져온다
-Fetch the |dead_cycles| or the |insert_penalties|	|dead_cycles|나 |insert_penalties|를 가져온다
-Fetch something on the |page_so_far|	|page_so_far|의 무언가를 가져온다
-Fetch the |par_shape| size	|par_shape|의 크기를 가져온다
+Fetch a token list or font identifier, provided that |level=tok_val|	|level=tokVal|이면 토큰 목록이나 글꼴 식별자를 가져온다
+Fetch the |space_factor| or the |prev_depth|	|spaceFactor|나 |prevDepth|를 가져온다
+Fetch the |prev_graf|	|prevGraf|를 가져온다
+Fetch the |dead_cycles| or the |insert_penalties|	|deadCycles|나 |insertPenalties|를 가져온다
+Fetch something on the |page_so_far|	|pageSoFar|의 무언가를 가져온다
+Fetch the |par_shape| size	|parShape|의 크기를 가져온다
 Fetch a box dimension	상자의 치수를 가져온다
 Fetch a font dimension	글꼴 치수를 가져온다
 Fetch a font integer	글꼴 정수를 가져온다
 Fetch a register	레지스터를 가져온다
 Fetch an item in the current node, if appropriate	알맞으면 현재 노드의 항목을 가져온다
 Complain that \.{\\the} can't do this; give zero result	\.{\\the}가 이것을 할 수 없다고 불평하고 0을 결과로 준다
-Convert \(c)|cur_val| to a lower level	|cur_val|을 낮은 수준으로 바꾼다
-Fix the reference count, if any, and negate |cur_val| if |negative|	참조 횟수가 있으면 고치고, |negative|면 |cur_val|의 부호를 바꾼다
-Negate all three glue components of |cur_val|	|cur_val|의 글루 성분 셋의 부호를 모두 바꾼다
+Convert \(c)|cur_val| to a lower level	|curVal|을 낮은 수준으로 바꾼다
+Fix the reference count, if any, and negate |cur_val| if |negative|	참조 횟수가 있으면 고치고, |negative|면 |curVal|의 부호를 바꾼다
+Negate all three glue components of |cur_val|	|curVal|의 글루 성분 셋의 부호를 모두 바꾼다
 Get the next non-blank non-sign token; set |negative| appropriately	공백도 부호도 아닌 다음 토큰을 얻고 |negative|를 알맞게 놓는다
-Scan an alphabetic character code into |cur_val|	알파벳 문자 코드를 |cur_val|에 훑어 넣는다
+Scan an alphabetic character code into |cur_val|	알파벳 문자 코드를 |curVal|에 훑어 넣는다
 Scan a numeric constant	수 상수를 훑는다
 Scan an optional space	선택적인 공백 하나를 훑는다
-Accumulate the constant until |cur_tok| is not a suitable digit	|cur_tok|이 알맞은 숫자가 아닐 때까지 상수를 쌓는다
+Accumulate the constant until |cur_tok| is not a suitable digit	|curTok|이 알맞은 숫자가 아닐 때까지 상수를 쌓는다
 Express astonishment that no number was here	수가 없다는 데 놀라움을 나타낸다
 Local variables for dimension calculations	치수 계산을 위한 지역 변수
-Fetch an internal dimension and |goto attach_sign|, or fetch an internal integer	내부 치수를 가져와 |goto attach_sign|, 아니면 내부 정수를 가져온다
+Fetch an internal dimension and |goto attach_sign|, or fetch an internal integer	내부 치수를 가져와 |goto attachSign|, 아니면 내부 정수를 가져온다
 Coerce glue to a dimension	글루를 치수로 바꾼다
 Scan decimal fraction	소수 부분을 훑는다
-Scan units and set |cur_val| to $x\cdot(|cur_val|+f/2^{16})$, where there are |x| sp per unit; |goto attach_sign| if the units are internal	단위를 훑고 |cur_val|을 $x\cdot(|cur_val|+f/2^{16})$으로 놓는다
-Scan for \(f)\.{fil} units; |goto attach_fraction| if found	\.{fil} 단위를 훑고, 찾았으면 |goto attach_fraction|
-Scan for \(u)units that are internal dimensions; |goto attach_sign| with |cur_val| set if found	내부 치수인 단위를 훑고, 찾았으면 |cur_val|을 정해 |goto attach_sign|
-Scan for \(m)\.{mu} units and |goto attach_fraction|	\.{mu} 단위를 훑고 |goto attach_fraction|
+Scan units and set |cur_val| to $x\cdot(|cur_val|+f/2^{16})$, where there are |x| sp per unit; |goto attach_sign| if the units are internal	단위를 훑고 |curVal|을 $x\cdot(|curVal|+f/2^{16})$으로 놓는다
+Scan for \(f)\.{fil} units; |goto attach_fraction| if found	\.{fil} 단위를 훑고, 찾았으면 |goto attachFraction|
+Scan for \(u)units that are internal dimensions; |goto attach_sign| with |cur_val| set if found	내부 치수인 단위를 훑고, 찾았으면 |curVal|을 정해 |goto attachSign|
+Scan for \(m)\.{mu} units and |goto attach_fraction|	\.{mu} 단위를 훑고 |goto attachFraction|
 Adjust \(f)for the magnification ratio	확대 배율에 맞추어 조정한다
-Scan for \(a)all other units and adjust |cur_val| and |f| accordingly; |goto done| in the case of scaled points	다른 모든 단위를 훑어 |cur_val|과 |f|를 조정하고, 눈금 포인트면 |goto done|
+Scan for \(a)all other units and adjust |cur_val| and |f| accordingly; |goto done| in the case of scaled points	다른 모든 단위를 훑어 |curVal|과 |f|를 조정하고, 눈금 포인트면 |goto done|
 Complain about unknown unit and |goto done2|	모르는 단위를 불평하고 |goto done2|
 Report that this dimension is out of range	이 치수가 범위를 벗어났다고 알린다
-Create a new glue specification whose width is |cur_val|; scan for its stretch and shrink components	너비가 |cur_val|인 새 글루 명세를 만들고 늘어남과 줄어듦 성분을 훑는다
-The em width for |cur_font|	|cur_font|의 em 너비
-The x-height for |cur_font|	|cur_font|의 x 높이
+Create a new glue specification whose width is |cur_val|; scan for its stretch and shrink components	너비가 |curVal|인 새 글루 명세를 만들고 늘어남과 줄어듦 성분을 훑는다
+The em width for |cur_font|	|curFont|의 em 너비
+The x-height for |cur_font|	|curFont|의 x 높이
 Copy the token list	토큰 목록을 베낀다
 Scan the argument for command |c|	명령 |c|의 인자를 훑는다
 Print the result of command |c|	명령 |c|의 결과를 찍는다
@@ -201,28 +201,28 @@ Expand the next part of the input	입력의 다음 부분을 펼친다
 Look for parameter number or \.{\#\#}	매개변수 번호나 \.{\#\#}를 찾는다
 Input and store tokens from the next line of the file	파일의 다음 줄에서 토큰들을 입력해서 저장한다
 Input for \.{\\read} from the terminal	터미널에서 \.{\\read}를 위한 입력을 한다
-Input the first line of |read_file[m]|	|read_file[m]|의 첫 줄을 입력한다
-Input the next line of |read_file[m]|	|read_file[m]|의 다음 줄을 입력한다
+Input the first line of |read_file[m]|	|readFile[m]|의 첫 줄을 입력한다
+Input the next line of |read_file[m]|	|readFile[m]|의 다음 줄을 입력한다
 Push the condition stack	조건 스택에 쌓는다
 Pop the condition stack	조건 스택에서 꺼낸다
 Either process \.{\\ifcase} or set |b| to the value of a boolean condition	\.{\\ifcase}를 처리하거나 |b|를 불 조건의 값으로 놓는다
 Display the value of |b|	|b|의 값을 보인다
-Skip to \.{\\else} or \.{\\fi}, then |goto common_ending|	\.{\\else}나 \.{\\fi}까지 건너뛰고 |goto common_ending|
+Skip to \.{\\else} or \.{\\fi}, then |goto common_ending|	\.{\\else}나 \.{\\fi}까지 건너뛰고 |goto commonEnding|
 Test if two characters match	두 문자가 맞는지 검사한다
 Test relation between integers or dimensions	정수나 치수 사이의 관계를 검사한다
 Test if an integer is odd	정수가 홀수인지 검사한다
 Test box register status	상자 레지스터의 상태를 검사한다
 Test if two tokens match	두 토큰이 맞는지 검사한다
-Select the appropriate case and |return| or |goto common_ending|	알맞은 경우를 고르고 |return|하거나 |goto common_ending|
+Select the appropriate case and |return| or |goto common_ending|	알맞은 경우를 고르고 |return|하거나 |goto commonEnding|
 Test if two macro texts match	두 매크로 텍스트가 맞는지 검사한다
-Declare the function called |open_fmt_file|	|open_fmt_file|이라는 함수를 선언한다
+Declare the function called |open_fmt_file|	|openFmtFile|이라는 함수를 선언한다
 Scan file name in the buffer	버퍼에서 파일 이름을 훑는다
 Try to get a different log file name	다른 기록 파일 이름을 얻어 본다
 Print the banner line, including the date and time	날짜와 시각을 포함해서 머리줄을 찍는다
 Read the first line of the new file	새 파일의 첫 줄을 읽는다
 Read and check the font data; |abort| if the \.{TFM} file is malformed; ...	글꼴 자료를 읽고 검사한다
 Report that the font won't be loaded	글꼴을 싣지 않겠다고 알린다
-Open |tfm_file| for input	|tfm_file|을 입력용으로 연다
+Open |tfm_file| for input	|tfmFile|을 입력용으로 연다
 Read the {\.{TFM}} size fields	\.{TFM}의 크기 필드들을 읽는다
 Use size fields to allocate font information	크기 필드들로 글꼴 정보를 할당한다
 Apologize for not loading the font, |goto done|	글꼴을 싣지 못한다고 사과하고 |goto done|
@@ -235,11 +235,11 @@ Read ligature/kern program	합자/커닝 프로그램을 읽는다
 Read extensible character recipes	늘일 수 있는 문자의 조립법을 읽는다
 Read font parameters	글꼴 매개변수들을 읽는다
 Make final adjustments and |goto done|	마지막 조정을 하고 |goto done|
-Issue an error message if |cur_val=fmem_ptr|	|cur_val=fmem_ptr|면 오류 메시지를 낸다
+Issue an error message if |cur_val=fmem_ptr|	|curVal=fmemPtr|면 오류 메시지를 낸다
 Increase the number of parameters in the last font	마지막 글꼴의 매개변수 수를 늘린다
 (added) macros of read_font_info	\.{TFM} 파일을 읽는 함수들
 (added) check one lig/kern instruction	합자/커닝 명령 하나를 검사한다
-Empty the last bytes out of |dvi_buf|	|dvi_buf|의 마지막 바이트들을 비운다
+Empty the last bytes out of |dvi_buf|	|dviBuf|의 마지막 바이트들을 비운다
 Output the font name whose internal number is |f|	내부 번호가 |f|인 글꼴의 이름을 출력한다
 Look at the other stack entries until deciding what sort of \.{DVI} command to generate; |goto found| if node |p| is a ``hit''	어떤 \.{DVI} 명령을 만들지 정할 때까지 다른 스택 항목들을 보고, 노드 |p|가 ``맞음''이면 |goto found|
 Generate a |down| or |right| command for |w| and |return|	|w|에 대한 |down|이나 |right| 명령을 만들고 |return|
@@ -247,31 +247,31 @@ Generate a |y0| or |z0| command in order to reuse a previous appearance of~|w|	�
 Consider a node with matching width; |goto found| if it's a hit	너비가 맞는 노드를 살피고, 맞음이면 |goto found|
 Change buffered instruction to |y| or |w| and |goto found|	버퍼의 명령을 |y|나 |w|로 바꾸고 |goto found|
 Change buffered instruction to |z| or |x| and |goto found|	버퍼의 명령을 |z|나 |x|로 바꾸고 |goto found|
-Initialize variables as |ship_out| begins	|ship_out|을 시작할 때 변수들을 초기화한다
-Declare procedures needed in |hlist_out|, |vlist_out|	|hlist_out|과 |vlist_out|에 필요한 프로시저들을 선언한다
-Output node |p| for |hlist_out| and move to the next node, maintaining the condition |cur_v=base_line|	|hlist_out|에서 노드 |p|를 출력하고 다음 노드로 옮겨 간다
-Change font |dvi_f| to |f|	글꼴 |dvi_f|를 |f|로 바꾼다
-Output the non-|char_node| |p| for |hlist_out| and move to the next node	|hlist_out|에서 |char_node|가 아닌 |p|를 출력하고 다음 노드로 옮겨 간다
+Initialize variables as |ship_out| begins	|shipOut|을 시작할 때 변수들을 초기화한다
+Declare procedures needed in |hlist_out|, |vlist_out|	|hlistOut|과 |vlistOut|에 필요한 프로시저들을 선언한다
+Output node |p| for |hlist_out| and move to the next node, maintaining the condition |cur_v=base_line|	|hlistOut|에서 노드 |p|를 출력하고 다음 노드로 옮겨 간다
+Change font |dvi_f| to |f|	글꼴 |dviF|를 |f|로 바꾼다
+Output the non-|char_node| |p| for |hlist_out| and move to the next node	|hlistOut|에서 |charNode|가 아닌 |p|를 출력하고 다음 노드로 옮겨 간다
 Output a box in an hlist	가로 목록에서 상자를 출력한다
 Output the whatsit node |p| in an hlist	가로 목록에서 whatsit 노드 |p|를 출력한다
 Move right or output leaders	오른쪽으로 움직이거나 리더를 출력한다
-Make node |p| look like a |char_node| and |goto reswitch|	노드 |p|를 |char_node|처럼 보이게 하고 |goto reswitch|
+Make node |p| look like a |char_node| and |goto reswitch|	노드 |p|를 |charNode|처럼 보이게 하고 |goto reswitch|
 Output a rule in an hlist	가로 목록에서 괘선을 출력한다
-Output leaders in an hlist, |goto fin_rule| if a rule or to |next_p| if done	가로 목록에서 리더를 출력하고, 괘선이면 |goto fin_rule|, 다 했으면 |goto next_p|
-Let |cur_h| be the position of the first box, and set |leader_wd+lx| to the spacing between corresponding parts of boxes	|cur_h|를 첫 상자의 위치로 놓고, |leader_wd+lx|를 상자 사이의 간격으로 놓는다
-Output a leader box at |cur_h|, then advance |cur_h| by |leader_wd+lx|	|cur_h|에 리더 상자 하나를 출력하고 |cur_h|를 |leader_wd+lx|만큼 나아가게 한다
-Output node |p| for |vlist_out| and move to the next node, maintaining the condition |cur_h=left_edge|	|vlist_out|에서 노드 |p|를 출력하고 다음 노드로 옮겨 간다
-Output the non-|char_node| |p| for |vlist_out|	|vlist_out|에서 |char_node|가 아닌 |p|를 출력한다
+Output leaders in an hlist, |goto fin_rule| if a rule or to |next_p| if done	가로 목록에서 리더를 출력하고, 괘선이면 |goto finRule|, 다 했으면 |goto nextP|
+Let |cur_h| be the position of the first box, and set |leader_wd+lx| to the spacing between corresponding parts of boxes	|curH|를 첫 상자의 위치로 놓고, |leaderWd+lx|를 상자 사이의 간격으로 놓는다
+Output a leader box at |cur_h|, then advance |cur_h| by |leader_wd+lx|	|curH|에 리더 상자 하나를 출력하고 |curH|를 |leaderWd+lx|만큼 나아가게 한다
+Output node |p| for |vlist_out| and move to the next node, maintaining the condition |cur_h=left_edge|	|vlistOut|에서 노드 |p|를 출력하고 다음 노드로 옮겨 간다
+Output the non-|char_node| |p| for |vlist_out|	|vlistOut|에서 |charNode|가 아닌 |p|를 출력한다
 Output a box in a vlist	세로 목록에서 상자를 출력한다
 Output the whatsit node |p| in a vlist	세로 목록에서 whatsit 노드 |p|를 출력한다
 Move down or output leaders	아래로 움직이거나 리더를 출력한다
-Output a rule in a vlist, |goto next_p|	세로 목록에서 괘선을 출력하고 |goto next_p|
-Output leaders in a vlist, |goto fin_rule| if a rule or to |next_p| if done	세로 목록에서 리더를 출력하고, 괘선이면 |goto fin_rule|, 다 했으면 |goto next_p|
-Let |cur_v| be the position of the first box, and set |leader_ht+lx| to the spacing between corresponding parts of boxes	|cur_v|를 첫 상자의 위치로 놓고, |leader_ht+lx|를 상자 사이의 간격으로 놓는다
-Output a leader box at |cur_v|, then advance |cur_v| by |leader_ht+lx|	|cur_v|에 리더 상자 하나를 출력하고 |cur_v|를 |leader_ht+lx|만큼 나아가게 한다
+Output a rule in a vlist, |goto next_p|	세로 목록에서 괘선을 출력하고 |goto nextP|
+Output leaders in a vlist, |goto fin_rule| if a rule or to |next_p| if done	세로 목록에서 리더를 출력하고, 괘선이면 |goto finRule|, 다 했으면 |goto nextP|
+Let |cur_v| be the position of the first box, and set |leader_ht+lx| to the spacing between corresponding parts of boxes	|curV|를 첫 상자의 위치로 놓고, |leaderHt+lx|를 상자 사이의 간격으로 놓는다
+Output a leader box at |cur_v|, then advance |cur_v| by |leader_ht+lx|	|curV|에 리더 상자 하나를 출력하고 |curV|를 |leaderHt+lx|만큼 나아가게 한다
 Flush the box from memory, showing statistics if requested	상자를 메모리에서 지우고, 요청이 있으면 통계를 보인다
 Ship box |p| out	상자 |p|를 내보낸다
-Update the values of |max_h| and |max_v|; but if the page is too large, |goto done|	|max_h|와 |max_v|의 값을 갱신하되, 쪽이 너무 크면 |goto done|
+Update the values of |max_h| and |max_v|; but if the page is too large, |goto done|	|maxH|와 |maxV|의 값을 갱신하되, 쪽이 너무 크면 |goto done|
 Finish the \.{DVI} file	\.{DVI} 파일을 마무리한다
 Output the font definitions for all fonts that were used	쓰인 모든 글꼴의 정의를 출력한다
 Clear dimensions to zero	치수들을 0으로 지운다
@@ -281,82 +281,82 @@ Incorporate box dimensions into the dimensions of the hbox that will contain~it	
 Transfer node |p| to the adjustment list	노드 |p|를 조정 목록으로 옮긴다
 Incorporate a whatsit node into an hbox	whatsit 노드를 가로 상자에 반영한다
 Incorporate glue into the horizontal totals	글루를 가로 합계에 반영한다
-Determine the value of |width(r)| and the appropriate glue setting; then |return| or |goto common_ending|	|width(r)|의 값과 알맞은 글루 설정을 정하고, |return|하거나 |goto common_ending|
+Determine the value of |width(r)| and the appropriate glue setting; then |return| or |goto common_ending|	|width(r)|의 값과 알맞은 글루 설정을 정하고, |return|하거나 |goto commonEnding|
 Finish issuing a diagnostic message for an overfull or underfull hbox	꽉 차거나 덜 찬 가로 상자에 관한 진단 메시지를 마저 낸다
-Determine horizontal glue stretch setting, then |return| or \hbox{|goto common_ending|}	가로 글루의 늘이기 설정을 정하고, |return|하거나 |goto common_ending|
+Determine horizontal glue stretch setting, then |return| or \hbox{|goto common_ending|}	가로 글루의 늘이기 설정을 정하고, |return|하거나 |goto commonEnding|
 Determine the stretch order	늘이기 차수를 정한다
-Report an underfull hbox and |goto common_ending|, if this box is sufficiently bad	덜 찬 가로 상자를 알리고, 이 상자가 충분히 나쁘면 |goto common_ending|
-Determine horizontal glue shrink setting, then |return| or \hbox{|goto common_ending|}	가로 글루의 줄이기 설정을 정하고, |return|하거나 |goto common_ending|
+Report an underfull hbox and |goto common_ending|, if this box is sufficiently bad	덜 찬 가로 상자를 알리고, 이 상자가 충분히 나쁘면 |goto commonEnding|
+Determine horizontal glue shrink setting, then |return| or \hbox{|goto common_ending|}	가로 글루의 줄이기 설정을 정하고, |return|하거나 |goto commonEnding|
 Determine the shrink order	줄이기 차수를 정한다
-Report an overfull hbox and |goto common_ending|, if this box is sufficiently bad	꽉 찬 가로 상자를 알리고, 이 상자가 충분히 나쁘면 |goto common_ending|
-Report a tight hbox and |goto common_ending|, if this box is sufficiently bad	빡빡한 가로 상자를 알리고, 이 상자가 충분히 나쁘면 |goto common_ending|
+Report an overfull hbox and |goto common_ending|, if this box is sufficiently bad	꽉 찬 가로 상자를 알리고, 이 상자가 충분히 나쁘면 |goto commonEnding|
+Report a tight hbox and |goto common_ending|, if this box is sufficiently bad	빡빡한 가로 상자를 알리고, 이 상자가 충분히 나쁘면 |goto commonEnding|
 Examine node |p| in the vlist, taking account of its effect on the dimensions of the new box; then advance |p| to the next node	세로 목록의 노드 |p|를 살펴 반영하고 다음으로 나아간다
 Incorporate box dimensions into the dimensions of the vbox that will contain~it	상자의 치수를 그것을 담을 세로 상자의 치수에 반영한다
 Incorporate a whatsit node into a vbox	whatsit 노드를 세로 상자에 반영한다
 Incorporate glue into the vertical totals	글루를 세로 합계에 반영한다
-Determine the value of |height(r)| and the appropriate glue setting; then |return| or |goto common_ending|	|height(r)|의 값과 알맞은 글루 설정을 정하고, |return|하거나 |goto common_ending|
+Determine the value of |height(r)| and the appropriate glue setting; then |return| or |goto common_ending|	|height(r)|의 값과 알맞은 글루 설정을 정하고, |return|하거나 |goto commonEnding|
 Finish issuing a diagnostic message for an overfull or underfull vbox	꽉 차거나 덜 찬 세로 상자에 관한 진단 메시지를 마저 낸다
-Determine vertical glue stretch setting, then |return| or \hbox{|goto common_ending|}	세로 글루의 늘이기 설정을 정하고, |return|하거나 |goto common_ending|
-Report an underfull vbox and |goto common_ending|, if this box is sufficiently bad	덜 찬 세로 상자를 알리고, 이 상자가 충분히 나쁘면 |goto common_ending|
-Determine vertical glue shrink setting, then |return| or \hbox{|goto common_ending|}	세로 글루의 줄이기 설정을 정하고, |return|하거나 |goto common_ending|
-Report an overfull vbox and |goto common_ending|, if this box is sufficiently bad	꽉 찬 세로 상자를 알리고, 이 상자가 충분히 나쁘면 |goto common_ending|
-Report a tight vbox and |goto common_ending|, if this box is sufficiently bad	빡빡한 세로 상자를 알리고, 이 상자가 충분히 나쁘면 |goto common_ending|
+Determine vertical glue stretch setting, then |return| or \hbox{|goto common_ending|}	세로 글루의 늘이기 설정을 정하고, |return|하거나 |goto commonEnding|
+Report an underfull vbox and |goto common_ending|, if this box is sufficiently bad	덜 찬 세로 상자를 알리고, 이 상자가 충분히 나쁘면 |goto commonEnding|
+Determine vertical glue shrink setting, then |return| or \hbox{|goto common_ending|}	세로 글루의 줄이기 설정을 정하고, |return|하거나 |goto commonEnding|
+Report an overfull vbox and |goto common_ending|, if this box is sufficiently bad	꽉 찬 세로 상자를 알리고, 이 상자가 충분히 나쁘면 |goto commonEnding|
+Report a tight vbox and |goto common_ending|, if this box is sufficiently bad	빡빡한 세로 상자를 알리고, 이 상자가 충분히 나쁘면 |goto commonEnding|
 Display choice node |p|	선택 노드 |p|를 보인다
 Display normal noad |p|	보통 노드 |p|를 보인다
 Display fraction noad |p|	분수 노드 |p|를 보인다
-Set up the values of |cur_size| and |cur_mu|, based on |cur_style|	|cur_style|에 따라 |cur_size|와 |cur_mu|의 값을 정한다
-Declare subprocedures for |var_delimiter|	|var_delimiter|의 하위 프로시저들
+Set up the values of |cur_size| and |cur_mu|, based on |cur_style|	|curStyle|에 따라 |curSize|와 |curMu|의 값을 정한다
+Declare subprocedures for |var_delimiter|	|varDelimiter|의 하위 프로시저들
 Look at the variants of |(z,x)|; set |f| and |c|...	|(z,x)|의 변형들을 살핀다
 Look at the list of characters starting with |x| in font |g|...	글꼴 |g|에서 |x|로 시작하는 문자 목록을 살핀다
 Make variable |b| point to a box for |(f,c)|	변수 |b|가 |(f,c)|를 담은 상자를 가리키게 한다
-Construct an extensible character in a new box |b|, using recipe |rem_byte(q)| and font |f|	조립법 |rem_byte(q)|와 글꼴 |f|로 새 상자 |b|에 늘일 수 있는 문자를 만든다
+Construct an extensible character in a new box |b|, using recipe |rem_byte(q)| and font |f|	조립법 |remByte(q)|와 글꼴 |f|로 새 상자 |b|에 늘일 수 있는 문자를 만든다
 Compute the minimum suitable height, |w|, and the corresponding number of extension steps, |n|; also set |width(b)|	알맞은 최소 높이 |w|와 확장 단계 수 |n|을 계산하고 |width(b)|도 정한다
 Simplify a trivial box	자명한 상자를 단순하게 한다
-Complain about an undefined family and set |cur_i| null	정의되지 않은 가족에 대해 불평하고 |cur_i|를 널로 한다
+Complain about an undefined family and set |cur_i| null	정의되지 않은 가족에 대해 불평하고 |curI|를 널로 한다
 Declare math construction procedures	수식 구성 프로시저들
 Process node-or-noad |q| as much as possible in preparation for the second pass of |mlist_to_hlist|, then move to the next item in the mlist	노드 |q|를 첫째 훑기에서 할 수 있는 만큼 처리하고 다음으로 간다
-Convert \(a)a final |bin_noad| to an |ord_noad|	마지막 |bin_noad|를 |ord_noad|로 바꾼다
+Convert \(a)a final |bin_noad| to an |ord_noad|	마지막 |binNoad|를 |ordNoad|로 바꾼다
 Make a second pass over the mlist, removing all noads and inserting the proper spacing and penalties	수식 목록을 다시 훑어 노드를 없애고 간격과 벌점을 넣는다
-Do first-pass processing based on |type(q)|; ...	|type(q)|에 따라 첫째 훑기 처리를 한다
+Do first-pass processing based on |type(q)|; ...	|typ(q)|에 따라 첫째 훑기 처리를 한다
 Cases for nodes that can appear in an mlist, after which we |goto done_with_node|	수식 목록에 나타날 수 있는 노드(node)의 경우들
 Change this node to a style node followed by the correct choice, then |goto done_with_node|	이 노드를 모양 노드와 알맞은 선택으로 바꾼다
 Convert \(m)math glue to ordinary glue	수식 글루를 보통 글루로 바꾼다
-Cases for noads that can follow a |bin_noad|	|bin_noad| 뒤에 올 수 있는 노드의 경우들
+Cases for noads that can follow a |bin_noad|	|binNoad| 뒤에 올 수 있는 노드의 경우들
 Make the height of box |y| equal to |h|	상자 |y|의 높이를 |h|와 같게 한다
 Switch to a larger accent if available and appropriate	알맞으면 더 큰 악센트로 바꾼다
 Compute the amount of skew	비낌의 양을 계산한다
 Swap the subscript and superscript into box |x|	아래첨자와 위첨자를 상자 |x|로 옮긴다
 Create equal-width boxes |x| and |z| for the numerator and denominator, ...	분자와 분모를 너비가 같은 상자 |x|와 |z|에 넣는다
-Adjust \(s)|shift_up| and |shift_down| for the case of no fraction line	분수 괘선이 없을 때 |shift_up|과 |shift_down|을 맞춘다
-Adjust \(s)|shift_up| and |shift_down| for the case of a fraction line	분수 괘선이 있을 때 |shift_up|과 |shift_down|을 맞춘다
-Construct a vlist box for the fraction, according to |shift_up| and |shift_down|	|shift_up|과 |shift_down|에 따라 분수의 세로 목록 상자를 만든다
-Put the \(f)fraction into a box with its delimiters, and make |new_hlist(q)| point to it	분수를 구분자와 함께 상자에 넣고 |new_hlist(q)|가 가리키게 한다
+Adjust \(s)|shift_up| and |shift_down| for the case of no fraction line	분수 괘선이 없을 때 |shiftUp|과 |shiftDown|을 맞춘다
+Adjust \(s)|shift_up| and |shift_down| for the case of a fraction line	분수 괘선이 있을 때 |shiftUp|과 |shiftDown|을 맞춘다
+Construct a vlist box for the fraction, according to |shift_up| and |shift_down|	|shiftUp|과 |shiftDown|에 따라 분수의 세로 목록 상자를 만든다
+Put the \(f)fraction into a box with its delimiters, and make |new_hlist(q)| point to it	분수를 구분자와 함께 상자에 넣고 |newHlist(q)|가 가리키게 한다
 Construct a box with limits above and below it, skewed by |delta|	위아래에 극한이 붙고 |delta|만큼 비낀 상자를 만든다
 Attach the limits to |y| and adjust |height(v)|, |depth(v)| to account for their presence	극한을 |y|에 붙이고 |height(v)|와 |depth(v)|를 맞춘다
-If instruction |cur_i| is a kern with |cur_c|, ...	|cur_i|가 |cur_c|와의 커닝이나 합자이면 |q|와 |p|를 처리한다
+If instruction |cur_i| is a kern with |cur_c|, ...	|curI|가 |curC|와의 커닝이나 합자이면 |q|와 |p|를 처리한다
 Convert \(n)|nucleus(q)| to an hlist and attach the sub/superscripts	|nucleus(q)|를 가로 목록으로 바꾸고 첨자를 붙인다
 Create a character node |p| for |nucleus(q)|, ...	|nucleus(q)|의 문자 노드 |p|를 만든다
 Construct a subscript box |x| when there is no superscript	위첨자가 없을 때 아래첨자 상자 |x|를 만든다
 Construct a superscript box |x|	위첨자 상자 |x|를 만든다
 Construct a sub/superscript combination box |x|, with the superscript offset by |delta|	위첨자를 |delta|만큼 비낀 첨자 조합 상자 |x|를 만든다
 If node |q| is a style node, change the style and |goto delete_q|; ...	노드 |q|의 종류에 따라 |t|와 |s|와 |pen|을 정한다
-Change the current style and |goto delete_q|	현재 모양을 바꾸고 |goto delete_q|한다
+Change the current style and |goto delete_q|	현재 모양을 바꾸고 |goto deleteQ|한다
 Compute the magic offset	마법의 오프셋을 계산한다
-Append inter-element spacing based on |r_type| and |t|	|r_type|과 |t|에 따라 원소 사이 간격을 덧붙인다
-Append any |new_hlist| entries for |q|, and any appropriate penalties	|q|의 |new_hlist| 항목과 알맞은 벌점을 덧붙인다
-Declare the procedure called |get_preamble_token|	|get_preamble_token|이라는 프로시저를 선언한다
+Append inter-element spacing based on |r_type| and |t|	|rType|과 |t|에 따라 원소 사이 간격을 덧붙인다
+Append any |new_hlist| entries for |q|, and any appropriate penalties	|q|의 |newHlist| 항목과 알맞은 벌점을 덧붙인다
+Declare the procedure called |get_preamble_token|	|getPreambleToken|이라는 프로시저를 선언한다
 Check for improper alignment in displayed math	따로 세운 수식 안의 부적절한 정렬을 검사한다
 Change current mode to |-vmode| for \.{\\halign}, |-hmode| for \.{\\valign}	현재 모드를 \.{\\halign}이면 |-vmode|로, \.{\\valign}이면 |-hmode|로 바꾼다
 Scan the preamble and record it in the |preamble| list	서문을 훑어 |preamble| 목록에 기록한다
 Append the current tabskip glue to the preamble list	현재 tabskip 글루를 서문 목록에 덧붙인다
-Scan preamble text until |cur_cmd| is |tab_mark| or |car_ret|, ...	|cur_cmd|가 |tab_mark|나 |car_ret|일 때까지 서문 텍스트를 훑는다
-Scan the template \<u_j>, putting the resulting token list in |hold_head|	틀 \<u_j>를 훑어 그 토큰 목록을 |hold_head|에 둔다
-Scan the template \<v_j>, putting the resulting token list in |hold_head|	틀 \<v_j>를 훑어 그 토큰 목록을 |hold_head|에 둔다
-Declare the procedure called |align_peek|	|align_peek|이라는 프로시저를 선언한다
-Declare the procedure called |init_span|	|init_span|이라는 프로시저를 선언한다
+Scan preamble text until |cur_cmd| is |tab_mark| or |car_ret|, ...	|curCmd|가 |tabMark|나 |carRet|일 때까지 서문 텍스트를 훑는다
+Scan the template \<u_j>, putting the resulting token list in |hold_head|	틀 \<u_j>를 훑어 그 토큰 목록을 |holdHead|에 둔다
+Scan the template \<v_j>, putting the resulting token list in |hold_head|	틀 \<v_j>를 훑어 그 토큰 목록을 |holdHead|에 둔다
+Declare the procedure called |align_peek|	|alignPeek|이라는 프로시저를 선언한다
+Declare the procedure called |init_span|	|initSpan|이라는 프로시저를 선언한다
 If the preamble list has been traversed, check that the row has ended	서문 목록을 다 지나왔으면 행이 끝났는지 검사한다
 Lengthen the preamble periodically	서문을 주기적으로 늘인다
-Copy the templates from node |cur_loop| into node |p|	노드 |cur_loop|의 틀을 노드 |p|로 베낀다
+Copy the templates from node |cur_loop| into node |p|	노드 |curLoop|의 틀을 노드 |p|로 베낀다
 Copy the tabskip glue between columns	열 사이의 tabskip 글루를 베낀다
 Package an unset box for the current column and record its width	현재 열의 미정 상자를 묶고 그 너비를 기록한다
 Update width entry for spanned columns	걸친 열들의 너비 항목을 갱신한다
@@ -370,66 +370,66 @@ Make the running dimensions in rule |q| extend to the boundaries of the alignmen
 Set the unset box |q| and the unset boxes in it	미정 상자 |q|와 그 안의 미정 상자들을 정한다
 Set the glue in node |r| and change it from an unset node	노드 |r|의 글루를 정하고 미정 노드에서 바꾼다
 Append tabskip glue and an empty box to list |u|, and update |s| and |t| as the prototype nodes are passed	목록 |u|에 tabskip 글루와 빈 상자를 덧붙이고 |s|와 |t|를 갱신한다
-Make the unset node |r| into an |hlist_node| of width |w|, setting the glue as if the width were |t|	미정 노드 |r|을 너비 |w|인 |hlist_node|로 바꾼다
-Make the unset node |r| into a |vlist_node| of height |w|, setting the glue as if the height were |t|	미정 노드 |r|을 높이 |w|인 |vlist_node|로 바꾼다
+Make the unset node |r| into an |hlist_node| of width |w|, setting the glue as if the width were |t|	미정 노드 |r|을 너비 |w|인 |hlistNode|로 바꾼다
+Make the unset node |r| into a |vlist_node| of height |w|, setting the glue as if the height were |t|	미정 노드 |r|을 높이 |w|인 |vlistNode|로 바꾼다
 Finish an alignment in a display	따로 세운 수식 안의 정렬을 마무리한다
-Declare subprocedures for |line_break|	|line_break|의 하위 프로시저들
+Declare subprocedures for |line_break|	|lineBreak|의 하위 프로시저들
 Local variables for line breaking	줄 나누기의 지역 변수
 Get ready to start line breaking	줄 나누기를 시작할 준비를 한다
 Find optimal breakpoints	최적의 나눔점들을 찾는다
 Break the paragraph at the chosen breakpoints, justify the resulting lines to the correct widths, and append them to the current vertical list	고른 나눔점들에서 문단을 나누어 줄을 맞추고 세로 목록에 덧붙인다
 Clean up the memory by removing the break nodes	나눔 노드들을 없애 메모리를 청소한다
-Other local variables for |try_break|	|try_break|의 다른 지역 변수
+Other local variables for |try_break|	|tryBreak|의 다른 지역 변수
 Make sure that |pi| is in the proper range	|pi|가 알맞은 범위에 있게 한다
-If node |r| is of type |delta_node|, update |cur_active_width|, set |prev_r| and |prev_prev_r|, then |goto continue|	노드 |r|이 델타 노드이면 너비를 갱신하고 |goto continue_|
+If node |r| is of type |delta_node|, update |cur_active_width|, set |prev_r| and |prev_prev_r|, then |goto continue|	노드 |r|이 델타 노드이면 너비를 갱신하고 |goto again|
 If a line number class has ended, create new active nodes for the best feasible breaks in that class; then |return| if |r=last_active|, otherwise compute the new |line_width|	줄 번호 부류가 끝났으면 새 활성 노드들을 만든다
-Consider the demerits for a line from |r| to |cur_p|; ...	|r|에서 |cur_p|까지의 줄의 감점을 고려한다
-Update the value of |printed_node| for symbolic displays	|printed_node|의 값을 갱신한다
+Consider the demerits for a line from |r| to |cur_p|; ...	|r|에서 |curP|까지의 줄의 감점을 고려한다
+Update the value of |printed_node| for symbolic displays	|printedNode|의 값을 갱신한다
 Create new active nodes for the best feasible breaks just found	방금 찾은 가장 좋은 실행 가능한 나눔들을 위해 새 활성 노드를 만든다
 Compute the new line width	새 줄 너비를 계산한다
-Compute the values of |break_width|	|break_width|의 값들을 계산한다
-Insert a delta node to prepare for breaks at |cur_p|	|cur_p|에서의 나눔을 준비하는 델타 노드를 넣는다
-Insert a new active node from |best_place[fit_class]| to |cur_p|	|best_place[fit_class]|에서 |cur_p|까지 새 활성 노드를 넣는다
+Compute the values of |break_width|	|breakWidth|의 값들을 계산한다
+Insert a delta node to prepare for breaks at |cur_p|	|curP|에서의 나눔을 준비하는 델타 노드를 넣는다
+Insert a new active node from |best_place[fit_class]| to |cur_p|	|bestPlace[fitClass]|에서 |curP|까지 새 활성 노드를 넣는다
 Insert a delta node to prepare for the next active node	다음 활성 노드를 준비하는 델타 노드를 넣는다
-Compute the discretionary |break_width| values	선택적 나눔의 |break_width| 값들을 계산한다
-Subtract glue from |break_width|	|break_width|에서 글루를 뺀다
-Subtract the width of node |v| from |break_width|	|break_width|에서 노드 |v|의 너비를 뺀다
-Add the width of node |s| to |break_width|	|break_width|에 노드 |s|의 너비를 더한다
+Compute the discretionary |break_width| values	선택적 나눔의 |breakWidth| 값들을 계산한다
+Subtract glue from |break_width|	|breakWidth|에서 글루를 뺀다
+Subtract the width of node |v| from |break_width|	|breakWidth|에서 노드 |v|의 너비를 뺀다
+Add the width of node |s| to |break_width|	|breakWidth|에 노드 |s|의 너비를 더한다
 Print a symbolic description of the new break node	새 나눔 노드를 기호로 설명해 찍는다
 Set line length parameters in preparation for hanging indentation	매달린 들여쓰기에 대비해 줄 길이 매개변수를 정한다
-Set the value of |b| to the badness for stretching the line, and compute the corresponding |fit_class|	줄을 늘일 때의 나쁨을 |b|에, 그에 맞는 |fit_class|를 정한다
-Set the value of |b| to the badness for shrinking the line, and compute the corresponding |fit_class|	줄을 줄일 때의 나쁨을 |b|에, 그에 맞는 |fit_class|를 정한다
+Set the value of |b| to the badness for stretching the line, and compute the corresponding |fit_class|	줄을 늘일 때의 나쁨을 |b|에, 그에 맞는 |fitClass|를 정한다
+Set the value of |b| to the badness for shrinking the line, and compute the corresponding |fit_class|	줄을 줄일 때의 나쁨을 |b|에, 그에 맞는 |fitClass|를 정한다
 Prepare to deactivate node~|r|, and |goto deactivate| unless there is a reason to consider lines of text from |r| to |cur_p|	노드~|r|의 비활성화를 준비하고, 까닭이 없으면 |goto deactivate|
 Record a new feasible break	새 실행 가능한 나눔을 기록한다
 Deactivate node |r|	노드 |r|을 비활성화한다
 Print a symbolic description of this feasible break	이 실행 가능한 나눔을 기호로 설명해 찍는다
-Print the list between |printed_node| and |cur_p|, then set |printed_node:=cur_p|	|printed_node|와 |cur_p| 사이의 목록을 찍고 |printed_node=cur_p|로 한다
-Compute the demerits, |d|, from |r| to |cur_p|	|r|에서 |cur_p|까지의 감점 |d|를 계산한다
+Print the list between |printed_node| and |cur_p|, then set |printed_node:=cur_p|	|printedNode|와 |curP| 사이의 목록을 찍고 |printedNode=curP|로 한다
+Compute the demerits, |d|, from |r| to |cur_p|	|r|에서 |curP|까지의 감점 |d|를 계산한다
 Update the active widths, since the first active node has been deleted	첫 활성 노드가 지워졌으므로 활성 너비들을 갱신한다
 Initialize for hyphenating a paragraph	문단에 하이픈을 넣을 준비를 한다
 Create an active breakpoint representing the beginning of the paragraph	문단의 처음을 나타내는 활성 나눔점을 만든다
-Call |try_break| if |cur_p| is a legal breakpoint; ...	|cur_p|가 합법적인 나눔점이면 |try_break|를 부르고 다음으로 나아간다
+Call |try_break| if |cur_p| is a legal breakpoint; ...	|curP|가 합법적인 나눔점이면 |tryBreak|를 부르고 다음으로 나아간다
 Try the final line break at the end of the paragraph, and |goto done| if the desired breakpoints have been found	문단 끝에서 마지막 줄 나눔을 시도하고, 원하는 나눔점들을 찾았으면 |goto done|
 (added) prepare next pass	다음 훑기를 준비한다
-(added) kern_break macro	|kern_break|를 한다
-Advance \(c)|cur_p| to the node following the present string of characters	|cur_p|를 지금 문자열 다음의 노드로 옮긴다
-Advance \(p)past a whatsit node in the \(l)|line_break| loop	|line_break| 루프에서 whatsit 노드를 지나간다
-If node |cur_p| is a legal breakpoint, call |try_break|; then update the active widths by including the glue in |glue_ptr(cur_p)|	|cur_p|가 합법적인 나눔점이면 |try_break|를 부르고 글루를 활성 너비에 넣는다
+(added) kern_break macro	|kernBreak|를 한다
+Advance \(c)|cur_p| to the node following the present string of characters	|curP|를 지금 문자열 다음의 노드로 옮긴다
+Advance \(p)past a whatsit node in the \(l)|line_break| loop	|lineBreak| 루프에서 whatsit 노드를 지나간다
+If node |cur_p| is a legal breakpoint, call |try_break|; then update the active widths by including the glue in |glue_ptr(cur_p)|	|curP|가 합법적인 나눔점이면 |tryBreak|를 부르고 글루를 활성 너비에 넣는다
 Try to hyphenate the following word	다음 낱말에 하이픈을 넣어 본다
 Try to break after a discretionary fragment, then |goto done5|	선택적 나눔 조각 뒤에서 나누어 보고 |goto done5|
-Add the width of node |s| to |disc_width|	|disc_width|에 노드 |s|의 너비를 더한다
-Add the width of node |s| to |act_width|	|act_width|에 노드 |s|의 너비를 더한다
+Add the width of node |s| to |disc_width|	|discWidth|에 노드 |s|의 너비를 더한다
+Add the width of node |s| to |act_width|	|actWidth|에 노드 |s|의 너비를 더한다
 Find an active node with fewest demerits	감점이 가장 적은 활성 노드를 찾는다
 Find the best active node for the desired looseness	원하는 느슨함에 가장 좋은 활성 노드를 찾는다
-Reverse the links of the relevant passive nodes, setting |cur_p| to the first breakpoint	관련된 수동 노드들의 링크를 뒤집고 |cur_p|를 첫 나눔점으로 한다
-Justify the line ending at breakpoint |cur_p|, and append it to the current vertical list, ...	나눔점 |cur_p|에서 끝나는 줄을 맞추어 현재 세로 목록에 덧붙인다
+Reverse the links of the relevant passive nodes, setting |cur_p| to the first breakpoint	관련된 수동 노드들의 링크를 뒤집고 |curP|를 첫 나눔점으로 한다
+Justify the line ending at breakpoint |cur_p|, and append it to the current vertical list, ...	나눔점 |curP|에서 끝나는 줄을 맞추어 현재 세로 목록에 덧붙인다
 Prune unwanted nodes at the beginning of the next line	다음 줄의 처음에서 원하지 않는 노드들을 쳐낸다
 Modify the end of the line to reflect the nature of the break and to include \.{\\rightskip}; also set the proper value of |disc_break|	나눔의 성질을 반영해 줄 끝을 고치고 \.{\\rightskip}을 넣는다
 Put the \(l)\.{\\leftskip} glue at the left and detach this line	\.{\\leftskip} 글루를 왼쪽에 놓고 이 줄을 떼어 낸다
-Call the packaging subroutine, setting |just_box| to the justified box	묶기 서브루틴을 불러 |just_box|를 맞춘 상자로 한다
+Call the packaging subroutine, setting |just_box| to the justified box	묶기 서브루틴을 불러 |justBox|를 맞춘 상자로 한다
 Append the new box to the current vertical list, followed by the list of special nodes taken out of the box by the packager	새 상자를 현재 세로 목록에 덧붙이고, 묶개가 꺼낸 특별한 노드들을 잇는다
 Append a penalty node, if a nonzero penalty is appropriate	알맞으면 0이 아닌 벌점 노드를 덧붙인다
-Change discretionary to compulsory and set |disc_break:=true|	선택적 나눔을 강제 나눔으로 바꾸고 |disc_break=true|로 한다
+Change discretionary to compulsory and set |disc_break:=true|	선택적 나눔을 강제 나눔으로 바꾸고 |discBreak=true|로 한다
 Destroy the |t| nodes following |q|, and make |r| point to the following node	|q| 뒤의 노드 |t|개를 없애고 |r|이 그 다음 노드를 가리키게 한다
 Transplant the post-break list	나눔 뒤 목록을 옮겨 심는다
 Transplant the pre-break list	나눔 앞 목록을 옮겨 심는다
@@ -447,29 +447,29 @@ Move the characters of a ligature node to |hu| and |hc|; but |goto done3| if the
 Reconstitute nodes for the hyphenated word, inserting discretionary hyphens	하이픈 넣은 낱말의 노드들을 재구성하고 선택적 하이픈을 끼워 넣는다
 Set up data structures with the cursor following position |j|	커서가 자리 |j| 뒤에 오도록 자료 구조를 마련한다
 If there's a ligature or kern at the cursor position, update the data structures, possibly advancing~|j|; continue until the cursor moves	커서 자리에 합자나 커닝이 있으면 자료 구조를 갱신한다
-Append a ligature and/or kern to the translation; |goto continue| if the stack of inserted ligatures is nonempty	번역에 합자나 커닝을 덧붙이고, 합자 스택이 비어 있지 않으면 |goto continue_|
+Append a ligature and/or kern to the translation; |goto continue| if the stack of inserted ligatures is nonempty	번역에 합자나 커닝을 덧붙이고, 합자 스택이 비어 있지 않으면 |goto again|
 Carry out a ligature replacement, updating the cursor structure and possibly advancing~|j|; ...	합자 대체를 수행하고 커서 구조를 갱신한다
 Create and append a discretionary node as an alternative to the unhyphenated word, ...	하이픈 없는 낱말의 대안으로 선택적 나눔 노드를 만들어 덧붙인다
-Put the \(c)characters |hu[l..i]| and a hyphen into |pre_break(r)|	문자 |hu[l..i]|와 하이픈을 |pre_break(r)|에 넣는다
-Put the \(c)characters |hu[i+1..@,]| into |post_break(r)|, appending to this list and to |major_tail| until synchronization has been achieved	문자 |hu[i+1..]|를 |post_break(r)|에 넣고 두 갈래를 맞춘다
-Append characters of |hu[j..@,]| to |major_tail|, advancing~|j|	|hu[j..]|의 문자들을 |major_tail|에 덧붙이며 |j|를 늘린다
-Move pointer |s| to the end of the current list, and set |replace_count(r)| appropriately	포인터 |s|를 현재 목록의 끝으로 옮기고 |replace_count(r)|를 정한다
+Put the \(c)characters |hu[l..i]| and a hyphen into |pre_break(r)|	문자 |hu[l..i]|와 하이픈을 |preBreak(r)|에 넣는다
+Put the \(c)characters |hu[i+1..@,]| into |post_break(r)|, appending to this list and to |major_tail| until synchronization has been achieved	문자 |hu[i+1..]|를 |postBreak(r)|에 넣고 두 갈래를 맞춘다
+Append characters of |hu[j..@,]| to |major_tail|, advancing~|j|	|hu[j..]|의 문자들을 |majorTail|에 덧붙이며 |j|를 늘린다
+Move pointer |s| to the end of the current list, and set |replace_count(r)| appropriately	포인터 |s|를 현재 목록의 끝으로 옮기고 |replaceCount(r)|를 정한다
 Store \(m)maximum values in the |hyf| table	|hyf| 표에 최댓값들을 저장한다
 Look for the word |hc[1..hn]| in the exception table, and |goto found| (with |hyf| containing the hyphens) if an entry is found	낱말 |hc[1..hn]|을 예외 표에서 찾고, 있으면 |goto found|
-If the string |hyph_word[h]| is less than \(hc)|hc[1..hn]|, |goto not_found|; ...	문자열 |hyph_word[h]|를 |hc[1..hn]|과 견준다
-Insert hyphens as specified in |hyph_list[h]|	|hyph_list[h]|에 지정된 대로 하이픈을 넣는다
+If the string |hyph_word[h]| is less than \(hc)|hc[1..hn]|, |goto not_found|; ...	문자열 |hyphWord[h]|를 |hc[1..hn]|과 견준다
+Insert hyphens as specified in |hyph_list[h]|	|hyphList[h]|에 지정된 대로 하이픈을 넣는다
 Enter as many hyphenation exceptions as are listed, until coming to a right brace; then |return|	오른쪽 중괄호에 이를 때까지 나열된 하이픈 넣기 예외를 모두 넣고 |return|한다
 Give improper \.{\\hyphenation} error	부적절한 \.{\\hyphenation} 오류를 낸다
 Append a new letter or hyphen	새 글자나 하이픈을 덧붙인다
 Append the value |n| to list |p|	목록 |p|에 값 |n|을 덧붙인다
 Enter a hyphenation exception	하이픈 넣기 예외 하나를 넣는다
 Insert the \(p)pair |(s,p)| into the exception table	쌍 |(s,p)|를 예외 표에 넣는다
-If the string |hyph_word[h]| is less than \(or)or equal to |s|, interchange |(hyph_word[h],hyph_list[h])| with |(s,p)|	문자열 |hyph_word[h]|가 |s| 이하이면 두 쌍을 맞바꾼다
+If the string |hyph_word[h]| is less than \(or)or equal to |s|, interchange |(hyph_word[h],hyph_list[h])| with |(s,p)|	문자열 |hyphWord[h]|가 |s| 이하이면 두 쌍을 맞바꾼다
 Declare procedures for preprocessing hyphenation patterns	하이픈 넣기 패턴을 전처리하는 프로시저들
 Sort \(t)the hyphenation op tables into proper order	하이픈 넣기 연산 표를 올바른 차례로 정렬한다
 Get ready to compress the trie	트라이를 압축할 준비를 한다
-Ensure that |trie_max>=h+256|	|trie_max>=h+256|이 되게 한다
-If all characters of the family fit relative to |h|, then |goto found|,\30\ otherwise |goto not_found|	가족의 모든 문자가 |h|에 대해 들어맞으면 |goto found|, 아니면 |goto not_found|
+Ensure that |trie_max>=h+256|	|trieMax>=h+256|이 되게 한다
+If all characters of the family fit relative to |h|, then |goto found|,\30\ otherwise |goto not_found|	가족의 모든 문자가 |h|에 대해 들어맞으면 |goto found|, 아니면 |goto notFound|
 Pack the family into |trie| relative to |h|	가족을 |h|에 대해 |trie|에 채워 넣는다
 Move the data into |trie|	자료를 |trie|로 옮긴다
 Enter all of the patterns into a linked trie, until coming to a right brace	오른쪽 중괄호에 이를 때까지 모든 패턴을 연결 트라이에 넣는다
@@ -477,45 +477,45 @@ Append a new letter or a hyphen level	새 글자나 하이픈 수준을 덧붙�
 Insert a new pattern into the linked trie	연결 트라이에 새 패턴을 넣는다
 Insert a new trie node between |q| and |p|, and make |p| point to it	|q|와 |p| 사이에 새 트라이 노드를 넣고 |p|가 그것을 가리키게 한다
 Compute the trie op code, |v|, and set |l:=0|	트라이 연산 코드 |v|를 계산하고 |l=0|으로 한다
-Insert glue for |split_top_skip| and set~|p:=null|	|split_top_skip|을 위한 글루를 넣고 |p=null|로 한다
+Insert glue for |split_top_skip| and set~|p:=null|	|splitTopSkip|을 위한 글루를 넣고 |p=null|로 한다
 If node |p| is a legal breakpoint, check if this break is the best known, ...	노드 |p|가 합법적인 나눔점이면 가장 좋은지 검사한다
 Use node |p| to update the current height and depth measurements; ...	노드 |p|로 현재 높이와 깊이 측정값을 갱신한다
 Check if node |p| is a new champion breakpoint; ...	노드 |p|가 새 챔피언 나눔점인지 검사한다
 Update the current height and depth measurements with respect to a glue or kern node~|p|	글루나 커닝 노드~|p|에 대해 현재 높이와 깊이 측정값을 갱신한다
-Process whatsit |p| in |vert_break| loop, |goto not_found|	|vert_break| 루프에서 whatsit |p|를 처리하고 |goto not_found|
-Compute the badness, |b|, using |awful_bad| if the box is too full	나쁨 |b|를 계산하되, 상자가 너무 차면 |awful_bad|로 한다
+Process whatsit |p| in |vert_break| loop, |goto not_found|	|vertBreak| 루프에서 whatsit |p|를 처리하고 |goto notFound|
+Compute the badness, |b|, using |awful_bad| if the box is too full	나쁨 |b|를 계산하되, 상자가 너무 차면 |awfulBad|로 한다
 Dispense with trivial cases of void or bad boxes	비었거나 잘못된 상자의 자명한 경우를 처리한다
 Look at all the marks in nodes before the break, and set the final link to |null| at the break	나눔 앞 노드들의 표시를 모두 살피고, 나눔에서 마지막 링크를 |null|로 한다
 Show the status of the current page	현재 쪽의 상태를 보인다
 (added) show page insertion node r	쪽 삽입 노드 |r|의 상태를 보인다
 Start a new current page	새 현재 쪽을 시작한다
-Declare the procedure called |fire_up|	|fire_up|이라는 프로시저를 선언한다
-Make the contribution list empty by setting its tail to |contrib_head|	꼬리를 |contrib_head|로 해서 기여 목록을 비운다
-Update the values of |last_glue|, |last_penalty|, and |last_kern|	|last_glue|, |last_penalty|, |last_kern|의 값을 갱신한다
+Declare the procedure called |fire_up|	|fireUp|이라는 프로시저를 선언한다
+Make the contribution list empty by setting its tail to |contrib_head|	꼬리를 |contribHead|로 해서 기여 목록을 비운다
+Update the values of |last_glue|, |last_penalty|, and |last_kern|	|lastGlue|, |lastPenalty|, |lastKern|의 값을 갱신한다
 Move node |p| to the current page; ...	노드 |p|를 현재 쪽으로 옮기고, 쪽 나눔 때가 되면 출력을 준비한다
 Link node |p| into the current page and |goto done|	노드 |p|를 현재 쪽에 잇고 |goto done|
 Recycle node |p|	노드 |p|를 재활용한다
 If the current page is empty and node |p| is to be deleted, |goto done1|; ...	현재 쪽이 비었고 |p|를 지워야 하면 |goto done1|; 아니면 쪽 상태를 갱신한다
-Initialize the current page, insert the \.{\\topskip} glue ahead of |p|, and |goto continue|	현재 쪽을 초기화하고, |p| 앞에 \.{\\topskip} 글루를 넣고, |goto continue_|
+Initialize the current page, insert the \.{\\topskip} glue ahead of |p|, and |goto continue|	현재 쪽을 초기화하고, |p| 앞에 \.{\\topskip} 글루를 넣고, |goto again|
 Prepare to move a box or rule node to the current page, then |goto contribute|	상자나 괘선 노드를 현재 쪽으로 옮길 준비를 하고 |goto contribute|
 Prepare to move whatsit |p| to the current page, then |goto contribute|	whatsit |p|를 현재 쪽으로 옮길 준비를 하고 |goto contribute|
 Append an insertion to the current page and |goto contribute|	현재 쪽에 삽입물을 덧붙이고 |goto contribute|
-Make sure that |page_max_depth| is not exceeded	|page_max_depth|를 넘지 않게 한다
+Make sure that |page_max_depth| is not exceeded	|pageMaxDepth|를 넘지 않게 한다
 Update the current page measurements with respect to the glue or kern specified by node~|p|	현재 쪽 측정값을 노드~|p|의 글루나 커닝으로 갱신한다
 Check if node |p| is a new champion breakpoint; then \(if)if it is time for a page break, ...	새 챔피언 나눔점이면 기록하고, 때가 되면 쪽을 내보낸다
 (added) record best page break	지금 나눔을 가장 좋은 쪽 나눔으로 기록한다
 Display the page break cost	쪽 나눔 비용을 보인다
 Compute the badness, |b|, of the current page, using |awful_bad| if the box is too full	현재 쪽의 나쁨 |b|를 계산한다
 Create a page insertion node with |subtype(r)=qi(n)|, and include the glue correction for box |n| in the current page state	|subtype(r)=qi(n)|인 쪽 삽입 노드를 만들고 상자 |n|의 글루 보정을 넣는다
-Find the best way to split the insertion, and change |type(r)| to |split_up|	삽입물을 나누는 가장 좋은 방법을 찾고 |type(r)|를 |split_up|으로 바꾼다
+Find the best way to split the insertion, and change |type(r)| to |split_up|	삽입물을 나누는 가장 좋은 방법을 찾고 |typ(r)|를 |splitUp|으로 바꾼다
 Display the insertion split cost	삽입물 나누기 비용을 보인다
-Set the value of |output_penalty|	|output_penalty|의 값을 정한다
+Set the value of |output_penalty|	|outputPenalty|의 값을 정한다
 Put the \(o)optimal current page into box 255, ...	최적의 현재 쪽을 상자 255에 넣고, 삽입물을 덧붙이고, 나머지를 기여 목록에 되돌린다
 Explain that too many dead cycles have occurred in a row	죽은 순환이 너무 많이 이어졌다고 설명한다
 Fire up the user's output routine and |return|	사용자의 출력 루틴을 작동시키고 |return|한다
 Perform the default output routine	기본 출력 루틴을 수행한다
 Ensure that box 255 is empty before output	출력 전에 상자 255가 비었는지 확인한다
-Update the values of |first_mark| and |bot_mark|	|first_mark|와 |bot_mark|의 값을 갱신한다
+Update the values of |first_mark| and |bot_mark|	|firstMark|와 |botMark|의 값을 갱신한다
 Break the current page at node |p|, put it in box~255, and put the remaining nodes on the contribution list	현재 쪽을 노드 |p|에서 나누어 상자~255에 넣고 나머지를 기여 목록에 둔다
 Prepare all the boxes involved in insertions to act as queues	삽입물에 관련된 모든 상자를 큐처럼 쓰도록 준비한다
 Delete \(t)the page-insertion nodes	쪽 삽입 노드들을 지운다
@@ -525,37 +525,37 @@ Either append the insertion node |p| after node |q|, and remove it from the curr
 Resume the page builder after an output routine has come to an end	출력 루틴이 끝난 뒤 쪽 조립기를 다시 시작한다
 Recover from an unbalanced output routine	균형이 맞지 않는 출력 루틴에서 회복한다
 Ensure that box 255 is empty after output	출력 뒤에 상자 255가 비었는지 확인한다
-Declare action procedures for use by |main_control|	|main_control|이 쓰는 동작 프로시저들
-Declare the procedure called |handle_right_brace|	|handle_right_brace|라는 프로시저를 선언한다
+Declare action procedures for use by |main_control|	|mainControl|이 쓰는 동작 프로시저들
+Declare the procedure called |handle_right_brace|	|handleRightBrace|라는 프로시저를 선언한다
 Give diagnostic information, if requested	요청이 있으면 진단 정보를 준다
-Cases of |main_control| that are not part of the inner loop	안쪽 루프에 속하지 않는 |main_control|의 경우들
-Append character |cur_chr| and the following characters (if~any) to the current hlist in the current font; |goto reswitch| when a non-character has been fetched	문자 |cur_chr|와 뒤따르는 문자들을 현재 가로 목록에 덧붙인다
-Append a normal inter-word space to the current list, then |goto big_switch|	현재 목록에 보통 낱말 사이 공백을 덧붙이고 |goto big_switch|
-Make a ligature node, if |ligature_present|; insert a null discretionary, if appropriate	|ligature_present|이면 합자 노드를 만들고, 알맞으면 널 선택적 나눔을 넣는다
+Cases of |main_control| that are not part of the inner loop	안쪽 루프에 속하지 않는 |mainControl|의 경우들
+Append character |cur_chr| and the following characters (if~any) to the current hlist in the current font; |goto reswitch| when a non-character has been fetched	문자 |curChr|와 뒤따르는 문자들을 현재 가로 목록에 덧붙인다
+Append a normal inter-word space to the current list, then |goto big_switch|	현재 목록에 보통 낱말 사이 공백을 덧붙이고 |goto bigSwitch|
+Make a ligature node, if |ligature_present|; insert a null discretionary, if appropriate	|ligaturePresent|이면 합자 노드를 만들고, 알맞으면 널 선택적 나눔을 넣는다
 If the cursor is immediately followed by the right boundary, |goto reswitch|; ...	커서를 한 걸음 오른쪽으로 옮긴다
-Look ahead for another character, or leave |lig_stack| empty if there's none there	다른 문자를 내다보거나, 없으면 |lig_stack|을 비워 둔다
-If there's a ligature/kern command relevant to |cur_l| and |cur_r|, adjust the text appropriately; exit to |main_loop_wrapup|	|cur_l|과 |cur_r|에 관련된 합자/커닝 명령이 있으면 텍스트를 고친다
-Move the cursor past a pseudo-ligature, then |goto main_loop_lookahead| or |main_lig_loop|	가짜 합자를 지나 커서를 옮기고 |goto main_loop_lookahead|나 |main_lig_loop|
+Look ahead for another character, or leave |lig_stack| empty if there's none there	다른 문자를 내다보거나, 없으면 |ligStack|을 비워 둔다
+If there's a ligature/kern command relevant to |cur_l| and |cur_r|, adjust the text appropriately; exit to |main_loop_wrapup|	|curL|과 |curR|에 관련된 합자/커닝 명령이 있으면 텍스트를 고친다
+Move the cursor past a pseudo-ligature, then |goto main_loop_lookahead| or |main_lig_loop|	가짜 합자를 지나 커서를 옮기고 |goto mainLoopLookahead|나 |mainLigLoop|
 Do ligature or kern command, returning to |main_lig_loop| or |main_loop_wrapup| or |main_loop_move|	합자나 커닝 명령을 수행하고, 알맞은 곳으로 돌아간다
-(added) qi(2),qi(6) case	|cur_r|을 바꾸고 |lig_stack|을 고친다
-Find the glue specification, |main_p|, for text spaces in the current font	현재 글꼴의 텍스트 공백을 위한 글루 명세 |main_p|를 찾는다
-Modify the glue specification in |main_p| according to the space factor	공백 인자에 따라 |main_p|의 글루 명세를 고친다
-Forbidden cases detected in |main_control|	|main_control|이 금지하는 경우들
+(added) qi(2),qi(6) case	|curR|을 바꾸고 |ligStack|을 고친다
+Find the glue specification, |main_p|, for text spaces in the current font	현재 글꼴의 텍스트 공백을 위한 글루 명세 |mainP|를 찾는다
+Modify the glue specification in |main_p| according to the space factor	공백 인자에 따라 |mainP|의 글루 명세를 고친다
+Forbidden cases detected in |main_control|	|mainControl|이 금지하는 경우들
 Math-only cases in non-math modes, or vice versa	수식 아닌 모드의 수식 전용 경우들과 그 반대
-Cases of |main_control| that build boxes and lists	상자와 목록을 만드는 |main_control|의 경우들
-Cases of |main_control| that don't depend on |mode|	|mode|에 상관없는 |main_control|의 경우들
-Cases of |main_control| that are for extensions to \TeX	\TeX의 확장을 위한 |main_control|의 경우들
+Cases of |main_control| that build boxes and lists	상자와 목록을 만드는 |mainControl|의 경우들
+Cases of |main_control| that don't depend on |mode|	|mode|에 상관없는 |mainControl|의 경우들
+Cases of |main_control| that are for extensions to \TeX	\TeX의 확장을 위한 |mainControl|의 경우들
 Drop current token and complain that it was unmatched	현재 토큰을 버리고 짝이 맞지 않았다고 불평한다
-Prepare to insert a token that matches |cur_group|, and print what it is	|cur_group|에 맞는 토큰을 끼워 넣을 준비를 하고 그것을 찍는다
-Cases of |handle_right_brace| where a |right_brace| triggers a delayed action	|right_brace|가 미루어 둔 동작을 일으키는 |handle_right_brace|의 경우들
-Append box |cur_box| to the current list, shifted by |box_context|	상자 |cur_box|를 |box_context|만큼 옮겨 현재 목록에 덧붙인다
-Store \(c)|cur_box| in a box register	|cur_box|를 상자 레지스터에 저장한다
-Append a new leader node that uses |cur_box|	|cur_box|를 쓰는 새 리더 노드를 덧붙인다
-If the current list ends with a box node, delete it from the list and make |cur_box| point to it; otherwise set |cur_box:=null|	현재 목록이 상자 노드로 끝나면 그것을 떼어 |cur_box|로 한다
+Prepare to insert a token that matches |cur_group|, and print what it is	|curGroup|에 맞는 토큰을 끼워 넣을 준비를 하고 그것을 찍는다
+Cases of |handle_right_brace| where a |right_brace| triggers a delayed action	|rightBrace|가 미루어 둔 동작을 일으키는 |handleRightBrace|의 경우들
+Append box |cur_box| to the current list, shifted by |box_context|	상자 |curBox|를 |boxContext|만큼 옮겨 현재 목록에 덧붙인다
+Store \(c)|cur_box| in a box register	|curBox|를 상자 레지스터에 저장한다
+Append a new leader node that uses |cur_box|	|curBox|를 쓰는 새 리더 노드를 덧붙인다
+If the current list ends with a box node, delete it from the list and make |cur_box| point to it; otherwise set |cur_box:=null|	현재 목록이 상자 노드로 끝나면 그것을 떼어 |curBox|로 한다
 Remove the last box, unless it's part of a discretionary	선택적 나눔의 일부가 아니면 마지막 상자를 떼어 낸다
-Split off part of a vertical box, make |cur_box| point to it	세로 상자의 일부를 떼어 |cur_box|가 가리키게 한다
+Split off part of a vertical box, make |cur_box| point to it	세로 상자의 일부를 떼어 |curBox|가 가리키게 한다
 Initiate the construction of an hbox or vbox, then |return|	가로 상자나 세로 상자 만들기를 시작하고 |return|한다
-Readjust the height and depth of |cur_box|, for \.{\\vtop}	\.{\\vtop}을 위해 |cur_box|의 높이와 깊이를 다시 맞춘다
+Readjust the height and depth of |cur_box|, for \.{\\vtop}	\.{\\vtop}을 위해 |curBox|의 높이와 깊이를 다시 맞춘다
 (added) insert_group case	삽입이나 조정 노드를 마무리한다
 Apologize for inability to do the operation now, unless \.{\\unskip} follows non-glue	지금은 이 연산을 할 수 없다고 사과한다
 Prune the current list, if necessary, until it contains only |char_node|, |kern_node|, |hlist_node|, |vlist_node|, |rule_node|, and |ligature_node| items; set |n| to the length of the list, and set |q| to the list's tail	현재 목록에 허락된 노드만 남도록 쳐내고, |n|을 길이로, |q|를 꼬리로 한다
@@ -568,13 +568,13 @@ Go into ordinary math mode	보통 수식 모드로 들어간다
 Calculate the natural width, |w|, by which the characters of the final line extend to the right of the reference point, ...	마지막 줄의 문자들이 기준점 오른쪽으로 뻗는 자연 너비 |w|를 계산한다
 Calculate the length, |l|, and the shift amount, |s|, of the display lines	따로 세운 수식 줄의 길이 |l|과 옮김 양 |s|를 계산한다
 Let |d| be the natural width of node |p|; ...	|d|를 노드 |p|의 자연 너비로 한다
-Let |d| be the natural width of this glue; if stretching or shrinking, set |v:=max_dimen|; |goto found| in the case of leaders	|d|를 이 글루의 자연 너비로 하고, 늘이거나 줄이면 |v=max_dimen|으로 한다
+Let |d| be the natural width of this glue; if stretching or shrinking, set |v:=max_dimen|; |goto found| in the case of leaders	|d|를 이 글루의 자연 너비로 하고, 늘이거나 줄이면 |v=maxDimen|으로 한다
 Let |d| be the width of the whatsit |p|	|d|를 whatsit |p|의 너비로 한다
-Treat |cur_chr| as an active character	|cur_chr|를 능동 문자로 다룬다
+Treat |cur_chr| as an active character	|curChr|를 능동 문자로 다룬다
 Scan a subformula enclosed in braces and |return|	중괄호로 둘러싼 하위 수식을 훑고 |return|한다
-Report that an invalid delimiter code is being changed to null; set~|cur_val:=0|	무효한 구분자 코드를 널로 바꾼다고 알리고 |cur_val=0|으로 한다
+Report that an invalid delimiter code is being changed to null; set~|cur_val:=0|	무효한 구분자 코드를 널로 바꾼다고 알리고 |curVal=0|으로 한다
 Complain that the user should have said \.{\\mathaccent}	사용자가 \.{\\mathaccent}라고 했어야 한다고 불평한다
-Declare the function called |fin_mlist|	|fin_mlist|라는 함수를 선언한다
+Declare the function called |fin_mlist|	|finMlist|라는 함수를 선언한다
 Insert a dummy noad to be sub/superscripted	첨자를 붙일 가짜 노드를 넣는다
 Use code |c| to distinguish between generalized fractions	코드 |c|로 일반화된 분수들을 구별한다
 Ignore the fraction operation and complain about this ambiguous case	분수 연산을 무시하고 이 모호한 경우에 대해 불평한다
@@ -592,30 +592,30 @@ Append the glue or equation number preceding the display	따로 세운 수식 �
 Append the display and perhaps also the equation number	따로 세운 수식과, 어쩌면 수식 번호도 덧붙인다
 Append the glue or equation number following the display	따로 세운 수식 뒤의 글루나 수식 번호를 덧붙인다
 Pontificate about improper alignment in display	따로 세운 수식 안의 부적절한 정렬에 대해 훈계한다
-Declare subprocedures for |prefixed_command|	|prefixed_command|의 하위 프로시저들
+Declare subprocedures for |prefixed_command|	|prefixedCommand|의 하위 프로시저들
 Discard erroneous prefixes and |return|	잘못된 접두어를 버리고 |return|한다
 Discard the prefixes \.{\\long} and \.{\\outer} if they are irrelevant	쓸모없으면 접두어 \.{\\long}과 \.{\\outer}를 버린다
 Adjust \(f)for the setting of \.{\\globaldefs}	\.{\\globaldefs} 설정에 맞춘다
 Assignments	대입들
 Insert a token saved by \.{\\afterassignment}, if any	\.{\\afterassignment}가 저장한 토큰이 있으면 끼워 넣는다
 If the right-hand side is a token parameter or token register, finish the assignment and |goto done|	오른쪽 변이 토큰 매개변수나 토큰 레지스터이면 대입을 마치고 |goto done|
-Let |n| be the largest legal code value, based on |cur_chr|	|cur_chr|에 따라 |n|을 가장 큰 합법적인 코드 값으로 한다
+Let |n| be the largest legal code value, based on |cur_chr|	|curChr|에 따라 |n|을 가장 큰 합법적인 코드 값으로 한다
 Compute the register location |l| and its type |p|; but |return| if invalid	레지스터 위치 |l|과 그 형 |p|를 계산하되, 무효하면 |return|한다
-Compute result of |register| or |advance|, put it in |cur_val|	|register|나 |advance|의 결과를 계산해 |cur_val|에 넣는다
+Compute result of |register| or |advance|, put it in |cur_val|	|register|나 |advance|의 결과를 계산해 |curVal|에 넣는다
 Compute the sum of two glue specs	두 글루 명세의 합을 계산한다
-Compute result of |multiply| or |divide|, put it in |cur_val|	|multiply|나 |divide|의 결과를 계산해 |cur_val|에 넣는다
+Compute result of |multiply| or |divide|, put it in |cur_val|	|multiply|나 |divide|의 결과를 계산해 |curVal|에 넣는다
 Scan the font size specification	글꼴 크기 지정을 훑는다
-If this font has already been loaded, set |f| to the internal font number and |goto common_ending|	이 글꼴을 이미 불러왔으면 |f|를 내부 글꼴 번호로 하고 |goto common_ending|
+If this font has already been loaded, set |f| to the internal font number and |goto common_ending|	이 글꼴을 이미 불러왔으면 |f|를 내부 글꼴 번호로 하고 |goto commonEnding|
 Put the \(p)(positive) `at' size into |s|	(양수인) `at' 크기를 |s|에 넣는다
 Print string |s| on the terminal	문자열 |s|를 터미널에 찍는다
 Print string |s| as an error message	문자열 |s|를 오류 메시지로 찍는다
 Change the case of the token in |p|, if a change is appropriate	알맞으면 |p|에 있는 토큰의 대소문자를 바꾼다
 Show the current contents of a box	상자의 현재 내용을 보인다
-Show the current meaning of a token, then |goto common_ending|	토큰의 현재 뜻을 보이고 |goto common_ending|
-Show the current value of some parameter or register, then |goto common_ending|	어떤 매개변수나 레지스터의 현재 값을 보이고 |goto common_ending|
+Show the current meaning of a token, then |goto common_ending|	토큰의 현재 뜻을 보이고 |goto commonEnding|
+Show the current value of some parameter or register, then |goto common_ending|	어떤 매개변수나 레지스터의 현재 값을 보이고 |goto commonEnding|
 Complete a potentially long \.{\\show} command	길어질 수 있는 \.{\\show} 명령을 마무리한다
 If dumping is not allowed, abort	덤프가 허락되지 않으면 그만둔다
-Create the |format_ident|, open the format file, and inform the user that dumping has begun	|format_ident|를 만들고, 포맷 파일을 열고, 덤프를 시작했다고 알린다
+Create the |format_ident|, open the format file, and inform the user that dumping has begun	|formatIdent|를 만들고, 포맷 파일을 열고, 덤프를 시작했다고 알린다
 Dump constants for consistency check	일관성 검사를 위한 상수들을 덤프한다
 Dump the string pool	문자열 풀을 덤프한다
 Dump the dynamic memory	동적 메모리를 덤프한다
@@ -644,17 +644,17 @@ Output statistics about this job	이 작업에 관한 통계를 출력한다
 (added) font/hyph/stack stats	글꼴, 하이픈 넣기, 스택에 관한 통계를 출력한다
 (added) incomplete conditionals in final_cleanup	끝나지 않은 조건문들을 알리고 없앤다
 Get the first line of input and prepare to start	입력의 첫 줄을 얻고 시작할 준비를 한다
-Numbered cases for |debug_help|	|debug_help|의 번호 붙은 경우들
+Numbered cases for |debug_help|	|debugHelp|의 번호 붙은 경우들
 Finish the extensions	확장들을 마무리한다
 (added) defer recover	바깥 레이블로 가는 |panic|을 받을 함수를 미루어 둔다
-Declare procedures needed in |do_extension|	|do_extension|에 필요한 프로시저들
+Declare procedures needed in |do_extension|	|doExtension|에 필요한 프로시저들
 Implement \.{\\openout}	\.{\\openout}을 구현한다
 Implement \.{\\write}	\.{\\write}를 구현한다
 Implement \.{\\closeout}	\.{\\closeout}을 구현한다
 Implement \.{\\special}	\.{\\special}을 구현한다
 Implement \.{\\immediate}	\.{\\immediate}를 구현한다
 Implement \.{\\setlanguage}	\.{\\setlanguage}를 구현한다
-Expand macros in the token list and make |link(def_ref)| point to the result	토큰 목록의 매크로를 펼치고 |link(def_ref)|가 그 결과를 가리키게 한다
+Expand macros in the token list and make |link(def_ref)| point to the result	토큰 목록의 매크로를 펼치고 |link(defRef)|가 그 결과를 가리키게 한다
 Recover from an unbalanced write command	균형이 맞지 않는 쓰기 명령에서 회복한다
 Do some work that has been queued up for \.{\\write}	\.{\\write}를 위해 미루어 둔 일을 한다
 (added) terminate last terminal line	터미널의 마지막 줄을 끝내고 출력 버퍼를 비운다
