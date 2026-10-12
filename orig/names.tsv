@@ -22,8 +22,8 @@ Initialize the print |selector| based on |interaction|	|interaction|에 따라 �
 Get user's advice and |return|	사용자의 조언을 얻고 |return|한다
 Put help message on the transcript file	도움말을 기록 파일에 넣는다
 Interpret code |c| and |return| if done	코드 |c|를 해석하고, 끝났으면 |return|한다
-Delete \(c)|c-"0"| tokens and |goto continue|	토큰 |c-"0"|개를 지우고 |goto continue|
-Print the help information and |goto continue|	도움말 정보를 찍고 |goto continue|
+Delete \(c)|c-"0"| tokens and |goto continue|	토큰 |c-"0"|개를 지우고 |continue|
+Print the help information and |goto continue|	도움말 정보를 찍고 |continue|
 Introduce new material from the terminal and |return|	터미널에서 새 재료를 끼워 넣고 |return|한다
 Change the interaction level and |return|	대화 수준을 바꾸고 |return|한다
 Print the menu of available options	쓸 수 있는 선택지들의 차림표를 찍는다
@@ -107,7 +107,7 @@ Input from external file, |goto restart| if no input found	바깥 파일에서 �
 Input from token list, |goto restart| if end of list or if a parameter needs to be expanded	토큰 목록에서 입력하고, 목록이 끝났거나 매개변수를 펼쳐야 하면 |goto restart|
 If an alignment entry has just ended, take appropriate action	정렬 항목이 방금 끝났으면 알맞은 조치를 한다
 Insert the \(v)\<v_j> template and |goto restart|	\<v_j> 틀을 끼워 넣고 |goto restart|
-Change state if necessary, and |goto switch| if the current character should be ignored, or |goto reswitch| if the current character changes to another	필요하면 상태를 바꾸고, 무시할 문자면 |goto switch|, 다른 문자로 바뀌면 |goto reswitch|
+Change state if necessary, and |goto scanNext| if the current character should be ignored, or |goto reswitch| if the current character changes to another	필요하면 상태를 바꾸고, 무시할 문자면 |goto scanNext|, 다른 문자로 바뀌면 |goto reswitch|
 Move to next line of file, or |goto restart| if there is no next line, or |return| if a \.{\\read} line has finished	파일의 다음 줄로 옮겨 가거나, 다음 줄이 없으면 |goto restart|, \.{\\read} 줄이 끝났으면 |return|
 Cases where character is ignored	문자를 무시하는 경우들
 Scan a control sequence and set |state:=skip_blanks| or |mid_line|	제어 시퀀스를 훑고 |state=skipBlanks|나 |midLine|으로 놓는다
@@ -117,7 +117,7 @@ Decry the invalid character and |goto restart|	잘못된 문자를 꾸짖고 |go
 Handle situations involving spaces, braces, changes of state	공백, 중괄호, 상태 변화가 얽힌 상황을 다룬다
 Enter |skip_blanks| state, emit a space	|skipBlanks| 상태에 들어가고 공백을 내보낸다
 Finish line, emit a space	줄을 끝내고 공백을 내보낸다
-Finish line, |goto switch|	줄을 끝내고 |goto switch|
+Finish line, |goto scanNext|	줄을 끝내고 |goto scanNext|
 Finish line, emit a \.{\\par}	줄을 끝내고 \.{\\par}를 내보낸다
 Scan ahead in the buffer until finding a nonletter; ...	버퍼에서 글자가 아닌 것을 찾을 때까지 앞서 훑는다
 If an expanded code is present, reduce it and |goto start_cs|	펼친 코드가 있으면 줄이고 |goto startCs|
@@ -141,12 +141,12 @@ Show the text of the macro being expanded	펼치는 매크로의 텍스트를 �
 Scan the parameters and make |link(r)| point to the macro body; but |return| if an illegal \.{\\par} is detected	매개변수들을 훑고 |link(r)|이 매크로 몸체를 가리키게 한다
 Feed the macro body and its parameters to the scanner	매크로 몸체와 그 매개변수들을 훑개에 먹인다
 Scan a parameter until its delimiter string has been found; or, if |s=null|, simply scan the delimiter string	구분 문자열을 찾을 때까지 매개변수 하나를 훑는다
-Advance \(r)|r|; |goto found| if the parameter delimiter has been fully matched, otherwise |goto continue|	|r|을 나아가게 하고, 구분자가 다 맞았으면 |goto found|, 아니면 |goto continue|
-Contribute the recently matched tokens to the current parameter, and |goto continue| if a partial match is still in effect; but abort if |s=null|	최근에 맞춘 토큰들을 현재 매개변수에 보태고, 부분적으로 맞은 상태면 |goto continue|
+Advance \(r)|r|; |goto found| if the parameter delimiter has been fully matched, otherwise |goto continue|	|r|을 나아가게 하고, 구분자가 다 맞았으면 |goto found|, 아니면 |goto again|
+Contribute the recently matched tokens to the current parameter, and |goto continue| if a partial match is still in effect; but abort if |s=null|	최근에 맞춘 토큰들을 현재 매개변수에 보태고, 부분적으로 맞은 상태면 |goto again|
 Report a runaway argument and abort	폭주한 인자를 알리고 그만둔다
 Contribute an entire group to the current parameter	그룹 전체를 현재 매개변수에 보탠다
-Report an extra right brace and |goto continue|	남는 오른쪽 중괄호를 알리고 |goto continue|
-Store the current token, but |goto continue| if it is a blank space that would become an undelimited parameter	현재 토큰을 저장하되, 구분되지 않는 매개변수가 될 공백이면 |goto continue|
+Report an extra right brace and |goto continue|	남는 오른쪽 중괄호를 알리고 |goto again|
+Store the current token, but |goto continue| if it is a blank space that would become an undelimited parameter	현재 토큰을 저장하되, 구분되지 않는 매개변수가 될 공백이면 |goto again|
 Report an improper use of the macro and abort	매크로를 잘못 썼다고 알리고 그만둔다
 Tidy up the parameter just scanned, and tuck it away	방금 훑은 매개변수를 정리해서 넣어 둔다
 Get the next non-blank non-relax non-call token	공백도 relax도 호출도 아닌 다음 토큰을 얻는다

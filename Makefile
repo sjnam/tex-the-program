@@ -26,7 +26,7 @@ $(BUILD)/tex: tex.go go.mod
 build: $(BUILD)/tex
 
 # 절 번호 참조(\secref)를 맞추려면 luatex를 두 번 돌려야 한다
-tex.pdf: tex.w
+tex.pdf: tex.w texlion.pdf
 	gweave tex.w
 	luatex --interaction=nonstopmode tex.tex >/dev/null
 	luatex --interaction=nonstopmode tex.tex >/dev/null

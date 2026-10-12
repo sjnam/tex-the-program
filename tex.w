@@ -102,6 +102,8 @@ vardef southof(expr q) = (xpart center q, ypart llcorner bbox q) enddef;
 여기기 때문이다.
 @.GWEB@>
 @^TeXbook@>
+\par\vfill\noindent
+\saveimageresource height 1.5in {texlion.pdf}\useimageresource\lastsavedimageresourceindex
 
 @ 지금의 구현은 오랜 내력을 지니고 있다. 그것은 1977년 여름, 마이클~F. 플래스와
 프랭크~M. 리앙이 그해 5월에 저자가 만든 명세를 바탕으로 원형을 설계하고 짠 데서
@@ -2084,7 +2086,7 @@ for {
 switch c {
 case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
 	if deletionsAllowed {
-		@<토큰 |c-"0"|개를 지우고 |goto continue|@>
+		@<토큰 |c-"0"|개를 지우고 |continue|@>
 	}
 case 'D':
 	if debug {
@@ -2104,7 +2106,7 @@ case 'E':
 		}
 	}
 case 'H':
-	@<도움말 정보를 찍고 |goto continue|@>
+	@<도움말 정보를 찍고 |continue|@>
 case 'I':
 	@<터미널에서 새 재료를 끼워 넣고 |return|한다@>
 case 'Q', 'R', 'S':
@@ -8588,7 +8590,7 @@ if loc <= limit { // 현재 줄을 아직 다 읽지 않았다
 	loc++
 reswitch: // 그것을 다시 소화하려면 여기로 간다
 	curCmd = catCode(curChr)
-	@<필요하면 상태를 바꾸고, 무시할 문자면 |goto switch|, 다른 문자로
+	@<필요하면 상태를 바꾸고, 무시할 문자면 |goto scanNext|, 다른 문자로
 	  바뀌면 |goto reswitch|@>
 } else {
 	state = newLine
@@ -8650,7 +8652,7 @@ case midLine + spacer:
 case midLine + carRet:
 	@<줄을 끝내고 공백을 내보낸다@>
 case skipBlanks + carRet, midLine + comment, skipBlanks + comment, newLine + comment:
-	@<줄을 끝내고 |goto switch|@>
+	@<줄을 끝내고 |goto scanNext|@>
 case newLine + carRet:
 	@<줄을 끝내고 \.{\\par}를 내보낸다@>
 case midLine + leftBrace:
@@ -8684,7 +8686,7 @@ curChr = ' '
 state = skipBlanks
 curChr = ' '
 
-@ @<줄을 끝내고 |goto switch|@>=
+@ @<줄을 끝내고 |goto scanNext|@>=
 loc = limit + 1
 goto scanNext
 
@@ -9543,9 +9545,9 @@ for {
 again:
 getToken() // |curTok|을 입력의 다음 토큰으로 놓는다
 if curTok == info(r) {
-	@<|r|을 나아가게 하고, 구분자가 다 맞았으면 |goto found|, 아니면 |goto continue|@>
+	@<|r|을 나아가게 하고, 구분자가 다 맞았으면 |goto found|, 아니면 |goto again|@>
 }
-@<최근에 맞춘 토큰들을 현재 매개변수에 보태고, 부분적으로 맞은 상태면 |goto continue|@>
+@<최근에 맞춘 토큰들을 현재 매개변수에 보태고, 부분적으로 맞은 상태면 |goto again|@>
 if curTok == parToken {
 	if longState != longCall {
 		@<폭주한 인자를 알리고 그만둔다@>
@@ -9555,10 +9557,10 @@ if curTok < rightBraceLimit {
 	if curTok < leftBraceLimit {
 		@<그룹 전체를 현재 매개변수에 보탠다@>
 	} else {
-		@<남는 오른쪽 중괄호를 알리고 |goto continue|@>
+		@<남는 오른쪽 중괄호를 알리고 |goto again|@>
 	}
 } else {
-	@<현재 토큰을 저장하되, 구분되지 않는 매개변수가 될 공백이면 |goto continue|@>
+	@<현재 토큰을 저장하되, 구분되지 않는 매개변수가 될 공백이면 |goto again|@>
 }
 m++
 if info(r) > endMatchToken {
@@ -9640,6 +9642,22 @@ goto exit
 훑었다면, `\.a' 하나를 현재 매개변수에 보태고 `\.b'를 다시 찾아야 한다. 프로그램은 그런 부분적 맞춤을,
 그리고 아주 복잡할 수도 있는 다른 경우들을 고려해야 한다. 그러나 대개는 |s=r|이어서 아무것도 할 필요가
 없다.
+
+보기를 들자. 매크로가 `\.{\\def\\a\#1ab\char'173...\char'175}'로 정의되었고 입력이 `\.{\\a xaab}'라면, 구분 문자열은
+`\.{ab}'이고 |s|는 그 첫 토큰 `\.a'를 가리킨다. 토큰을 하나씩 읽을 때마다 일은 다음과 같이 진행된다.
+$$\vbox{\halign{\hfil#\hfil\quad&\hfil#\hfil\quad&\hfil#\hfil\quad&#\hfil\cr
+읽은 토큰&|r|이 가리키는 것&\.{\#1}에 모인 것&\cr
+\noalign{\smallskip\hrule\smallskip}
+\.x&\.a&\.x&맞지 않으므로 매개변수에 넣는다\cr
+\.a&\.b&\.x&구분 문자열의 첫 토큰과 맞았다\cr
+\.a&\.b&\.{xa}&어긋났다. 앞서 맞춘 \.a를 매개변수로 넘기고\cr
+&&&지금의 \.a로 처음부터 다시 맞춘다\cr
+\.b&|endMatch|&\.{xa}&구분 문자열을 다 맞추었다\cr}}$$
+그래서 \.{\#1}은 `\.{xa}'가 된다. 셋째 줄에서 일어나는 일이 이 절의 일이다. 앞서 맞춘 토큰들, 곧 |s|부터
+|r| 바로 앞까지의 토큰들을 하나씩 매개변수로 넘길 때마다, 남은 꼬리에 현재 토큰을 붙인 것이 구분 문자열의 앞부분과
+맞는지 다시 본다. 맞으면 |r|을 거기에 맞추고 계속하며, 끝내 맞지 않으면 |r=s|로 돌아가서 현재 토큰을 보통의
+토큰처럼 다룬다. 구분 문자열이 길고 이상하게 생겼으면 이 방법은 같은 토큰을 여러 번 비교할 수 있지만,
+구분 문자열은 대개 아주 짧으므로 문제가 되지 않는다.
 
 덧붙여 말하면, \.{\\long}이 아닌 매크로의 어떤 매개변수에는 \.{\\par} 토큰이 몰래 끼어들 수 있다. 이를테면
 `\.{\\def\\a\#1\\par!\{...\}}'에서 첫 \.{\\par} 뒤에 느낌표가 오지 않는 경우를 생각해 보라. 그런 상황에서
@@ -14096,6 +14114,26 @@ $y$, $z$라는 \.{DVI} 명령에 해당하고, 숫자들은 서로 다른 세로
 
 위의 예의 첨자 $3_z\,1_y\,4_d\ldots\,$는 사실 이 절차로 만든 것이다. 독자는 확인해 볼 수 있다. (어서 해 보라.)
 
+확인한 결과를 그림으로 그리면 다음과 같다. 위의 호들은 $y$-맞음이고 아래의 호는 $z$-맞음이다. 호의
+왼쪽 끝에서는 매개변수가 있는 명령(|y1|이나 |z1| 따위)이 $y$나 $z$의 값을 정하고, 오른쪽 끝마다 \.{DVI}
+파일에서 매개변수 없는 한 바이트짜리 명령 |y0|이나 |z0|을 쓸 수 있다. 이 보기에서는 움직임 열세 번
+가운데 네 번이 한 바이트로 줄어든다.
+$$\mplibcode
+beginfig(14);
+save u, dg, sb; numeric u; u := 26pt; string dg[], sb[];
+dg0:="3"; dg1:="1"; dg2:="4"; dg3:="1"; dg4:="5"; dg5:="9"; dg6:="2";
+dg7:="6"; dg8:="5"; dg9:="3"; dg10:="5"; dg11:="8"; dg12:="9";
+sb0:="z"; sb1:="y"; sb2:="d"; sb3:="y"; sb4:="y"; sb5:="d"; sb6:="d";
+sb7:="d"; sb8:="y"; sb9:="z"; sb10:="y"; sb11:="d"; sb12:="d";
+for i = 0 upto 12: label(textext("$" & dg[i] & "_" & sb[i] & "$"), (i*u, 0)); endfor
+def yarc(expr a, b) = drawarrow (a*u,8pt){dir 50} .. {dir -50}(b*u,8pt) enddef;
+def zarc(expr a, b) = drawarrow (a*u,-8pt){dir -40} .. {dir 40}(b*u,-8pt) enddef;
+yarc(1,3); yarc(4,8); yarc(8,10); zarc(0,9);
+label.top(btex \eightpoint $y$-맞음 etex, (6u, 40pt));
+label.bot(btex \eightpoint $z$-맞음 etex, (4.5u, -50pt));
+endfig;
+\endmplibcode$$
+
 @ 이런 생각을 구현하려고 \TeX은 현재 쪽에 대해 만든 \ID{down}, $y$, $z$ 명령을 가리키는 포인터들의 스택을 유지한다.
 \ID{right}, |w|, |x| 명령에 대해서도 비슷한 스택이 있다. 이 스택들을 아래 스택과 오른쪽 스택이라고 부르고, 그 맨 위
 원소는 변수 |downPtr|와 |rightPtr|에 둔다.
@@ -17629,6 +17667,42 @@ $$\vbox{\halign{\hbox to 325pt{\qquad\.{#}\hfil}\cr
 
 (9) 마지막 단계는 참된 열 너비를 계산하고, 미정 상자를 모두 가로 상자로 바꾸고, 그 전부를 \.{\\halign}을 둘러싼 세로 목록에
 덧붙이는 것이다. 각 미정 열 상자의 마지막 너비를 정하는 규칙은 아래에서 설명한다.
+
+그 결과를 그림으로 보이면 다음과 같다(치수는 대강 정했다). 2열만 보면 그 너비는 \.{a2}의 너비면
+충분하지만, 둘째 행에서 1열과 2열에 걸친 상자가 1열의 너비와 그 사이의 tabskip을 넘는 만큼 2열이
+넓어진다. 걸친 상자의 자연 너비는 걸침 노드에 기록되어 있다가 이때 쓰인다. 셋째 행의 걸친 상자는
+2열과 3열과 그 사이의 tabskip을 합친 너비로 맞추어진다. 마지막으로 정렬 전체를 \.{to 300pt}에
+맞추려고 tabskip 글루가 늘어나는데, 늘어날 수 있는 것은 fil 차수의 늘어남을 가진 마지막 두
+tabskip뿐이다. 회색 부분이 tabskip 글루다.
+$$\mplibcode
+beginfig(15);
+save k, c, h, cell; numeric k, h; numeric c[]; k := 1.3pt; h := 14pt;
+c0 := 0; c1 := 8k; c2 := 68k; c3 := 76k; c4 := 128k; c5 := 184k; c6 := 244k; c7 := 300k;
+for y = 0, -h-10pt, -2h-12pt:
+  fill (c0,y)--(c1,y)--(c1,y-h)--(c0,y-h)--cycle withcolor .88white;
+  fill (c2,y)--(c3,y)--(c3,y-h)--(c2,y-h)--cycle withcolor .88white;
+  fill (c4,y)--(c5,y)--(c5,y-h)--(c4,y-h)--cycle withcolor .88white;
+  fill (c6,y)--(c7,y)--(c7,y-h)--(c6,y-h)--cycle withcolor .88white;
+endfor
+def cell(expr a, b, y)(text t) =
+  unfill (a,y)--(b,y)--(b,y-h)--(a,y-h)--cycle;
+  draw (a,y)--(b,y)--(b,y-h)--(a,y-h)--cycle; label(t, (1/2[a,b], y-h/2));
+enddef;
+cell(c1, c2, 0)(btex \eightpoint\tt u1a1v1 etex);
+cell(c3, c4, 0)(btex \eightpoint\tt a2 etex);
+cell(c5, c6, 0)(btex \eightpoint u3{\vrule height 7pt depth 2pt}v3 etex);
+draw (c0,-h-5pt)--(c7,-h-5pt) dashed evenly;
+label.rt(btex \eightpoint \cs{noalign}의 \cs{vskip} etex, (c7+4pt,-h-5pt));
+cell(c1, c4, -h-10pt)(btex \eightpoint\tt u1b1v1u2b2v2 etex);
+cell(c5, c6, -h-10pt)(btex \eightpoint (비었음) etex);
+cell(c1, c2, -2h-12pt)(btex \eightpoint (비었음) etex);
+cell(c3, c6, -2h-12pt)(btex \eightpoint\tt u2c2v2 etex);
+drawdblarrow (c1,12pt)--(c2,12pt); label.top(btex \eightpoint $w_1$ etex, (1/2[c1,c2],12pt));
+drawdblarrow (c3,12pt)--(c4,12pt); label.top(btex \eightpoint $w_2$ etex, (1/2[c3,c4],12pt));
+drawdblarrow (c5,12pt)--(c6,12pt); label.top(btex \eightpoint $w_3$ etex, (1/2[c5,c6],12pt));
+drawdblarrow (c0,-3h-22pt)--(c7,-3h-22pt); label.bot(btex \eightpoint \.{300pt} etex, (1/2[c0,c7],-3h-22pt));
+endfig;
+\endmplibcode$$
 
 \yskip\noindent
 명령 \.{\\halign}을 처리하는 동안 우리는 두려움 없이 제어를 \TeX의 나머지 부분에 넘겨준다는 것에 주목하라. 결정적인 고비마다

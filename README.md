@@ -20,6 +20,7 @@
 | 파일 | 내용 |
 | --- | --- |
 | `tex.w` | 번역 본문. 모든 것이 여기서 나온다 |
+| `texlion.pdf` | `tex.pdf` 1쪽의 왼쪽 아래에 넣는 사자 그림 |
 | `Makefile` | 빌드, 조판, 테스트 |
 | `go.mod` | Go 모듈 정의 |
 | `tests/trip.sh` | TRIP 테스트 |
