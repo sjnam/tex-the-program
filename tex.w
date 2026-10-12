@@ -2627,15 +2627,16 @@ func xOverN(x scaled, n int32) (xOverN scaled) {
 @<함수들@>=
 func xnOverD(x scaled, n, d int32) (xnOverD scaled) {
 	var positive bool // |x>=0|이었나?
+	var t, u, v nonnegativeInteger // 중간 양들
 	if x >= 0 {
 		positive = true
 	} else {
 		x = -x
 		positive = false
 	}
-	t := (x % 0o100000) * n // 중간 양들
-	u := (x/0o100000)*n + (t / 0o100000)
-	v := (u%d)*0o100000 + (t % 0o100000)
+	t = (x % 0o100000) * n
+	u = (x/0o100000)*n + (t / 0o100000)
+	v = (u%d)*0o100000 + (t % 0o100000)
 	if u/d >= 0o100000 {
 		arithError = true
 	} else {
