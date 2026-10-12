@@ -25,7 +25,8 @@ rm -rf "$WORK"; mkdir -p "$WORK"; cd "$WORK"
 pltotf "$DIST/trip.pl" trip.tfm >/dev/null
 cp "$DIST/trip.tex" .
 
-# 2. 테스트용 INITEX를 만든다. tripman의 지시대로 상수 몇 개를 바꾼다.
+# 2. 테스트용 INITEX를 만든다. tripman의 지시대로 상수 몇 개를 바꾸고, 키워 둔
+#    bufSize와 dviBufSize는 tex.web의 처음 값으로 되돌린다.
 cp "$TOP/tex.w" "$TOP/go.mod" .
 gtangle tex.w >/dev/null 2>&1
 perl -0pi -e '
@@ -36,6 +37,8 @@ perl -0pi -e '
   s/(\n\terrorLine\s*=\s*)72/${1}64/          or die "errorLine";
   s/(\n\thalfErrorLine\s*=\s*)42/${1}32/      or die "halfErrorLine";
   s/(\n\tmaxPrintLine\s*=\s*)79/${1}72/       or die "maxPrintLine";
+  s/(\n\tbufSize\s*=\s*)20000/${1}500/        or die "bufSize";
+  s/(\n\tdviBufSize\s*=\s*)16384/${1}800/     or die "dviBufSize";
 ' tex.go
 go build -o triptex .
 

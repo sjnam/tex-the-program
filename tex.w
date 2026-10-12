@@ -210,6 +210,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"io/fs"
 	"math"
 	"os"
 	"os/exec"
@@ -363,6 +364,12 @@ var iniVersion bool // 이것이 \.{INITEX}인가?
 \.{INITEX}의 것을 늘 지켜야 한다. 곧 |memMax|는 |memTop|과 같아야 하고 |memMin|은
 |memBot|과 같아야 한다.
 
+줄 버퍼의 크기 |bufSize|와 출력 버퍼의 크기 |dviBufSize|는 처음에 500과 800이었지만 여기서는
+키웠다. 요즘의 문서에는 500자보다 긴 줄이 드물지 않고, 출력 버퍼가 크면 \secref{yz-matches}의
+최적화가 |y|와 |z|를 다시 쓸 기회를 더 멀리까지 찾을 수 있다. 그 값 16384는 오늘날 널리 쓰이는
+\TeX\ 구현의 것과 같으므로 \.{DVI} 파일도 바이트 하나까지 같아진다. 다만 \.{TRIP} 테스트는
+처음의 값을 요구하므로 테스트용 \.{INITEX}를 만들 때 되돌린다.
+
 @<전역 상수@>=
 const (
 	@!memMax = 30000 // \TeX의 내부 배열 |mem|의 가장 큰 첨자;
@@ -371,7 +378,7 @@ const (
 	@!memMin = 0 // \TeX의 내부 배열 |mem|의 가장 작은 첨자;
 	// |minHalfword| 이상이어야 한다;
 	// \.{INITEX}에서는 |memBot|과 같아야 하고, 그 밖에는 |<=memBot|
-	@!bufSize = 500 // 열린 파일들의 현재 줄과 \.{\\csname}과 \.{\\endcsname} 사이의
+	@!bufSize = 20000 // 열린 파일들의 현재 줄과 \.{\\csname}과 \.{\\endcsname} 사이의
 	// 제어 시퀀스에 동시에 들어 있는 문자 수의 최댓값; |maxHalfword|를 넘으면 안 된다
 	@!errorLine = 72 // 터미널 오류 메시지의 문맥 줄의 너비
 	@!halfErrorLine = 42 // 터미널 오류 메시지에서 문맥 첫 줄의 너비;
@@ -394,7 +401,7 @@ const (
 	@!trieSize = 8000 // 하이픈 넣기 패턴을 위한 공간; 실무용 \TeX보다
 	// \.{INITEX}에서 더 커야 한다
 	@!trieOpSize = 500 // 하이픈 넣기 패턴의 ``연산 코드''를 위한 공간
-	@!dviBufSize = 800 // 출력 버퍼의 크기; 8의 배수여야 한다
+	@!dviBufSize = 16384 // 출력 버퍼의 크기; 8의 배수여야 한다
 	@!fileNameSize = 1024 // 파일 이름은 이보다 길면 안 된다
 )
 
@@ -772,6 +779,13 @@ func wOpenOut(f *wordFile) bool { // 낱말 파일을 출력용으로 연다
 차례로 뒤지고, 거기서 찾지 못하면 \TeX\ 배포판의 \.{kpsewhich} 명령에게 물어본다. 다만 포맷
 파일은 구현마다 형식이 달라서 다른 \TeX의 것을 읽을 수 없으므로 \.{kpsewhich}에게 묻지 않는다.
 찾지 못하면 머리말을 뗀 이름을 돌려주므로, 그런 파일이 현재 디렉터리에 있으면 그것이 열린다.
+
+\.{kpsewhich}는 부를 때마다 배포판의 파일 목록을 처음부터 읽으므로 한 번에 0.1초쯤 걸린다.
+입력 파일은 몇 개뿐이라 상관없지만, plain 포맷을 만드는 \.{INITEX}는 글꼴을 마흔 개쯤 읽으므로
+그것만으로 4초가 넘게 걸린다. 그래서 글꼴만은 \.{kpsewhich}에게 글꼴 디렉터리의 목록을 한 번만
+받아서, 처음 글꼴을 찾을 때 그 디렉터리들을 훑어 이름에서 경로로 가는 표 |tfmFiles|를 만든다.
+목록의 순서대로 훑고 먼저 나온 것을 남기므로, 맨 앞의 현재 디렉터리가 이긴다. 표에 없는 글꼴만
+\.{kpsewhich}에게 따로 묻는다.
 @^system dependencies@>
 
 @<함수들@>=
@@ -789,6 +803,12 @@ func externalName() string {
 					}
 				}
 			}
+			if a.env == "TEXFONTS" {
+				@<글꼴 디렉터리들을 훑어 표 |tfmFiles|를 아직 안 만들었으면 만든다@>
+				if p, ok := tfmFiles[nm]; ok {
+					return p
+				}
+			}
 			if a.env != "TEXFORMATS" {
 				if out, err := exec.Command("kpsewhich", nm).Output(); err == nil {
 					if p := strings.TrimSpace(string(out)); p != "" {
@@ -801,6 +821,39 @@ func externalName() string {
 	}
 	return nm
 }
+
+@ 글꼴 디렉터리의 목록은 \.{kpsewhich -show-path=tfm}이 쌍점으로 나누어 알려 준다. 끝이 `\.{//}'인
+디렉터리는 그 아래를 모두 뒤지라는 뜻이고, 앞의 `\.{!!}'는 파일 목록 데이터베이스만 믿으라는
+뜻인데, 여기서는 디스크를 직접 훑으므로 그냥 떼어 낸다. 배포판이 없어 목록이 비어도 표는 빈 채로
+만들어지므로, 다시 훑으려 하지 않는다.
+
+@<글꼴 디렉터리들을 훑어...@>=
+if tfmFiles == nil {
+	tfmFiles = map[string]string{}
+	out, _ := exec.Command("kpsewhich", "-show-path=tfm").Output()
+	for _, dir := range filepath.SplitList(strings.TrimSpace(string(out))) {
+		dir = strings.TrimPrefix(dir, "!!")
+		deep := strings.HasSuffix(dir, "//")
+		root := strings.TrimRight(dir, "/")
+		filepath.WalkDir(root, func(p string, e fs.DirEntry, err error) error {
+			switch {
+			case err != nil:
+			case e.IsDir():
+				if p != root && !deep {
+					return filepath.SkipDir
+				}
+			default:
+				if _, dup := tfmFiles[e.Name()]; !dup {
+					tfmFiles[e.Name()] = p
+				}
+			}
+			return nil
+		})
+	}
+}
+
+@ @<전역 변수@>=
+var @!tfmFiles map[string]string // 글꼴 파일 이름에서 경로로 가는 표
 
 @ 파일은 루틴 |aClose|, |bClose|, |wClose|로 닫는다. 이것은 |f|에 대한 입력이나 출력이 모두
 @^system dependencies@>
@@ -14056,7 +14109,7 @@ for k = strStart[fontName[f]]; k <= strStart[fontName[f]+1]-1; k++ {
 	dviOut(so(strPool[k]))
 }
 
-@ 작은 컴퓨터를 위한 판의 \TeX은 이 프로그램의 다음 몇 부분의 착상을 빼도 좋을 것이다. 명령 |w0|, |x0|, |y0|, |z0|를
+@ \seclabel{yz-matches}작은 컴퓨터를 위한 판의 \TeX은 이 프로그램의 다음 몇 부분의 착상을 빼도 좋을 것이다. 명령 |w0|, |x0|, |y0|, |z0|를
 써서 \.{DVI} 코드를 최적화하는 것이 꼭 필요하지는 않기 때문이다. 게다가 이제 설명할 알고리즘은 \.{DVI} 코드의 길이를
 최적으로 줄인다고 내세우지 않는다. 결국 간결함보다는 속도가 더 중요하다. 그러나 이 방법은 놀랍도록 효과적이고,
 시간도 비교적 적게 든다.
