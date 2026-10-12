@@ -451,12 +451,12 @@ Append a ligature and/or kern to the translation; |goto continue| if the stack o
 Carry out a ligature replacement, updating the cursor structure and possibly advancing~|j|; ...	합자 대체를 수행하고 커서 구조를 갱신한다
 Create and append a discretionary node as an alternative to the unhyphenated word, ...	하이픈 없는 낱말의 대안으로 선택적 나눔 노드를 만들어 덧붙인다
 Put the \(c)characters |hu[l..i]| and a hyphen into |pre_break(r)|	문자 |hu[l..i]|와 하이픈을 |preBreak(r)|에 넣는다
-Put the \(c)characters |hu[i+1..@,]| into |post_break(r)|, appending to this list and to |major_tail| until synchronization has been achieved	문자 |hu[i+1..]|를 |postBreak(r)|에 넣고 두 갈래를 맞춘다
+Put the \(c)characters |hu[i+1..@,]| into |post_break(r)|, appending to this list and to |major_tail| until synchronization has been achieved	문자 |hu[i+1 ..]|를 |postBreak(r)|에 넣고 두 갈래를 맞춘다
 Append characters of |hu[j..@,]| to |major_tail|, advancing~|j|	|hu[j..]|의 문자들을 |majorTail|에 덧붙이며 |j|를 늘린다
 Move pointer |s| to the end of the current list, and set |replace_count(r)| appropriately	포인터 |s|를 현재 목록의 끝으로 옮기고 |replaceCount(r)|를 정한다
 Store \(m)maximum values in the |hyf| table	|hyf| 표에 최댓값들을 저장한다
-Look for the word |hc[1..hn]| in the exception table, and |goto found| (with |hyf| containing the hyphens) if an entry is found	낱말 |hc[1..hn]|을 예외 표에서 찾고, 있으면 |goto found|
-If the string |hyph_word[h]| is less than \(hc)|hc[1..hn]|, |goto not_found|; ...	문자열 |hyphWord[h]|를 |hc[1..hn]|과 견준다
+Look for the word |hc[1 .. hn]| in the exception table, and |goto found| (with |hyf| containing the hyphens) if an entry is found	낱말 |hc[1 .. hn]|을 예외 표에서 찾고, 있으면 |goto found|
+If the string |hyph_word[h]| is less than \(hc)|hc[1 .. hn]|, |goto not_found|; ...	문자열 |hyphWord[h]|를 |hc[1 .. hn]|과 견준다
 Insert hyphens as specified in |hyph_list[h]|	|hyphList[h]|에 지정된 대로 하이픈을 넣는다
 Enter as many hyphenation exceptions as are listed, until coming to a right brace; then |return|	오른쪽 중괄호에 이를 때까지 나열된 하이픈 넣기 예외를 모두 넣고 |return|한다
 Give improper \.{\\hyphenation} error	부적절한 \.{\\hyphenation} 오류를 낸다

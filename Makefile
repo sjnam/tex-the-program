@@ -3,7 +3,7 @@
 #   make            프로그램(build/tex)과 문서(tex.pdf)를 만든다
 #   make build      tex.w에서 Go 소스를 뽑아(gtangle) build/tex를 만든다
 #   make pdf        tex.w를 조판해(gweave, luatex 두 번) tex.pdf를 만든다
-#   make check      tex.pdf를 만들 때 생긴 조판 경고의 수를 센다(0이어야 한다)
+#   make check      tex.pdf의 조판 경고와 조용히 깨진 조판을 센다(둘 다 0이어야 한다)
 #   make fmt        build/plain.fmt를 만든다(INITEX로 plain.tex를 읽고 \dump)
 #   make story      story.tex를 조판해 진짜 TeX의 DVI와 비교한다
 #   make trip       크누스의 TRIP 테스트를 돌린다
@@ -36,6 +36,7 @@ pdf: tex.pdf
 check: tex.pdf
 	@n=$$(grep -ac 'Overfull\|Underfull\|Error\|Missing\|Undefined' tex.log); \
 	echo "조판 경고: $$n"; test $$n -eq 0
+	@python3 tests/typeset-check.py
 
 $(BUILD)/plain.fmt: $(BUILD)/tex
 	cd $(BUILD) && ./tex -ini plain '\dump' </dev/null

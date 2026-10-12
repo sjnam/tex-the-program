@@ -25,6 +25,7 @@
 | `go.mod` | Go 모듈 정의 |
 | `tests/trip.sh` | TRIP 테스트 |
 | `tests/compare.sh` | 문서 하나를 진짜 TeX과 함께 조판해 DVI를 비교한다 |
+| `tests/typeset-check.py` | `tex.pdf`에서 오류 없이 조용히 깨진 조판(악센트가 된 따옴표, 잘못 끊긴 수 따위)을 찾는다 |
 | `BUGS.md` | 원본에서 의심스러워 살펴본 곳, 번역하다 생겼다가 고친 버그 |
 | `orig/tex.web` | 옮긴 원본(CTAN의 3.141592653) |
 | `orig/names.tsv` | 원본의 영어 절 이름과 한글 절 이름의 대응표 |
@@ -95,12 +96,13 @@
 - LuaTeX와 TeX Live: 문서를 조판할 때, 그리고 프로그램이 TFM 파일과 `plain.tex` 같은 입력 파일을
   `kpsewhich`로 찾을 때 쓴다
 - 테스트에는 `pltotf`, `dvitype`(TeX Live에 들어 있다), `curl`, `perl`도 쓴다
+- `make check`에는 `python3`를 쓰고, 있으면 `pdftotext`(poppler)도 쓴다
 
 ```sh
 make            # build/tex와 tex.pdf를 만든다
 make build      # 프로그램만: tex.w → tex.go(gtangle) → build/tex(go build)
 make pdf        # 문서만: tex.w → tex.tex(gweave) → tex.pdf(luatex 두 번)
-make check      # 조판 경고(Overfull, Underfull 따위)의 수를 센다. 0이어야 한다
+make check      # 조판 경고(Overfull, Underfull 따위)와 조용히 깨진 조판의 수를 센다. 둘 다 0이어야 한다
 make test       # make story와 make trip(아래 테스트)을 함께 돌린다
 make clean
 ```

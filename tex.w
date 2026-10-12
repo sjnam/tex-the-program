@@ -610,7 +610,7 @@ const (
 @^TeXbook@>
 
 입출력 파일에 표준 {\mc ASCII} 코드만 나타나는 시스템에서 \TeX을 쓴다면,
-|xchr[0..@'37]|에 어떤 코드를 넣든 별로 상관없지만, 가장 안전한 방침은 아래 코드처럼
+|xchr[0 .. @'37]|에 어떤 코드를 넣든 별로 상관없지만, 가장 안전한 방침은 아래 코드처럼
 모두 공백으로 두는 것이다.
 
 그러나 |xchr|를 달리 정하면 확장 문자 집합을 가진 컴퓨터에서 \TeX이 더 친절해져서,
@@ -701,7 +701,7 @@ type @!byteFile struct { // 이진 자료를 담은 파일
 @^system dependencies@>
 
 @<전역 변수@>=
-var @!nameOfFile [fileNameSize + 1]textChar // 첨자는 |1..fileNameSize|
+var @!nameOfFile [fileNameSize + 1]textChar // 첨자는 |1 .. fileNameSize|
 var @!nameLength int32 // |nameOfFile|에서 실제로 뜻이 있는 문자의 수(나머지는 공백)
 
 @ 파일을 열 때 \GO/의 |os.Open|과 |os.Create|는 무언가 잘못되었더라도 운영체제의 오류
@@ -1138,8 +1138,8 @@ if cmd := strings.Join(args, " "); len(cmd) > 0 && first+int32(len(cmd)) < bufSi
 @^system dependencies@>
 
 @<전역 형@>=
-type @!poolPointer = int32 // |strPool|을 가리키는 변수를 위해; |0..poolSize|
-type @!strNumber = int32 // |strStart|를 가리키는 변수를 위해; |0..maxStrings|
+type @!poolPointer = int32 // |strPool|을 가리키는 변수를 위해; |0 .. poolSize|
+type @!strNumber = int32 // |strStart|를 가리키는 변수를 위해; |0 .. maxStrings|
 type @!packedASCIICode = uint8 // 배열 |strPool|의 원소
 
 func si(c asciiCode) packedASCIICode { return packedASCIICode(c) } // |asciiCode|를 |packedASCIICode|로 바꾼다
@@ -1306,7 +1306,7 @@ for k = 0; k <= 255; k++ {
 
 @ 처음 128개의 문자열에는 95개의 표준 {\mc ASCII} 문자가 들어가고, 나머지 33개의 문자는
 시스템에 따른 변경을 여기서 하지 않는 한 `\.{\^\^A}' 같은 세 기호 꼴로 찍힐 것이다. 확장
-문자 집합을 가진 설치처, 이를테면 |xchr[@'32]=@t\.{\'^^Z\'}@>|인 곳에서는 문자열 \.{'32}가
+문자 집합을 가진 설치처, 이를테면 |xchr[@'32]=@t\.{\char'47\^\^Z\char'47}@>|인 곳에서는 문자열 \.{'32}가
 세 문자 \.{'136}, \.{'136}, \.{'132}(\.{\^\^Z}) 대신 문자 하나 \.{'32}이기를 바랄 것이다.
 한편 확장 문자 집합을 가진 사람들도 문자열 \.{'15}는 \.{\^\^M}으로 나타내고 싶을 것이다.
 \.{'15}는 |carriageReturn|이기 때문이다. 탭이나 줄 먹임이나 캐리지 리턴이나 벨 소리, 또는
@@ -1437,11 +1437,11 @@ const (
 )
 
 var @!logFile alphaFile // \TeX\ 작업의 기록
-var @!selector int32 // 메시지를 찍을 곳; |0..maxSelector|
+var @!selector int32 // 메시지를 찍을 곳; |0 .. maxSelector|
 var @!dig [23]int32 // 출력하고 있는 수의 숫자들; 저마다 |0..15|
 var @!tally int32 // 최근에 찍은 문자의 수
-var @!termOffset int32 // 현재 터미널 줄의 문자 수; |0..maxPrintLine|
-var @!fileOffset int32 // 현재 파일 줄의 문자 수; |0..maxPrintLine|
+var @!termOffset int32 // 현재 터미널 줄의 문자 수; |0 .. maxPrintLine|
+var @!fileOffset int32 // 현재 파일 줄의 문자 수; |0 .. maxPrintLine|
 var @!trickBuf [errorLine + 1]asciiCode // 흉내 찍기를 위한 순환 버퍼
 var @!trickCount int32 // 흉내 찍기의 문턱값; 나중에 설명한다
 var @!firstCount int32 // 흉내 찍기를 위한 또 하나의 변수
@@ -1767,7 +1767,7 @@ func printTwo(n int32) { // 가장 낮은 두 자리 숫자를 찍는다
 
 @<함수들@>=
 func printHex(n int32) { // 양의 정수를 십육진 꼴로 찍는다
-	var k int32 // 현재 숫자의 첨자; $0\L n<16^{22}$이라고 가정한다
+	var k int32 // 현재 숫자의 첨자; $0\le n<16^{22}$이라고 가정한다
 	k = 0
 	printChar('"')
 	for {
@@ -1970,7 +1970,7 @@ errorCount = 0 // |history|는 다른 곳에서 초기화한다
 재귀는 결코 두 단계보다 깊어지지 않는다.
 @^recursion@>
 
-@ 도움말의 낱낱의 줄은 배열 |helpLine|에 기록된다. 이 배열의 위치 |0..(helpPtr-1)|에
+@ 도움말의 낱낱의 줄은 배열 |helpLine|에 기록된다. 이 배열의 위치 |0 .. (helpPtr-1)|에
 항목들이 들어 있다. 그것들은 거꾸로, 곧 |helpLine[0]|이 맨 마지막에 나오도록 찍어야 한다.
 
 이를테면 함수 호출 |help3("a","b","c")|는 |helpPtr=3|, |helpLine[2]="a"|,
@@ -2436,7 +2436,7 @@ const (
 )
 
 type @!scaled = int32 // 이 형은 눈금 정수에 쓴다
-type @!nonnegativeInteger = int32 // $0\L x<2^{31}$
+type @!nonnegativeInteger = int32 // $0\le x<2^{31}$
 type @!smallNumber = int32 // 이 형은 이름이 다 말해 준다; |0..63|
 
 @ 다음 함수는 주어진 십진 소수 $(.d_0d_1\ldots d_{k-1})$로부터 눈금 정수를 만드는 데 쓴다.
@@ -2458,7 +2458,7 @@ func roundDecimals(k smallNumber) scaled { // 십진 소수를 바꾼다
 ``가장 간단한'' 것을 출력하는데, 소수점 뒤에는 언제나 숫자가 적어도 하나 온다.
 
 루프의 불변 관계는, 앞으로 찍을 십진 숫자들의 나열이 범위
-$s-\delta\L10\cdot2^{16}f<s$에 있는 분수~$f$를 이룰 때, 그리고 오직 그때에만 원래의 수를
+$s-\delta\le10\cdot2^{16}f<s$에 있는 분수~$f$를 이룰 때, 그리고 오직 그때에만 원래의 수를
 내놓는다는 것이다. 값 $f=0$이 이 조건을 만족할 때, 그리고 오직 그때에만 멈출 수 있다. 루프는 $s$가
 0이 될 수 있기 전에 끝난다.
 
@@ -3081,10 +3081,10 @@ def cell(expr a, b, used) =
 enddef;
 cell(0,2,true); cell(2,5,false); cell(5,8,true); cell(8,10,false); cell(10,12,true); cell(12,16,false);
 label(btex \ninepoint $p$ etex, (12.5u, h/2));
-drawarrow (3.5u, h){up} .. {down}(9u, h);
-drawarrow (9u, h){up} .. {down}(13u, h);
-drawarrow (13u, h){up} .. (7.5u, h+34pt) .. {down}(3u, h);
-label.top(btex \ninepoint \ID{rlink} etex, (7.5u, h+34pt));
+drawarrow (3.5u, h){up} .. (6u, h+16pt) .. {down}(8.5u, h);
+drawarrow (9.5u, h){up} .. (11u, h+12pt) .. {down}(12.5u, h);
+drawarrow (13.5u, h){up} .. {left}(12.5u, h+28pt) -- (3.5u, h+28pt){left} .. {down}(2.5u, h);
+label.top(btex \ninepoint \ID{rlink} etex, (8u, h+28pt));
 drawarrow (2.5u, -18pt)--(2.5u, -2pt);
 label.bot(btex \ID{rover} etex, (2.5u, -18pt));
 fill (14u,0)--(16u,0)--(16u,h)--(14u,h)--cycle withcolor .55white;
@@ -4770,7 +4770,7 @@ default:
 @* 명령 코드.
 더 나아가기 전에, \TeX이 따르는 여러 명령을 나타내는 내부 코드 번호에 기호 이름을 정의해야 한다.
 이 코드들은 어느 정도 임의로 정했지만 완전히 그렇지는 않다. 이를테면 문자 형을 위한 명령 코드는
-언어가 정한다. 사용자가 이를테면 `\.{\\catcode \`\\\${} = 3}'이라고 해서 \.{\char'44}를 수식
+언어가 정한다. 사용자가 이를테면 `\.{\\catcode \char'140\\\${} = 3}'이라고 해서 \.{\char'44}를 수식
 구분자로 만드는데, 명령 코드 |mathShift|는 3과 같기 때문이다. 다른 몇몇 코드는 프로그램의
 |case| 문이 멀리 떨어진 경우들을 고려하지 않아도 되도록, 또는 |case| 문을 |if| 문으로 바꿀 수
 있도록 서로 이웃하게 만들었다.
@@ -5086,7 +5086,7 @@ func setCurList(r listStateRecord) {
 }
 
 var @!nest [nestSize + 1]listStateRecord
-var @!nestPtr int32 // |nest|에서 쓰이지 않는 첫 위치; |0..nestSize|
+var @!nestPtr int32 // |nest|에서 쓰이지 않는 첫 위치; |0 .. nestSize|
 var @!maxNestStack int32 // 쌓을 때 |nestPtr|의 최댓값
 var @!shownMode int32 // \.{\\tracingcommands}가 가장 최근에 보인 모드
 
@@ -5150,7 +5150,7 @@ func popNest() { // 의미 수준을 떠나 옛 수준에 다시 들어간다
 
 @<함수들@>=
 func showActivities() {
-	var p int32 // |nest|의 첨자; |0..nestSize|
+	var p int32 // |nest|의 첨자; |0 .. nestSize|
 	var m int32 // 모드; |-mmode..mmode|
 	var a memoryWord // 보조
 	var q, r pointer // 현재 쪽을 보이기 위해
@@ -6265,7 +6265,7 @@ func endDiagnostic(blankLine bool) { // 추적한 뒤에 알맞은 상태를 되
 @ 물론 앞의 루틴들이 돌아가려면 전역 변수를 몇 개 더 선언해야 한다.
 
 @<전역 변수@>=
-var @!oldSetting int32 // |0..maxSelector|
+var @!oldSetting int32 // |0 .. maxSelector|
 var @!sysTime, @!sysDay, @!sysMonth, @!sysYear int32 // 바깥 시스템이 주는 날짜와 시각
 
 @ 표 |eqtb|의 마지막 영역에는 여기서 정의하는 치수 매개변수와 256개의 \.{\\dimen} 레지스터가 들어 있다.
@@ -6956,7 +6956,7 @@ const (
 	@!maxGroupCode = 16
 )
 
-type @!groupCode = int32 // 수준 경계의 |saveLevel|; |0..maxGroupCode|
+type @!groupCode = int32 // 수준 경계의 |saveLevel|; |0 .. maxGroupCode|
 
 @ 전역 변수 |curGroup|은 지금 어떤 종류의 그룹 안에 있는지 추적한다. 또 하나의 전역 변수
 |curBoundary|는 맨 위의 |levelBoundary| 낱말을 가리킨다. 그리고 |curLevel|은 현재의 중첩 깊이다.
@@ -6965,11 +6965,11 @@ type @!groupCode = int32 // 수준 경계의 |saveLevel|; |0..maxGroupCode|
 
 @ @<전역 변수@>=
 var @!saveStack [saveSize + 1]memoryWord
-var @!savePtr int32 // |saveStack|에서 쓰이지 않는 첫 항목; |0..saveSize|
+var @!savePtr int32 // |saveStack|에서 쓰이지 않는 첫 항목; |0 .. saveSize|
 var @!maxSaveStack int32 // 저장 스택의 최대 사용량
 var @!curLevel quarterword // 그룹의 현재 중첩 수준
 var @!curGroup groupCode // 현재 그룹의 종류
-var @!curBoundary int32 // 현재 수준이 시작하는 곳; |0..saveSize|
+var @!curBoundary int32 // 현재 수준이 시작하는 곳; |0 .. saveSize|
 
 @ 이쯤에서 독자는 매개변수 이름의 긴 목록 바로 앞에서 했던 |eqtb|의 소개를 다시 훑어보는 것이 좋겠다.
 프로그램의 ``바깥 수준''은 |levelOne|이라는 것을 떠올리자. 정의되지 않은 제어 시퀀스는 |levelZero|에서
@@ -7042,7 +7042,7 @@ func eqDestroy(w memoryWord) { // |w|를 잊을 준비를 한다
 		q = equivField(w) // \.{\\parshape} 덩어리를 해제해야 한다
 		if q != null {
 			freeNode(q, info(q)+info(q)+1)
-		} // 그런 덩어리는 |n=info(q)|일 때 |2n+1|낱말 길이다
+		} // 그런 덩어리는 |n=info(q)|일 때 $2n+1$낱말 길이다
 	case boxRef:
 		flushNodeList(equivField(w))
 	default:
@@ -7488,7 +7488,7 @@ var @!curChr halfword // 현재 명령의 피연산자
 var @!curCs pointer // 여기서 찾은 제어 시퀀스; 찾지 못하면 0
 var @!curTok halfword // |curCmd|와 |curChr|를 꾸려 넣은 대표값
 
-@ 루틴 |printCmdChr|는 명령 코드와 그 수식어의 기호 해석을 찍는다. 이것은 어떤 `\.{You can\'t}'
+@ 루틴 |printCmdChr|는 명령 코드와 그 수식어의 기호 해석을 찍는다. 이것은 어떤 `\.{You can\char'47t}'
 오류 메시지와 \.{\\show} 같은 진단 루틴의 구현에 쓰인다.
 
 프로시저 |printCmdChr|의 몸체는 찍기 명령들을 꽤 지루하게 늘어놓은 것이고, 그 대부분은 \TeX\ 원시 명령을
@@ -7570,8 +7570,8 @@ type @!inStateRecord struct {
 
 @ @<전역 변수@>=
 var @!inputStack [stackSize + 1]inStateRecord
-var @!inputPtr int32 // |inputStack|에서 쓰이지 않는 첫 위치; |0..stackSize|
-var @!maxInStack int32 // 쌓을 때 |inputPtr|의 가장 큰 값; |0..stackSize|
+var @!inputPtr int32 // |inputStack|에서 쓰이지 않는 첫 위치; |0 .. stackSize|
+var @!maxInStack int32 // 쌓을 때 |inputPtr|의 가장 큰 값; |0 .. stackSize|
 
 @ 기본 입출력 루틴을 논의할 때 이미 특별한 변수 |loc|을 썼다. ``맨 위'' 입력 상태의 다른
 구성 요소들도 |loc|처럼 저마다 전역 변수다. 의미 둥지의 경우(\secref{nest})와 마찬가지로, 그것들을
@@ -7642,8 +7642,8 @@ label.llft(btex \ninepoint 제어 낱말, 제어 공백 etex, 1/2[n,s] + (-2pt,0
 drawarrow (s + r*dir(10)) -- (m + r*dir(-95));
 label.lrt(btex \ninepoint 공백이 아닌 문자, 제어 기호 etex, 1/2[s,m] + (4pt,-2pt));
 drawarrow (m + r*dir(-160)) -- (s + r*dir(70));
-label.ulft(btex \vbox{\ninepoint\halign{\hfil#\hfil\cr 공백(공백 토큰을 내보낸다),\cr 제어 낱말, 제어 공백\cr}} etex,
-  1/2[m,s] + (-8pt,4pt));
+label.lft(btex \vbox{\ninepoint\halign{\hfil#\hfil\cr 공백(공백 토큰을 내보낸다),\cr 제어 낱말, 제어 공백\cr}} etex,
+  .35[m + r*dir(-160), s + r*dir(70)] - (1pt,0));
 drawarrow (n + r*dir(115)) .. (n + (0,2.8r)) .. (n + r*dir(65));
 label.top(btex \ninepoint 공백 etex, n + (0,2.8r));
 drawarrow (m + r*dir(115)) .. (m + (0,2.8r)) .. (m + r*dir(65));
@@ -7721,8 +7721,8 @@ endfig;
 func terminalInput() bool    { return name == 0 } // 터미널에서 읽고 있나?
 func curFile() *alphaFile   { return &inputFile[index] } // 현재의 |alphaFile| 변수
 
-var @!inOpen int32 // 버퍼에 든 줄의 수에서 하나를 뺀 것; |0..maxInOpen|
-var @!openParens int32 // 열린 텍스트 파일의 수; |0..maxInOpen|
+var @!inOpen int32 // 버퍼에 든 줄의 수에서 하나를 뺀 것; |0 .. maxInOpen|
+var @!openParens int32 // 열린 텍스트 파일의 수; |0 .. maxInOpen|
 var @!inputFile [maxInOpen + 1]alphaFile
 var @!line int32 // 현재 원본 파일의 현재 줄 번호
 var @!lineStack [maxInOpen + 1]int32
@@ -7888,7 +7888,7 @@ func setParamStart(v halfword)     { limit = v }
 
 @<전역 변수@>=
 var @!paramStack [paramSize + 1]pointer // 매개변수의 토큰 목록 포인터
-var @!paramPtr int32 // |paramStack|에서 쓰이지 않는 첫 항목; |0..paramSize|
+var @!paramPtr int32 // |paramStack|에서 쓰이지 않는 첫 항목; |0 .. paramSize|
 var @!maxParamStack int32 // |paramPtr|의 가장 큰 값, |<=paramSize+9|일 것이다
 
 @ 입력 루틴들은 \.{\\halign}과 \.{\\valign}의 처리와도 상호 작용해야 한다. 어떤 곳에 탭 표시와
@@ -7906,7 +7906,7 @@ var @!alignState int32 // 현재 정렬에 대한 그룹 수준
 변수 |basePtr|에는 이 프로시저가 보여 준 가장 낮은 수준이 들어 있다.
 
 @<전역 변수@>=
-var @!basePtr int32 // |showContext|가 보여 준 가장 얕은 수준; |0..stackSize|
+var @!basePtr int32 // |showContext|가 보여 준 가장 얕은 수준; |0 .. stackSize|
 
 @ 각 수준의 상태는 두 줄을 찍어서 나타낸다. 첫째 줄은 지금까지 읽은 것을, 둘째 줄은 앞으로 읽을 것을
 보여 준다. 첫째 줄에 문자가 많아야 |halfErrorLine|개, 둘째 줄에 많아야 |errorLine|개 들어가도록 필요하면
@@ -7915,7 +7915,7 @@ var @!basePtr int32 // |showContext|가 보여 준 가장 얕은 수준; |0..sta
 
 @<함수들@>=
 func showContext() { // 훑개가 어디 있는지 찍는다
-	var oldSetting int32 // 저장한 |selector| 설정; |0..maxSelector|
+	var oldSetting int32 // 저장한 |selector| 설정; |0 .. maxSelector|
 	var nn int32 // 지금까지 보여 준 문맥의 수에서 하나를 뺀 것
 	var bottomLine bool // 보여 줄 마지막 문맥에 이르렀나?
 	@<서식 계산을 위한 지역 변수@>
@@ -8044,7 +8044,7 @@ default:
 
 곧 첫째 줄에 나타나는 설명 정보의 길이를 |l|이라고 하자. 그 줄을 위해 모은 문맥 정보의 길이는
 |k=firstCount|이고, 2행을 위해 모은 문맥 정보의 길이는 $m=\min(|tally|, |trickCount|)-k$다.
-이제 |h=halfErrorLine|이라고 하자. 만일 |l+k<=h|이면 1행의 설명 정보 뒤에 |trickBuf[0..k-1]|을 찍고
+이제 |h=halfErrorLine|이라고 하자. 만일 |l+k<=h|이면 1행의 설명 정보 뒤에 |trickBuf[0 .. k-1]|을 찍고
 |n=l+k|로 놓는다. 여기서 |n|은 1행의 길이다. 반대로 $l+k>h$이면 잘라 내야 하므로 |n=h|로 놓고 `\.{...}' 다음에
 $$\hbox{|trickBuf[(l+k-h+3)..k-1]|}$$
 을 찍는다. 여기서 |trickBuf|의 첨자는 |errorLine|을 법으로 순환한다. 둘째 줄은 공백 |n|개 다음에
@@ -8052,11 +8052,11 @@ $$\hbox{|trickBuf[(l+k-h+3)..k-1]|}$$
 프로그램을 짜기가 더 쉽다.
 
 @<서식 계산을...@>=
-var @!i int32 // |buffer|의 첨자; |0..bufSize|
-var @!j int32 // |buffer|에서 현재 줄의 끝; |0..bufSize|
-var @!l int32 // 1행의 설명 정보의 길이; |0..halfErrorLine|
+var @!i int32 // |buffer|의 첨자; |0 .. bufSize|
+var @!j int32 // |buffer|에서 현재 줄의 끝; |0 .. bufSize|
+var @!l int32 // 1행의 설명 정보의 길이; |0 .. halfErrorLine|
 var @!m int32 // 2행을 위해 모은 문맥 정보
-var @!n int32 // 1행의 길이; |0..errorLine|
+var @!n int32 // 1행의 길이; |0 .. errorLine|
 var @!p int32 // |trickBuf|에서 시작이나 끝 위치
 var @!q int32 // 임시 첨자
 
@@ -8528,9 +8528,9 @@ insList(p)
 
 @<함수들@>=
 func getNext() { // |curCmd|, |curChr|, |curCs|를 다음 토큰으로 놓는다
-	var k int32 // |buffer|의 첨자; |0..bufSize|
+	var k int32 // |buffer|의 첨자; |0 .. bufSize|
 	var t halfword // 토큰
-	var cat int32 // 대개 |catCode(curChr)|; |0..maxCharCode|
+	var cat int32 // 대개 |catCode(curChr)|; |0 .. maxCharCode|
 	var c, cc asciiCode // 펼쳐질 수 있는 코드의 구성 요소
 	var d int32 // 펼쳐진 코드에서 남는 문자의 수; |2..3|
 restart: // 다음 입력 토큰을 얻으려면 여기로 간다
@@ -8738,7 +8738,7 @@ if curCmd >= outerCall {
 @ 제어 시퀀스 이름은 어떤 파일의 줄에 나타날 때에만 훑는다. 한번 훑고 나면 그 |eqtb| 위치가 유일한
 식별자 노릇을 하므로, \TeX은 그 등가물을 기호 꼴로 찍을 때 말고는 원래 이름을 더 참조할 필요가 없다.
 
-제어 시퀀스를 훑는 프로그램은 악의적인 사용자가 `\.{\\catcode\'15=0}' 같은 것을 시도할 때 일어날 수
+제어 시퀀스를 훑는 프로그램은 악의적인 사용자가 `\.{\\catcode\char'47 15=0}' 같은 것을 시도할 때 일어날 수
 있는 폭발을 피하도록 조심스럽게 쓰였다. 이 알고리즘은 |buffer[limit+1]|은 들여다볼 수 있지만
 |buffer[limit+2]|는 결코 들여다보지 않는다.
 
@@ -8981,7 +8981,7 @@ loc = start // 읽을 준비가 되었다
 
 @<함수들@>=
 func firmUpTheLine() {
-	var k int32 // |buffer|의 첨자; |0..bufSize|
+	var k int32 // |buffer|의 첨자; |0 .. bufSize|
 	limit = last
 	if pausing() > 0 {
 		if interaction > nonstopMode {
@@ -9056,7 +9056,7 @@ func getToken() { // |curCmd|, |curChr|, |curTok|를 정한다
 func expand() {
 	var t halfword // ``뒤에 펼쳐지는'' 토큰
 	var p, q, r pointer // 목록을 다루기 위해
-	var j int32 // |buffer|의 첨자; |0..bufSize|
+	var j int32 // |buffer|의 첨자; |0 .. bufSize|
 	var saveScannerStatus smallNumber // |scannerStatus|를 잠시 저장한다
 	cvBackup := curVal // 전역 양 |curVal|을 저장한다
 	cvlBackup := curValLevel // |curValLevel| 따위를 저장한다
@@ -9852,7 +9852,7 @@ func muError() {
 @ 다음 루틴 `|scanSomethingInternal|'은 `\.{\\hsize}' 같은 내부 양을 가져오는 데 쓰이고, `\.{\\the\\toks0}'와
 `\.{\\the\\baselineskip}' 같은 구성을 펼칠 때 `\.{\\the}'를 처리하는 데에도 쓰인다. 곧 |scanInt| 프로시저를
 살펴볼 텐데, 이것은 |scanSomethingInternal|을 부른다. 한편 |scanSomethingInternal|도
-`\.{\\catcode\`\\\$}'나 `\.{\\fontdimen} \.3 \.{\\ff}' 같은 구성을 위해 |scanInt|를 부른다.
+`\.{\\catcode\char'140\\\$}'나 `\.{\\fontdimen} \.3 \.{\\ff}' 같은 구성을 위해 |scanInt|를 부른다.
 두 프로시저가 서로를 부르지만, \GO/에서는 함수를 쓰기 전에 선언할 필요가 없으므로 문제가
 되지 않는다. 다른 프로시저 몇 개는 여기서 선언한다.
 
@@ -9926,7 +9926,7 @@ case register:
 
 @<함수들@>=
 func scanSomethingInternal(level smallNumber, negative bool) { // 내부 매개변수를 가져온다
-	var p int32 // |nest|의 첨자; |0..nestSize|
+	var p int32 // |nest|의 첨자; |0 .. nestSize|
 	m := curChr // 피연산자 토큰의 |chrCode| 부분
 	switch curCmd {
 	case defCode: @<어떤 표에서 문자 코드를 가져온다@>
@@ -10324,7 +10324,7 @@ func scanTwentySevenBitInt() {
 }
 
 @ 정수 앞에는 공백과 `\.+'나 `\.-' 부호가 몇 개든 올 수 있다. 그다음에는 십진 상수(곧 기수 10),
-팔진 상수(곧 기수 8, 앞에~\.\'가 붙는다), 십육진 상수(기수 16, 앞에~\."가 붙는다), 알파벳 상수(앞에~\.\`가
+팔진 상수(곧 기수 8, 앞에~\.{\char'47}가 붙는다), 십육진 상수(기수 16, 앞에~\."가 붙는다), 알파벳 상수(앞에~\.{\char'140}가
 붙는다), 또는 내부 변수가 온다. 훑기가 끝나면 |curVal|에 답이 들어 있는데, 그 절댓값은 많아야
 $2^{31}-1=2147483647$이어야 한다. 변수 |radix|의 값은 십진, 팔진, 십육진 상수의 경우에 10, 8, 16으로 놓이고, 그
 밖에는 0으로 놓인다. 상수 뒤에는 선택적인 공백 하나가 온다.
@@ -10511,7 +10511,7 @@ backError()
 @<전역 변수@>=
 var @!curOrder glueOrd // |scanDimen|이 찾은 무한대의 차수
 
-@ `\.{-\'77 pt}' 같은 구성도 올바른 치수이므로 |scanDimen|은 |scanInt|로 시작할 수 있다. 소수의 정수 부분에도
+@ `\.{-\char'47 77 pt}' 같은 구성도 올바른 치수이므로 |scanDimen|은 |scanInt|로 시작할 수 있다. 소수의 정수 부분에도
 |scanInt|를 쓰면 편리한 까닭이 이것이다.
 
 루틴 |scanDimen|의 여러 갈래는 |curVal|을 정수로 다루면서 보조 분수 |f|를 함께 다루므로, 실제로 관심 있는 양은
@@ -10952,7 +10952,7 @@ func strToks(b poolPointer) pointer { // |strPool[b..poolPtr-1]|을 토큰 목�
 
 @<함수들@>=
 func theToks() (theToks pointer) {
-	var oldSetting int32 // |selector| 설정을 담는다; |0..maxSelector|
+	var oldSetting int32 // |selector| 설정을 담는다; |0 .. maxSelector|
 	var p, q, r pointer // 토큰 목록을 베끼는 데 쓴다
 	var b poolPointer // 임시 문자열의 바닥
 	getXToken()
@@ -11050,7 +11050,7 @@ func convToks() {
 	var saveScannerStatus smallNumber // 들어올 때의 |scannerStatus|
 	c := curChr // 원하는 변환의 종류; |numberCode..jobNameCode|
 	@<명령 |c|의 인자를 훑는다@>
-	oldSetting := selector // |selector| 설정을 담는다; |0..maxSelector|
+	oldSetting := selector // |selector| 설정을 담는다; |0 .. maxSelector|
 	selector = newString
 	b := poolPtr // 임시 문자열의 바닥
 	@<명령 |c|의 결과를 찍는다@>
@@ -12139,7 +12139,7 @@ func packBufferedName(n smallNumber, a, b int32) {
 
 @<|openFmtFile|이라는 함수를 선언한다@>=
 func openFmtFile() bool {
-	var j int32 // 포맷 파일 이름 뒤의 첫 공백; |0..bufSize|
+	var j int32 // 포맷 파일 이름 뒤의 첫 공백; |0 .. bufSize|
 	j = loc
 	if buffer[loc] == '&' {
 		loc++
@@ -12189,7 +12189,7 @@ found:
 
 @<함수들@>=
 func makeNameString() strNumber {
-	var k int32 // |nameOfFile|의 첨자; |1..fileNameSize|
+	var k int32 // |nameOfFile|의 첨자; |1 .. fileNameSize|
 	if poolPtr+nameLength > poolSize || strPtr == maxStrings ||
 		curLength() > 0 {
 		return '?'
@@ -12300,7 +12300,7 @@ func packJobName(s strNumber) { // |s = ".log"|, |".dvi"|, 또는 |formatExtensi
 
 @<함수들@>=
 func promptFileName(s, e string) {
-	var k int32 // |buffer|의 첨자; |0..bufSize|
+	var k int32 // |buffer|의 첨자; |0 .. bufSize|
 	if interaction == scrollMode {
 		wakeUpTerminal()
 	}
@@ -12377,10 +12377,10 @@ outputFileName = 0
 
 @<함수들@>=
 func openLogFile() {
-	var k int32 // |months|와 |buffer|의 첨자; |0..bufSize|
-	var l int32 // 첫 입력 줄의 끝; |0..bufSize|
+	var k int32 // |months|와 |buffer|의 첨자; |0 .. bufSize|
+	var l int32 // 첫 입력 줄의 끝; |0 .. bufSize|
 	var months string // 달 이름의 약어들
-	oldSetting := selector // 앞의 |selector| 설정; |0..maxSelector|
+	oldSetting := selector // 앞의 |selector| 설정; |0 .. maxSelector|
 	if jobName == 0 {
 		jobName = str("texput")
 	}
@@ -12743,7 +12743,7 @@ const (
 
 @<전역 형@>=
 type @!internalFontNumber = int32 // |charNode|의 |font|; |fontBase..fontMax|
-type @!fontIndex = int32 // |fontInfo|의 첨자; |0..fontMemSize|
+type @!fontIndex = int32 // |fontInfo|의 첨자; |0 .. fontMemSize|
 
 @ 이제 (꽤 만만찮은) 글꼴 배열들의 배열이 나온다.
 
@@ -13910,7 +13910,7 @@ curS = -1
 간결하게 하려고 버퍼 안의 명령을 바꿀 수 있다. 이를테면 `|down2|' 명령을 `|y2|'로 바꾸면 뒤따르는 `|y0|' 명령을 쓸
 수 있게 되어 두 바이트를 아낀다.
 
-출력 버퍼는 크기가 같은 두 부분으로 나뉜다. 구간 |dviBuf[0..halfBuf-1]|에 있는 바이트가 앞쪽 절반을 이루고,
+출력 버퍼는 크기가 같은 두 부분으로 나뉜다. 구간 |dviBuf[0 .. halfBuf-1]|에 있는 바이트가 앞쪽 절반을 이루고,
 |dviBuf[halfBuf..dviBufSize-1]|에 있는 바이트가 뒤쪽 절반을 이룬다. 전역 변수 |dviPtr|는 다음 출력 바이트를 받을
 위치를 가리킨다. 이 포인터가 |dviLimit|에 이르면, 다음에 침범할 반쪽 버퍼를 출력으로 보내고 |dviLimit|를 다른
 값으로 바꾼다. 한계 |dviLimit|는 언제나 두 값 |halfBuf|나 |dviBufSize| 가운데 하나와 같다. 그러므로 작업의 맨 처음을
@@ -13920,7 +13920,7 @@ curS = -1
 번호가 |>=dviGone|일 때에만 버퍼에 있다.
 
 @<전역 형@>=
-type @!dviIndex = int32 // 출력 버퍼의 첨자; |0..dviBufSize|
+type @!dviIndex = int32 // 출력 버퍼의 첨자; |0 .. dviBufSize|
 
 @ 어떤 시스템에서는 |dviBuf|를 바이트 배열로 꾸려 두는 편이 더 효율적일 수 있다. 네 바이트를 한꺼번에 출력하기가 더
 쉬울 수 있기 때문이다.
@@ -14899,7 +14899,7 @@ func shipOut(p pointer) { // 상자 |p|를 출력한다
 	var pageLoc int32 // 현재 |bop|의 위치
 	var j, k int32 // 처음 열 개의 \.{\\count} 레지스터의 첨자; |0..9|
 	var s poolPointer // |strPool|의 첨자
-	var oldSetting int32 // 저장한 |selector| 설정; |0..maxSelector|
+	var oldSetting int32 // 저장한 |selector| 설정; |0 .. maxSelector|
 	if tracingOutput() > 0 {
 		printNl("")
 		printLn()
@@ -18681,7 +18681,7 @@ var @!passNumber halfword // 이번 훑기에서 할당한 수동 노드의 수
 가로 목록에서 나눔점 |p| 뒤에 시작하는 줄과 나눔점 |r| 뒤에 시작하는 줄 사이의 공간 차이를 알려 준다. 다시 말해 |p| 뒤에
 시작해서 현재 위치에서 끝나는 줄의 길이를 알면, |r| 뒤에 시작하는 줄의 대응하는 길이는 노드~|q|의 양들을 더해서 얻는다.
 델타 노드는 눈금 수 여섯 개를 담는다. 모든 차수의 무한에 대해 글루의 늘일 수 있는 양의 순변화를 기록해야 하기 때문이다.
-자연 너비의 차이는 |mem[q+1].sc|에, pt, fil, fill, filll 단위의 늘어남 차이는 |mem[q+2..q+5].sc|에, 줄어듦 차이는
+자연 너비의 차이는 |mem[q+1].sc|에, pt, fil, fill, filll 단위의 늘어남 차이는 |mem[q+2 .. q+5].sc|에, 줄어듦 차이는
 |mem[q+6].sc|에 있다. 델타 노드의 |subtype| 필드는 쓰이지 않는다.
 
 @<정의@>=
@@ -20472,7 +20472,7 @@ if ligStack > null {
 	}
 }
 
-@ 이제 찾아낸 잠재적 하이픈들을 넣을 준비가 되었다. 다음 프로그램이 실행될 때 우리는 낱말 |hu[1..hn]|을 노드 |ha| 뒤에
+@ 이제 찾아낸 잠재적 하이픈들을 넣을 준비가 되었다. 다음 프로그램이 실행될 때 우리는 낱말 |hu[1 .. hn]|을 노드 |ha| 뒤에
 덧붙이고, 그 결과에 노드 |q|를 덧붙이고 싶다. 이 과정에서 변수 |i|는 |hu|의 임시 첨자이고, 변수 |j|는 |hu|에서 현재 위치의
 첨자이며, 변수 |l|은 선택적 나눔 갈래에서 |j|에 대응하는 것이다. 변수 |r|은 새로 만드는 노드를 가리킨다. 그리고 새 지역
 변수가 몇 개 필요하다.
@@ -20526,7 +20526,7 @@ for {
 	}
 	i = hyphenPassed; hyf[i] = 0
 	@<문자 |hu[l..i]|와 하이픈을 |preBreak(r)|에 넣는다@>
-	@<문자 |hu[i+1..]|를 |postBreak(r)|에 넣고 두 갈래를 맞춘다@>
+	@<문자 |hu[i+1 ..]|를 |postBreak(r)|에 넣고 두 갈래를 맞춘다@>
 	@<포인터 |s|를 현재 목록의 끝으로 옮기고 |replaceCount(r)|를 정한다@>
 	hyphenPassed = j - 1; setLink(holdHead, null)
 	if !odd(hyf[j-1]) {
@@ -20563,7 +20563,7 @@ if hyfNode != null {
 @ 맞추기 알고리즘은 |l=i+1<=j|로 시작한다. 문자들을 |postBreak(r)|에 넣으면서, 맞추어질 때까지 이 목록과 |majorTail|에
 덧붙여 나간다.
 
-@<문자 |hu[i+1..]|를...@>=
+@<문자 |hu[i+1 ..]|를...@>=
 minorTail = null; setPostBreak(r, null); cLoc = 0
 if bcharLabel[hf] != nonAddress { // 새 줄의 처음에 왼쪽 경계를 둔다
 	l--; c = hu[l]; cLoc = l; hu[l] = 256
@@ -20613,13 +20613,13 @@ if rCount > 127 { // 선택적 하이픈을 잊어야 한다
 s = majorTail
 
 @* 하이픈 넣기.
-낱말 |hc[1..hn]|이 하이픈 넣기 후보를 담도록 마련되면, \TeX은 먼저 그 낱말이 사용자의 예외 사전에 있는지 본다. 없으면 주어진
+낱말 |hc[1 .. hn]|이 하이픈 넣기 후보를 담도록 마련되면, \TeX은 먼저 그 낱말이 사용자의 예외 사전에 있는지 본다. 없으면 주어진
 낱말 안에 나타나는 패턴에 바탕을 두고 하이픈을 넣는데, 이때 프랭크~M. 리앙(Frank M. Liang)의 알고리즘을 쓴다.
 @^Liang, Franklin Mark@>
 
 예외 찾기 루틴보다 훨씬 흥미로우므로 리앙의 방법부터 살펴보자. 알고리즘은 모든 |j|에 대해 |hyf[j]|를 0으로 하고, 구분자 구실을
 하도록 |hc[0]|과 |hc[hn+1]|에 무효한 문자를 넣는 것으로 시작한다. 그런 다음 주어진 패턴 집합 가운데 어느 것이 낱말
-|hc[0..(hn+1)]| 안에 나타나는지 꽤 빠른 방법으로 알아본다. 길이 |k|인 각 패턴 $p_1\ldots p_k$에는 |k+1|개의 수 $n_0\ldots n_k$로
+|hc[0 .. (hn+1)]| 안에 나타나는지 꽤 빠른 방법으로 알아본다. 길이 |k|인 각 패턴 $p_1\ldots p_k$에는 |k+1|개의 수 $n_0\ldots n_k$로
 된 나열이 딸려 있다. 패턴이 |hc[(j+1)..(j+k)]|에 나타나면 \TeX은 |0<=i<=k|에 대해 |hyf[j+i]=@tmax@>(hyf[j+i],@t$n_i$@>)|로
 한다. 나타나는 패턴마다 이 일을 하고 나면, 이미 보았듯이 |hyf[j]|가 홀수일 때 |hc[j]|와 |hc[j+1]| 사이에 선택적 하이픈이 들어간다.
 
@@ -20666,7 +20666,7 @@ University, 1983)에서 논의한다. \TeX은 그저 패턴에서 출발해서 �
 |v=minQuarterword|가 될 때까지 되풀이한다.
 
 @<전역 형@>=
-type @!triePointer = int32 // |trie|의 첨자; |0..trieSize|
+type @!triePointer = int32 // |trie|의 첨자; |0 .. trieSize|
 
 @ @<정의@>=
 func trieLink(p triePointer) halfword { return trie[p].rh } // 트라이의 ``아래로'' 가는 링크
@@ -20684,7 +20684,7 @@ var @!trie [trieSize + 1]twoHalves // |trieLink|, |trieChar|, |trieOp|
 var @!hyfDistance [trieOpSize + 1]smallNumber // $n_j$의 자리 |k-j|
 var @!hyfNum [trieOpSize + 1]smallNumber // $n_j$의 값
 var @!hyfNext [trieOpSize + 1]quarterword // 이어지는 코드
-var @!opStart [256]int32 // 현재 언어의 오프셋; |0..trieOpSize|
+var @!opStart [256]int32 // 현재 언어의 오프셋; |0 .. trieOpSize|
 
 @ @<하이픈 넣기의 지역...@>=
 var z triePointer // |trie|의 첨자
@@ -20697,7 +20697,7 @@ var v int32 // |hyfDistance| 따위의 첨자
 for j = 0; j <= hn; j++ {
 	hyf[j] = 0
 }
-@<낱말 |hc[1..hn]|을 예외 표에서 찾고, 있으면 |goto found|@>
+@<낱말 |hc[1 .. hn]|을 예외 표에서 찾고, 있으면 |goto found|@>
 if trieChar(triePointer(curLang)+1) != qi(curLang) {
 	return // |curLang|의 패턴이 없다
 }
@@ -20744,7 +20744,7 @@ $\alpha$와 다르면 $\alpha$가 표에 없다고 결론지을 수 있다.
 선택적 하이픈이 있으면 그 목록에 수 |k|가 들어 있다.
 
 @<전역 형@>=
-type @!hyphPointer = int32 // 순서 해시 표의 첨자; |0..hyphSize|
+type @!hyphPointer = int32 // 순서 해시 표의 첨자; |0 .. hyphSize|
 
 @ @<전역 변수@>=
 var @!hyphWord [hyphSize + 1]strNumber // 예외 낱말
@@ -20770,22 +20770,22 @@ var u poolPointer // |strPool|의 첨자
 @ 먼저 해시 코드 |h|를 계산하고, 낱말을 찾거나 찾지 못할 때까지 찾는다. 서로 다른 언어의 낱말은 문자열에 언어 코드를 덧붙여서
 따로 둔다. 낱말을 찾으면 |hyf|에 하이픈이 담긴 채로 |goto found|한다.
 
-@<낱말 |hc[1..hn]|을 예외 표에서...@>=
+@<낱말 |hc[1 .. hn]|을 예외 표에서...@>=
 h = hc[1]; hn++; hc[hn] = curLang
 for j = 2; j <= hn; j++ {
 	h = (h + h + hc[j]) % hyphSize
 }
 for {
-	@<문자열 |hyphWord[h]|를 |hc[1..hn]|과 견준다@>
+	@<문자열 |hyphWord[h]|를 |hc[1 .. hn]|과 견준다@>
 	if h > 0 { h-- } else { h = hyphSize }
 }
 notFound:
 	hn--
 
-@ 문자열 |hyphWord[h]|가 |hc[1..hn]|보다 작으면 |goto notFound|한다. 두 문자열이 같으면 |hyf|를 하이픈 자리로 정하고
+@ 문자열 |hyphWord[h]|가 |hc[1 .. hn]|보다 작으면 |goto notFound|한다. 두 문자열이 같으면 |hyf|를 하이픈 자리로 정하고
 |goto found|한다.
 
-@<문자열 |hyphWord[h]|를 |hc[1..hn]|과...@>=
+@<문자열 |hyphWord[h]|를 |hc[1 .. hn]|과...@>=
 k = hyphWord[h]
 if k == 0 {
 	goto notFound
@@ -20987,11 +20987,11 @@ $$\hbox{|@t$v^\prime$@>=newTrieOp(0,1,minQuarterword)|,\qquad |v=newTrieOp(3,2,@
 시작하므로, 첨자 |h|에 |trieOpSize|를 더해 쓴다.
 
 @<전역 변수@>=
-var @!trieOpHash [2*trieOpSize + 1]int32 // 네 짝의 트라이 연산 코드; |0..trieOpSize|
+var @!trieOpHash [2*trieOpSize + 1]int32 // 네 짝의 트라이 연산 코드; |0 .. trieOpSize|
 var @!trieUsed [256]quarterword // 이 언어에서 지금까지 쓴 가장 큰 연산 코드
 var @!trieOpLang [trieOpSize + 1]asciiCode // 해시한 네 짝의 언어 부분
 var @!trieOpVal [trieOpSize + 1]quarterword // 해시한 네 짝에 대응하는 연산 코드
-var @!trieOpPtr int32 // 지금까지 저장한 연산의 수; |0..trieOpSize|
+var @!trieOpPtr int32 // 지금까지 저장한 연산의 수; |0 .. trieOpSize|
 
 @ 다음 프로시저에서 |overflow| 정지를 없애고 싶은 유혹이 든다. 함수 |newTrieOp|가 작업을 중단하는 대신 |minQuarterword|를 돌려줄
 수도 있을 것이다(그러면 하이픈 넣기 패턴의 일부를 그냥 무시하게 된다). 그러나 그러면 같은 패턴을 쓰는 서로 다른 \TeX 설치에서
@@ -21000,7 +21000,7 @@ var @!trieOpPtr int32 // 지금까지 저장한 연산의 수; |0..trieOpSize|
 @<하이픈 넣기 패턴을 전처리하는...@>=
 func newTrieOp(d, n smallNumber, v quarterword) quarterword {
 	var u quarterword // 시험 연산 코드
-	var l int32 // 저장된 자료를 가리킨다; |0..trieOpSize|
+	var l int32 // 저장된 자료를 가리킨다; |0 .. trieOpSize|
 	h := abs(n+313*d+361*v+1009*curLang)%(trieOpSize+trieOpSize) - trieOpSize // 시험 해시 자리; |-trieOpSize..trieOpSize|
 	for {
 		l = trieOpHash[trieOpSize+h]
@@ -21134,7 +21134,7 @@ var @!trieRef = &trieHash // 연결 트라이 가족이 |trie|에 들어가는 �
 func trieBack(p triePointer) halfword { return trie[p].lh } // |trie| 구멍의 뒤로 가는 링크
 func setTrieBack(p triePointer, v halfword) { trie[p].lh = v }
 
-var @!trieTaken [trieSize + 1]bool // 여기서 가족이 시작하는가? 첨자 |1..trieSize|
+var @!trieTaken [trieSize + 1]bool // 여기서 가족이 시작하는가? 첨자 |1 .. trieSize|
 var @!trieMin [256]triePointer // 문자마다 가능한 첫 자리
 var @!trieMax triePointer // |trie|에서 쓴 가장 큰 자리
 var @!trieNotReady bool // 트라이가 아직 연결된 꼴인가?
@@ -21365,7 +21365,7 @@ if digitSensed || curChr < '0' || curChr > '9' {
 	hyf[k] = curChr - '0'; digitSensed = true
 }
 
-@ 다음 코드가 작동할 때 패턴 $p_1\ldots p_k$는 |hc[1..k]|에 있고, 대응하는 수 나열 $n_0\ldots n_k$는 |hyf[0..k]|에 있다.
+@ 다음 코드가 작동할 때 패턴 $p_1\ldots p_k$는 |hc[1 .. k]|에 있고, 대응하는 수 나열 $n_0\ldots n_k$는 |hyf[0 .. k]|에 있다.
 
 @<연결 트라이에 새 패턴을...@>=
 @<트라이 연산 코드 |v|를 계산하고 |l=0|으로 한다@>
@@ -22042,7 +22042,7 @@ func buildPage() { // 기여 내용을 현재 쪽에 덧붙인다
 	var q, r pointer // 살피는 노드들
 	var b, c int32 // 현재 쪽의 나쁨과 비용
 	var pi int32 // 나쁨에 더할 벌점
-	var n int32 // 삽입 상자 번호; |minQuarterword..255|
+	var n int32 // 삽입 상자 번호; |minQuarterword .. 255|
 	var delta, h, w scaled // 삽입 계산에 쓰는 크기들
 	if link(contribHead) == null || outputActive {
 		return
@@ -22398,7 +22398,7 @@ endDiagnostic(false)
 func fireUp(c pointer) {
 	var p, q, r, s pointer // 살피거나 바꾸는 노드들
 	var prevP pointer // |p|의 앞 노드
-	var n int32 // 삽입 상자 번호; |minQuarterword..255|
+	var n int32 // 삽입 상자 번호; |minQuarterword .. 255|
 	var wait bool // 지금 삽입물을 다음으로 미루어야 하는가?
 	@<|outputPenalty|의 값을 정한다@>
 	if botMark() != null {
@@ -26078,7 +26078,7 @@ func alterAux() {
 
 @ @<|prefixedCommand|의 하위...@>=
 func alterPrevGraf() {
-	nest[nestPtr] = curList(); p := nestPtr // |nest|의 첨자; |0..nestSize|
+	nest[nestPtr] = curList(); p := nestPtr // |nest|의 첨자; |0 .. nestSize|
 	for abs(nest[p].modeField) != vmode {
 		p--
 	}
@@ -26212,7 +26212,7 @@ func newFont(a smallNumber) {
 	var s scaled // 지정된 ``at'' 크기, 또는 배율에 음의 부호를 붙인 것
 	var f internalFontNumber // 기존 글꼴들을 훑는다
 	var t strNumber // 얼린 글꼴 식별자의 이름
-	var oldSetting int32 // |selector| 설정을 담아 둔다; |0..maxSelector|
+	var oldSetting int32 // |selector| 설정을 담아 둔다; |0 .. maxSelector|
 	var flushableString strNumber // 아직 참조되지 않은 문자열
 	if jobName == 0 {
 		openLogFile() // \.{texput}을 글꼴 이름과 헷갈리지 않게 한다
@@ -26414,7 +26414,7 @@ case message:
 func issueMessage() {
 	c := curChr // \.{\\message}와 \.{\\errmessage}를 구별한다; |0..1|
 	setLink(garbage, scanToks(false, true))
-	oldSetting := selector // |selector| 설정을 담아 둔다; |0..maxSelector|
+	oldSetting := selector // |selector| 설정을 담아 둔다; |0 .. maxSelector|
 	selector = newString
 	tokenShow(defRef); selector = oldSetting
 	flushList(defRef)
@@ -27972,7 +27972,7 @@ outWhat(p)
 func specialOut(p pointer) {
 	var k poolPointer // |strPool|의 첨자
 	synchH(); synchV()
-	oldSetting := selector // 찍기 |selector|를 담아 둔다; |0..maxSelector|
+	oldSetting := selector // 찍기 |selector|를 담아 둔다; |0 .. maxSelector|
 	selector = newString
 	showTokenList(link(writeTokens(p)), null, poolSize-poolPtr)
 	selector = oldSetting
@@ -28001,7 +28001,7 @@ setEqType(endWrite, outerCall); setEquiv(endWrite, null)
 @ @<|hlistOut|과 |vlistOut|에 필요한...@>=
 func writeOut(p pointer) {
 	@<토큰 목록의 매크로를 펼치고 |link(defRef)|가 그 결과를 가리키게 한다@>
-	oldSetting := selector // 찍기 |selector|를 담아 둔다; |0..maxSelector|
+	oldSetting := selector // 찍기 |selector|를 담아 둔다; |0 .. maxSelector|
 	j := writeStream(p) // 쓰기 스트림 번호
 	if writeOpen[j] {
 		selector = j
