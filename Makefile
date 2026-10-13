@@ -33,6 +33,8 @@ tex.pdf: tex.w texlion.pdf decoframe.pdf
 	luatex --interaction=nonstopmode tex.tex >/dev/null
 
 pdf: tex.pdf
+	qpdf tex.pdf --pages tex.pdf r2-r1,1-r3 -- deco.pdf
+	mv deco.pdf tex.pdf
 
 check: tex.pdf
 	@n=$$(grep -ac 'Overfull\|Underfull\|Error\|Missing\|Undefined' tex.log); \
@@ -52,7 +54,10 @@ trip:
 
 test: story trip
 
-deco: tex.pdf
+deco: tex.w tex-deco.ch
+	gweave tex.w tex-deco.ch
+	luatex --interaction=nonstopmode tex.tex >/dev/null
+	luatex --interaction=nonstopmode tex.tex >/dev/null
 	qpdf tex.pdf --pages tex.pdf r2-r1,1-r3 -- deco.pdf
 	mv deco.pdf tex.pdf
 
