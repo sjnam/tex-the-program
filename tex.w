@@ -55,7 +55,7 @@ vardef southof(expr q) = (xpart center q, ypart llcorner bbox q) enddef;
 
 \def\title{\TeX82}
 \def\topofcontents{\null\vfill
-  \centerline{\titlefont \TeX82}
+  \centerline{\titlefont \TeX: The Program}
   \vskip 15pt
   \centerline{도널드 크누스의 \TeX\ 프로그램을 한글 \.{GWEB}으로 옮김}
   \vfill}
@@ -373,33 +373,33 @@ var iniVersion bool // 이것이 \.{INITEX}인가?
 @<전역 상수@>=
 const (
 	@!memMax = 30000 // \TeX의 내부 배열 |mem|의 가장 큰 첨자;
-	// |maxHalfword|보다 엄격히 작아야 한다;
-	// \.{INITEX}에서는 |memTop|과 같아야 하고, 그 밖에는 |>=memTop|
+	@t\quad@>// |maxHalfword|보다 엄격히 작아야 한다;
+	@t\quad@>// \.{INITEX}에서는 |memTop|과 같아야 하고, 그 밖에는 |>=memTop|
 	@!memMin = 0 // \TeX의 내부 배열 |mem|의 가장 작은 첨자;
-	// |minHalfword| 이상이어야 한다;
-	// \.{INITEX}에서는 |memBot|과 같아야 하고, 그 밖에는 |<=memBot|
+	@t\quad@>// |minHalfword| 이상이어야 한다;
+	@t\quad@>// \.{INITEX}에서는 |memBot|과 같아야 하고, 그 밖에는 |<=memBot|
 	@!bufSize = 20000 // 열린 파일들의 현재 줄과 \.{\\csname}과 \.{\\endcsname} 사이의
-	// 제어 시퀀스에 동시에 들어 있는 문자 수의 최댓값; |maxHalfword|를 넘으면 안 된다
+	@t\quad@>// 제어 시퀀스에 동시에 들어 있는 문자 수의 최댓값; |maxHalfword|를 넘으면 안 된다
 	@!errorLine = 72 // 터미널 오류 메시지의 문맥 줄의 너비
 	@!halfErrorLine = 42 // 터미널 오류 메시지에서 문맥 첫 줄의 너비;
-	// 30과 |errorLine-15| 사이여야 한다
+	@t\quad@>// 30과 |errorLine-15| 사이여야 한다
 	@!maxPrintLine = 79 // 출력하는 텍스트 줄의 가장 긴 너비; 적어도 60이어야 한다
 	@!stackSize = 200 // 동시에 열려 있는 입력원의 최대 개수
 	@!maxInOpen = 6 // 동시에 진행할 수 있는 입력 파일과 오류 삽입의 최대 개수
 	@!fontMax = 75 // 내부 글꼴 번호의 최댓값; |maxQuarterword|를 넘으면 안 되고
-	// 많아야 |fontBase+256|이어야 한다
+	@t\quad@>// 많아야 |fontBase+256|이어야 한다
 	@!fontMemSize = 20000 // 모든 글꼴을 위한 |fontInfo|의 낱말 수
 	@!paramSize = 60 // 동시에 쓰이는 매크로 매개변수의 최대 개수
 	@!nestSize = 40 // 동시에 활성인 의미 수준의 최대 개수
 	@!maxStrings = 3000 // 문자열의 최대 개수; |maxHalfword|를 넘으면 안 된다
 	@!stringVacancies = 8000 // \TeX\ 자신의 오류 메시지를 저장한 뒤에 사용자의
-	// 제어 시퀀스와 글꼴 이름을 위해 남아 있어야 할 문자 수의 최솟값
+	@t\quad@>// 제어 시퀀스와 글꼴 이름을 위해 남아 있어야 할 문자 수의 최솟값
 	@!poolSize = 32000 // 문자열들에 든 문자 수의 최댓값; 모든 오류 메시지와 도움말,
-	// 모든 글꼴과 제어 시퀀스의 이름을 포함한다; |stringVacancies|보다
-	// \TeX\ 자신의 문자열들의 전체 길이(지금 약 23000)만큼 커야 한다
+	@t\quad@>// 모든 글꼴과 제어 시퀀스의 이름을 포함한다; |stringVacancies|보다
+	@t\quad@>// \TeX\ 자신의 문자열들의 전체 길이(지금 약 23000)만큼 커야 한다
 	@!saveSize = 600 // 현재 그룹 바깥의 값들을 저장하는 공간; 많아야 |maxHalfword|
 	@!trieSize = 8000 // 하이픈 넣기 패턴을 위한 공간; 실무용 \TeX보다
-	// \.{INITEX}에서 더 커야 한다
+	@t\quad@>// \.{INITEX}에서 더 커야 한다
 	@!trieOpSize = 500 // 하이픈 넣기 패턴의 ``연산 코드''를 위한 공간
 	@!dviBufSize = 16384 // 출력 버퍼의 크기; 8의 배수여야 한다
 	@!fileNameSize = 1024 // 파일 이름은 이보다 길면 안 된다
@@ -415,12 +415,12 @@ const (
 @<정의@>=
 const (
 	@!memBot = 0 // \.{INITEX}가 내보내는 |mem| 배열의 가장 작은 첨자;
-	// |memMin|보다 작으면 안 된다
+	@t\quad@>// |memMin|보다 작으면 안 된다
 	@!memTop = 30000 // \.{INITEX}가 내보내는 |mem| 배열의 가장 큰 첨자;
-	// |memBot|보다 상당히 커야 하고 |memMax|보다 크면 안 된다
+	@t\quad@>// |memBot|보다 상당히 커야 하고 |memMax|보다 크면 안 된다
 	@!fontBase = 0 // 가장 작은 내부 글꼴 번호; |minQuarterword|보다 작으면 안 된다
 	@!hashSize = 2100 // 제어 시퀀스의 최대 개수; 많아야 대략
-	// |(memMax-memMin)/10|이어야 한다
+	@t\quad@>// |(memMax-memMin)/10|이어야 한다
 	@!hashPrime = 1777 // |hashSize|의 약 85\pct!에 해당하는 소수
 	@!hyphSize = 307 // 또 하나의 소수; \.{\\hyphenation} 예외의 개수
 )
@@ -1317,7 +1317,7 @@ notFound:
 
 @<함수들@>=
 func getStringsStarted() bool { // 문자열 풀을 초기화한다.
-	// 무언가 잘못되면 |false|를 돌려준다
+	@t\quad@>// 무언가 잘못되면 |false|를 돌려준다
 	var k, l int32 // 작은 첨자나 계수기
 	poolPtr = 0
 	strPtr = 0
@@ -3911,7 +3911,7 @@ const (
 	@!ssGlue = fillGlue + glueSpecSize // \.{0pt plus 1fil minus 1fil}
 	@!filNegGlue = ssGlue + glueSpecSize // \.{0pt plus -1fil minus 0pt}
 	@!loMemStatMax = filNegGlue + glueSpecSize - 1 // 가변 크기 |mem|에서
-	// 정적으로 할당된 가장 큰 낱말
+	@t\quad@>// 정적으로 할당된 가장 큰 낱말
 	@#
 	@!pageInsHead = memTop // 현재 쪽의 삽입 자료 목록
 	@!contribHead = memTop - 1 // 아직 현재 쪽에 들어가지 않은 항목들의 세로 목록
@@ -3928,7 +3928,7 @@ const (
 	@!garbage = memTop - 12 // 쓰레기 정보에 쓴다
 	@!backupHead = memTop - 13 // |scanKeyword|가 만든 토큰 목록의 머리
 	@!hiMemStatMin = memTop - 13 // 한 낱말짜리 |mem|에서
-	// 정적으로 할당된 가장 작은 낱말
+	@t\quad@>// 정적으로 할당된 가장 작은 낱말
 	@!hiMemStatUsage = 14 // 언제나 있는 한 낱말짜리 노드의 수
 )
 
@@ -4750,7 +4750,7 @@ func addGlueRef(p pointer)  { setGlueRefCount(p, glueRefCount(p)+1) } // 글루 
 
 @<함수들@>=
 func copyNodeList(p pointer) pointer { // |p|에서 시작하는 노드 목록의 복제를 만들고
-	// 새 목록을 가리키는 포인터를 돌려준다
+	@t\quad@>// 새 목록을 가리키는 포인터를 돌려준다
 	var r pointer // 새 목록을 위해 지금 만들고 있는 노드
 	var words int32 // 아직 베낄 낱말의 수; |0..5|
 	h := getAvail() // 베낀 목록의 임시 머리
@@ -7337,7 +7337,7 @@ func prepareMag() {
 @<정의@>=
 const (
 	@!csTokenFlag = 0o7777 // 제어 시퀀스를 나타내는 토큰에서 |eqtb| 위치에 더하는 양;
-	// 256의 배수에서 1을 뺀 것
+	@t\quad@>// 256의 배수에서 1을 뺀 것
 	@!leftBraceToken = 0o0400 // $2^8\cdot|leftBrace|$
 	@!leftBraceLimit = 0o1000 // $2^8\cdot(|leftBrace|+1)$
 	@!rightBraceToken = 0o1000 // $2^8\cdot|rightBrace|$
@@ -12515,7 +12515,7 @@ done:
 		jobName = curName
 		openLogFile()
 	} // |openLogFile|은 |showContext|를 하지 않으므로 |limit|와 |loc|은
-	// 아직 뜻 있는 값으로 정하지 않아도 된다
+	@t\quad@>// 아직 뜻 있는 값으로 정하지 않아도 된다
 	if termOffset+length(name) > maxPrintLine-2 {
 		printLn()
 	} else if termOffset > 0 || fileOffset > 0 {
@@ -12825,7 +12825,7 @@ var @!fontUsed [fontMax + 1]bool // 이 글꼴의 문자가 실제로 출력에 
 var @!hyphenChar [fontMax + 1]int32 // 현재의 \.{\\hyphenchar} 값
 var @!skewChar [fontMax + 1]int32 // 현재의 \.{\\skewchar} 값
 var @!bcharLabel [fontMax + 1]fontIndex // 왼쪽 경계 문자의 |ligKern| 프로그램의 시작,
-	// 없으면 |nonAddress|
+	@t\quad@>// 없으면 |nonAddress|
 var @!fontBchar [fontMax + 1]int32 // 경계 문자, 없으면 |nonChar|; |minQuarterword..nonChar|
 var @!fontFalseBchar [fontMax + 1]int32 // 글꼴에 없으면 |fontBchar|, 있으면 |nonChar|
 
