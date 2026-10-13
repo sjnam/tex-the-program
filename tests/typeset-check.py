@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # tex.pdf에서 오류도 경고도 없이 조용히 깨지는 조판을 찾는다. tex.log의 경고 수는
 # make check가 따로 센다(빠진 글자도 plain TeX이 ``Missing character''로 남기므로
-# 거기서 잡힌다). 여기서 보는 것은 다음 네 가지다.
+# 거기서 잡힌다). 여기서 보는 것은 다음 다섯 가지다.
 #
 #   1. tex.w: \.{...}나 \.X 안의 \' \` \" \= 따위. webmac과 달리 gwebmac의 \.은
 #      이것들을 문자로 바꾸지 않으므로 plain TeX의 악센트가 되어 버린다.
@@ -12,6 +12,10 @@
 #      \ID{lSize}로 끊긴다. 숫자와 ..을 띄어 |0 .. poolSize|로 쓴다.
 #   4. tex.pdf의 텍스트: 풀리지 않은 절 참조 `§??', 새어 나온 \PB나 @<, 그리고
 #      plain TeX의 \L, \o 따위가 낳는 Ł, ø 같은 글자. (pdftotext가 있을 때만)
+#   5. tex.tex: 한글 식별자 \ID{가}. 이 프로그램에는 한글 식별자가 없으므로, 이것은
+#      |...|의 짝이 엇갈려 산문이 코드로 조판되었다는 뜻이다. 이를테면 산문의
+#      |@<문자 |s|가 ...@>|는 이름 안의 |에서 끊기고(바깥 |...|를 떼어 쓴다),
+#      주석 속 |...| 안의 @t...@>도 짝을 어긋나게 한다.
 #
 #   tests/typeset-check.py            (저장소 맨 위에서, make pdf 다음에)
 #
@@ -60,6 +64,9 @@ for n, line in enumerate(woven, 1):
             report(f"tex.tex:{n}", f"수 바로 뒤의 식별자 \\NU{{{m.group(1)}}}")
     for m in re.finditer(r"\\mathord\{\.\}\\NU\{(\.[^}]*)\}", line):
         report(f"tex.tex:{n}", f"..이 소수점으로 읽힘 .\\NU{{{m.group(1)}}}")
+    # 5: 한글 식별자
+    for m in re.finditer(r"\\ID\{([^}]*[\uac00-\ud7a3][^}]*)\}", line):
+        report(f"tex.tex:{n}", f"코드로 조판된 산문 \\ID{{{m.group(1)}}}")
 
 # 4: tex.pdf의 텍스트
 if shutil.which("pdftotext"):

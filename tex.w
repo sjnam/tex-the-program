@@ -1544,7 +1544,7 @@ func printLn() { // 줄의 끝을 찍는다
 @ \seclabel{print-char}프로시저 |printChar|는 문자 하나를 원하는 곳으로 보낸다. 이때 배열 |xchr|를 써서 그 문자를
 |inputLn|과 어울리는 외부 문자로 바꾼다. 찍는 것은 모두 |printLn|이나 |printChar|를 거친다.
 
-아래 코드의 `|@<문자 |s|가 현재의 줄바꿈 문자다@>|'처럼 불 식 노릇을 하는 이름 있는 절은
+아래 코드의 `@<문자 |s|가 현재의 줄바꿈 문자다@>'처럼 불 식 노릇을 하는 이름 있는 절은
 |if| 문의 조건 자리에 바로 쓸 수 없다. \.{gtangle}은 이름 있는 절을 펼칠 때 그 앞뒤에서
 줄을 바꾸는데, \GO/는 줄 끝의 `\.)' 뒤에 쌍반점을 넣기 때문이다. 그래서 이 프로그램은
 그런 절의 값을 먼저 지역 변수(여기서는 |isNl|)에 받아 두고 그 변수를 검사한다.
@@ -10412,7 +10412,7 @@ curOrder = normal
 @<함수들@>=
 func scanInt() { // |curVal|을 정수로 놓는다
 	var negative bool // 답의 부호를 바꾸어야 하나?
-	var m int32 // |@t$2^{31}$@> div radix|, 위험의 문턱값
+	var m int32 // 위험의 문턱값, 곧 $2^{31}$을 |radix|로 나눈 몫
 	var d smallNumber // 방금 훑은 숫자
 	var vacuous bool // 숫자가 하나도 나타나지 않았나?
 	var okSoFar bool // 오류 메시지를 냈나?
