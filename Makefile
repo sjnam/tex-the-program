@@ -9,10 +9,11 @@
 #   make trip       크누스의 TRIP 테스트를 돌린다
 #   make test       story와 trip을 모두 돌린다
 #   make clean      만든 것을 모두 지운다
+#   make deco       문서 테두리를 액자로 장식한다
 
 BUILD = build
 
-.PHONY: all build pdf check fmt story trip test clean
+.PHONY: all build pdf check fmt story trip test clean deco
 
 all: build pdf
 
@@ -26,7 +27,7 @@ $(BUILD)/tex: tex.go go.mod
 build: $(BUILD)/tex
 
 # 절 번호 참조(\secref)를 맞추려면 luatex를 두 번 돌려야 한다
-tex.pdf: tex.w texlion.pdf
+tex.pdf: tex.w texlion.pdf decoframe.pdf
 	gweave tex.w
 	luatex --interaction=nonstopmode tex.tex >/dev/null
 	luatex --interaction=nonstopmode tex.tex >/dev/null
@@ -50,6 +51,10 @@ trip:
 	tests/trip.sh
 
 test: story trip
+
+deco: tex.pdf
+	qpdf tex.pdf --pages tex.pdf r2-r1,1-r3 -- deco.pdf
+	mv deco.pdf tex.pdf
 
 clean:
 	rm -rf $(BUILD) tex.go tex.tex tex.log tex.pdf tex.toc tex.ref tex.idx tex.scn
