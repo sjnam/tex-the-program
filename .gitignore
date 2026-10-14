@@ -11,6 +11,13 @@ tex.ref
 tex.idx
 tex.scn
 
+# make deco: 액자를 두른 판
+tex-deco.tex
+tex-deco.log
+tex-deco.pdf
+tex-deco.toc
+tex-deco.ref
+
 # make trip: tests/trip.sh가 처음 돌 때 CTAN에서 받아 오는 크누스의 원본 파일들
 tests/trip/
 

@@ -21,6 +21,8 @@
 | --- | --- |
 | `tex.w` | 번역 본문. 모든 것이 여기서 나온다 |
 | `texlion.pdf` | `tex.pdf` 1쪽의 왼쪽 아래에 넣는 사자 그림 |
+| `tex-deco.ch` | 쪽마다 액자를 두르는 바꿈 파일(`make deco`) |
+| `decoframe.pdf` | `tex-deco.ch`가 쪽마다 까는 액자 그림 |
 | `Makefile` | 빌드, 조판, 테스트 |
 | `go.mod` | Go 모듈 정의 |
 | `tests/trip.sh` | TRIP 테스트 |
@@ -39,7 +41,7 @@
 함께 찍힌다.
 
 이 번역은 쪽 넘김을 깔끔하게 하려고 긴 절을 몇 개로 나누기도 하고, 정의와 코드를 따로 두려고 절을
-보태기도 했다. 그래서 절 번호가 원본과 어긋난다(원본 1380절, 번역 1484절). 원본이나
+보태기도 했다. 그래서 절 번호가 원본과 어긋난다(원본 1380절, 번역 1490절). 원본이나
 *TeX: The Program*과 맞추어 볼 때는 절 이름(`orig/names.tsv`)과 찾아보기를 쓰면 된다. 마지막 부인
 찾아보기에서는 식별자와 오류 메시지가 쓰인 모든 절을 찾을 수 있다.
 
@@ -95,12 +97,14 @@
 - LuaTeX와 TeX Live: 문서를 조판할 때, 그리고 프로그램이 TFM 파일과 `plain.tex` 같은 입력 파일을
   `kpsewhich`로 찾을 때 쓴다
 - 테스트에는 `pltotf`, `dvitype`(TeX Live에 들어 있다), `curl`, `perl`도 쓴다
+- [qpdf](https://qpdf.sourceforge.io/): gweave가 문서 맨 끝에 두는 차례를 맨 앞으로 옮긴다
 - `make check`에는 `python3`를 쓰고, 있으면 `pdftotext`(poppler)도 쓴다
 
 ```sh
 make            # build/tex와 tex.pdf를 만든다
 make build      # 프로그램만: tex.w → tex.go(gtangle) → build/tex(go build)
-make pdf        # 문서만: tex.w → tex.tex(gweave) → tex.pdf(luatex 두 번)
+make pdf        # 문서만: tex.w → tex.tex(gweave) → tex.pdf(luatex 두 번, qpdf로 차례를 맨 앞에)
+make deco       # 쪽마다 액자를 두른 판: tex.w + tex-deco.ch → tex-deco.pdf(tex.pdf는 그대로 둔다)
 make check      # 조판 경고(Overfull, Underfull 따위)와 조용히 깨진 조판의 수를 센다. 둘 다 0이어야 한다
 make test       # make story와 make trip(아래 테스트)을 함께 돌린다
 make clean

@@ -54,7 +54,11 @@ vardef southof(expr q) = (xpart center q, ypart llcorner bbox q) enddef;
 \endmplibcode
 
 \def\title{\TeX82}
-\def\topofcontents{\null\vfill
+% 차례는 문서 맨 끝에 찍히는데, Makefile이 qpdf로 그것을 맨 앞으로 옮긴다.
+% 차례가 몇 쪽이 되든 옮길 수 있도록, 차례 앞에 이미 내보낸 쪽 수를 로그에 적어 둔다.
+\def\topofcontents{\immediate\write-1{TOC begins after page
+    \directlua{tex.sprint(status.total_pages)}}%
+  \null\vfill
   \centerline{\titlefont \TeX: The Program}
   \vskip 15pt
   \centerline{도널드 크누스의 \TeX\ 프로그램을 한글 \.{GWEB}으로 옮김}

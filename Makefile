@@ -9,7 +9,7 @@
 #   make trip       크누스의 TRIP 테스트를 돌린다
 #   make test       story와 trip을 모두 돌린다
 #   make clean      만든 것을 모두 지운다
-#   make deco       문서 테두리를 액자로 장식한다
+#   make deco       테두리에 액자를 두른 문서(tex-deco.pdf)를 만든다
 
 BUILD = build
 
@@ -26,15 +26,26 @@ $(BUILD)/tex: tex.go go.mod
 
 build: $(BUILD)/tex
 
-# 절 번호 참조(\secref)를 맞추려면 luatex를 두 번 돌려야 한다
-tex.pdf: tex.w texlion.pdf decoframe.pdf
-	gweave tex.w
-	luatex --interaction=nonstopmode tex.tex >/dev/null
-	luatex --interaction=nonstopmode tex.tex >/dev/null
+# 절 번호 참조(\secref)를 맞추려면 luatex를 두 번 돌려야 한다.
+# gweave는 차례를 맨 끝에 두므로, qpdf로 차례를 맨 앞으로 옮긴다. 차례가 몇 쪽인지는
+# tex.w의 \topofcontents가 로그에 적어 둔 "TOC begins after page B"로 안다:
+# B+1쪽부터 끝까지가 차례다.
+# $(1)은 조판할 .tex 파일의 이름(곧 \jobname), $(2)는 바꿈 파일이다.
+define weave
+	$(if $(2),mkdir -p $(BUILD) && gweave -o $(BUILD) tex.w $(2) && mv $(BUILD)/tex.tex $(1).tex,gweave tex.w)
+	luatex --interaction=nonstopmode $(1).tex >/dev/null
+	luatex --interaction=nonstopmode $(1).tex >/dev/null
+	@b=$$(sed -n 's/^TOC begins after page \([0-9][0-9]*\)$$/\1/p' $(1).log); \
+	test -n "$$b" || { echo "$(1).log에 차례의 시작 쪽이 없다" >&2; exit 1; }; \
+	echo "qpdf $(1).pdf --pages $(1).pdf $$((b+1))-z,1-$$b -- $(1)-toc.pdf"; \
+	qpdf $(1).pdf --pages $(1).pdf $$((b+1))-z,1-$$b -- $(1)-toc.pdf
+	mv $(1)-toc.pdf $(1).pdf
+endef
+
+tex.pdf: tex.w texlion.pdf
+	$(call weave,tex)
 
 pdf: tex.pdf
-	qpdf tex.pdf --pages tex.pdf r2-r1,1-r3 -- deco.pdf
-	mv deco.pdf tex.pdf
 
 check: tex.pdf
 	@n=$$(grep -ac 'Overfull\|Underfull\|Error\|Missing\|Undefined' tex.log); \
@@ -54,12 +65,12 @@ trip:
 
 test: story trip
 
-deco: tex.w tex-deco.ch
-	gweave tex.w tex-deco.ch
-	luatex --interaction=nonstopmode tex.tex >/dev/null
-	luatex --interaction=nonstopmode tex.tex >/dev/null
-	qpdf tex.pdf --pages tex.pdf r2-r1,1-r3 -- deco.pdf
-	mv deco.pdf tex.pdf
+# 액자를 두른 판은 tex-deco.pdf로 따로 만들어 tex.pdf를 건드리지 않는다
+tex-deco.pdf: tex.w tex-deco.ch texlion.pdf decoframe.pdf
+	$(call weave,tex-deco,tex-deco.ch)
+
+deco: tex-deco.pdf
 
 clean:
-	rm -rf $(BUILD) tex.go tex.tex tex.log tex.pdf tex.toc tex.ref tex.idx tex.scn
+	rm -rf $(BUILD) tex.go tex.tex tex.log tex.pdf tex.toc tex.ref tex.idx tex.scn\
+	  tex-deco.tex tex-deco.log tex-deco.pdf tex-deco.toc tex-deco.ref
