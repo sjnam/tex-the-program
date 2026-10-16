@@ -1343,8 +1343,7 @@ appLcHex := func(x int32) {
 	}
 }
 for k = 0; k <= 255; k++ {
-	unprintable := @<문자 |k|를 찍을 수 없다@>
-	if unprintable {
+	if @<문자 |k|를 찍을 수 없다@> {
 		appendChar('^')
 		appendChar('^')
 		if k < 0o100 {
@@ -1555,8 +1554,7 @@ func printLn() { // 줄의 끝을 찍는다
 
 @<기본 인쇄...@>=
 func printChar(s asciiCode) { // 문자 하나를 찍는다
-	isNl := @<문자 |s|가 현재의 줄바꿈 문자다@>
-	if isNl {
+	if @<문자 |s|가 현재의 줄바꿈 문자다@> {
 		if selector < pseudo {
 			printLn()
 			return
@@ -1661,8 +1659,7 @@ if selector > pseudo {
 	printChar(s)
 	return // 내부 문자열은 펼치지 않는다
 }
-isNl := @<문자 |s|가 현재의 줄바꿈 문자다@>
-if isNl {
+if @<문자 |s|가 현재의 줄바꿈 문자다@> {
 	if selector < pseudo {
 		printLn()
 		return
@@ -3804,8 +3801,7 @@ func newGlue(q pointer) pointer {
 
 @<함수들@>=
 func newSkipParam(n smallNumber) pointer {
-	tempPtr = @<글루 매개변수 번호 |n|의...@>
-	tempPtr = newSpec(tempPtr)
+	tempPtr = newSpec(@<글루 매개변수 번호 |n|의...@>)
 	p := newGlue(tempPtr) // 새 노드
 	setGlueRefCount(tempPtr, null)
 	setSubtype(p, n+1)
