@@ -177,7 +177,7 @@ const banner = "This is TeX, Version 3.141592653 (GWEB)" // \TeX이 시작할 �
 \smallskip
 \item{$\bullet$} 식별자에는 \GO/의 관례대로 낙타 등 표기(|getNext|)를 쓴다. 여러 낱말로 된
 이름은 둘째 낱말부터 첫 글자를 대문자로 쓰고, |endOfTEX|의 \TeX처럼 머리글자말은 대문자로
-둔다. 이름이 \GO/의 예약어와 겹치면 다른 이름을 쓴다. 이를테면 노드의 |type| 필드를 읽는
+둔다. 이름이 \GO/의 예약어와 겹치면 다른 이름을 쓴다. 이를테면 노드의 \ID{type} 필드를 읽는
 함수는 |typ|이다.
 \item{$\bullet$} 전역 변수는 꾸러미 수준의 변수이고, 프로시저와 함수는 모두 \GO/의
 함수다. 한 곳에서만 불리는 프로시저도 프로그램의 짜임새를 드러내려고 따로 둔 것이
@@ -3348,9 +3348,9 @@ if p < rover {
 가로 목록이나 세로 목록은 각 노드의 첫 낱말에 있는 |link| 필드로 이어진다. 낱낱의 노드는 상자,
 글루, 벌점, 또는 선택적 하이픈 같은 특별한 것을 나타낸다. 이렇게 종류가 다양하기 때문에 어떤
 노드는 다른 노드보다 길고, 우리는 여러 종류의 노드를 구별해야 한다. 이를 위해 첫 낱말에 연결과
-함께 `|type|' 필드를, 그리고 필요하면 `|subtype|' 필드를 넣는다.
+함께 `\ID{type}' 필드를, 그리고 필요하면 `|subtype|' 필드를 넣는다.
 
-필드 이름 |type|은 \GO/의 예약어이므로 이 필드를 읽는 함수의 이름은 |typ|이다. 쓰는 함수는
+필드 이름 \ID{type}은 \GO/의 예약어이므로 이 필드를 읽는 함수의 이름은 |typ|이다. 쓰는 함수는
 다른 필드와 같은 규칙에 따라 |setType|이다.
 
 @<정의@>=
@@ -3362,7 +3362,7 @@ func setSubtype(p pointer, v quarterword) { mem[p].hh.b1 = v }
 @ 문자 노드 |@!charNode|는 문자 하나를 나타내는데, 모든 상자의 압도적 다수를 차지하므로 가장 중요한 종류의
 노드다. 그래서 |charNode|가 메모리를 많이 차지하지 않도록 특별히 조심한다. 이런 노드는 모두 한
 낱말 길이이고, 사실 이 성질로 알아볼 수 있다. 다른 종류의 노드는 적어도 두 낱말이고, |mem|에서
-|hiMemMin|보다 작은 위치에 나타나기 때문이다. 그래서 |charNode|에서는 |type| 필드를 뺄 수 있고,
+|hiMemMin|보다 작은 위치에 나타나기 때문이다. 그래서 |charNode|에서는 \ID{type} 필드를 뺄 수 있고,
 그 자리에 |font|와 그 글꼴 안의 |character|를 밝히는 두 바이트를 둘 수 있다.
 
 문자 노드의 형식은 글꼴을 256개까지, 글꼴마다 문자를 256개까지 허용한다는 데 주목하라. 그러나
@@ -3395,7 +3395,7 @@ func character(p pointer) quarterword       { return subtype(p) } // |charNode|�
 func setCharacter(p pointer, v quarterword) { setSubtype(p, v) }
 
 @ 노드 |hlistNode|는 가로 목록으로 만든 상자를 나타낸다. 이 노드는 저마다 일곱 낱말 길이이고, 다음
-필드들을 담는다(반드시 있는 |type|과 |link|는 빼고 말한다. 다른 노드 형을 이야기할 때에도 이것들은
+필드들을 담는다(반드시 있는 \ID{type}과 |link|는 빼고 말한다. 다른 노드 형을 이야기할 때에도 이것들은
 따로 말하지 않겠다). 필드 |height|와 |width|와 |depth|는 상자의 치수를 나타내는 눈금 정수다.
 필드 |shiftAmount|도 있는데, 이 상자를 얼마나 내려야 하는지(가로 목록에 나타날 때), 또는 오른쪽으로
 얼마나 옮겨야 하는지(세로 목록에 나타날 때)를 나타내는 눈금 정수다. 필드 |listPtr|는 이 상자를
@@ -3442,7 +3442,7 @@ endfig;
 
 @<정의@>=
 const (
-	@!hlistNode = 0 // 가로 목록 노드의 |type|
+	@!hlistNode = 0 // 가로 목록 노드의 \ID{type}
 	@!boxNodeSize = 7 // 상자 노드에 할당할 낱말 수
 	@!widthOffset = 1 // 상자 노드에서 |width| 필드의 위치
 	@!depthOffset = 2 // 상자 노드에서 |depth| 필드의 위치
@@ -3494,7 +3494,7 @@ func newNullBox() pointer { // 새 상자 노드를 만든다
 @ 노드 |vlistNode|는 세로 목록을 담는다는 점만 빼면 모든 면에서 |hlistNode|와 같다.
 
 @<정의@>=
-const @!vlistNode = 1 // 세로 목록 노드의 |type|
+const @!vlistNode = 1 // 세로 목록 노드의 \ID{type}
 
 @ 노드 |ruleNode|는 꽉 찬 검은 직사각형을 나타낸다. 이 노드에도 |hlistNode|처럼 |width|, |depth|, |height|
 필드가 있다. 그러나 이 치수 가운데 어느 것이 $-2^{30}$이면, 실제 값은 괘선을 그것을 둘러싼 가장
@@ -3503,7 +3503,7 @@ const @!vlistNode = 1 // 세로 목록 노드의 |type|
 
 @<정의@>=
 const (
-	@!ruleNode = 2 // 괘선 노드의 |type|
+	@!ruleNode = 2 // 괘선 노드의 \ID{type}
 	@!ruleNodeSize = 4 // 괘선 노드에 할당할 낱말 수
 	@!nullFlag = -0o10000000000 // $-2^{30}$, 빠진 항목을 뜻한다
 )
@@ -3534,7 +3534,7 @@ func newRule() pointer {
 
 @<정의@>=
 const (
-	@!insNode = 3 // 삽입 노드의 |type|
+	@!insNode = 3 // 삽입 노드의 \ID{type}
 	@!insNodeSize = 5 // 삽입에 할당할 낱말 수
 )
 
@@ -3551,7 +3551,7 @@ func setSplitTopPtr(p pointer, v pointer) { setLink(p+4, v) }
 
 @<정의@>=
 const (
-	@!markNode = 4 // 표시 노드의 |type|
+	@!markNode = 4 // 표시 노드의 \ID{type}
 	@!smallNodeSize = 2 // 대부분의 노드 형에 할당할 낱말 수
 )
 
@@ -3563,7 +3563,7 @@ func setMarkPtr(p pointer, v int32) { mem[p+1].sc = v }
 가리킨다.
 
 @<정의@>=
-const @!adjustNode = 5 // 조정 노드의 |type|
+const @!adjustNode = 5 // 조정 노드의 \ID{type}
 
 func adjustPtr(p pointer) int32        { return markPtr(p) } // 가로 목록에서 옮겨 낼 세로 목록
 func setAdjustPtr(p pointer, v int32) { setMarkPtr(p, v) }
@@ -3578,7 +3578,7 @@ func setAdjustPtr(p pointer, v int32) { setMarkPtr(p, v) }
 2나 1을 더한다.
 
 @<정의@>=
-const @!ligatureNode = 6 // 합자 노드의 |type|
+const @!ligatureNode = 6 // 합자 노드의 \ID{type}
 
 func ligChar(p pointer) pointer      { return p + 1 } // 합자가 들어 있는 낱말
 func ligPtr(p pointer) pointer       { return link(ligChar(p)) } // 문자들의 목록
@@ -3619,7 +3619,7 @@ func newLigItem(c quarterword) pointer {
 나눔 노드만 보게 된다.
 
 @<정의@>=
-const @!discNode = 7 // 선택적 나눔 노드의 |type|
+const @!discNode = 7 // 선택적 나눔 노드의 \ID{type}
 
 func replaceCount(p pointer) quarterword       { return subtype(p) } // 뒤따르는 노드 가운데 몇 개를 바꿀지
 func setReplaceCount(p pointer, v quarterword) { setSubtype(p, v) }
@@ -3652,7 +3652,7 @@ func newDisc() pointer { // 빈 |discNode|를 만든다
 관련된 기능을 확장인 것처럼 다룬다. 확장에 관한 더 이상의 논의는 이 프로그램의 끝까지 미루겠다.
 
 @<정의@>=
-const @!whatsitNode = 8 // 특별한 확장 노드의 |type|
+const @!whatsitNode = 8 // 특별한 확장 노드의 \ID{type}
 
 @ 노드 |mathNode|는 가로 목록에만 나타나는데, 수식의 앞뒤에 나타난다. 필드 |subtype|은 수식
 앞에서는 |before|이고 수식 뒤에서는 |after|다. 필드 |width|도 있는데, \.{\\mathsurround}로 넣은 둘레의
@@ -3660,7 +3660,7 @@ const @!whatsitNode = 8 // 특별한 확장 노드의 |type|
 
 @<정의@>=
 const (
-	@!mathNode = 9 // 수식 노드의 |type|
+	@!mathNode = 9 // 수식 노드의 \ID{type}
 	@!before = 0 // 수식을 여는 수식 노드의 |subtype|
 	@!after = 1 // 수식을 닫는 수식 노드의 |subtype|
 )
@@ -3678,7 +3678,7 @@ func newMath(w scaled, s smallNumber) pointer {
 
 @ \TeX은 |hlistNode|, |vlistNode|, |ruleNode|, |insNode|, |markNode|, |adjustNode|,
 |ligatureNode|, |discNode|, |whatsitNode|, |mathNode|가 형 코드의 낮은 쪽 끝에 있다는 사실을
-이용한다. 목록에서 앞 노드의 |type|이 |mathNode|보다 작을 때, 그리고 오직 그때에만 글루에서
+이용한다. 목록에서 앞 노드의 \ID{type}이 |mathNode|보다 작을 때, 그리고 오직 그때에만 글루에서
 나눌 수 있게 하는 것이다. 또 나눔 뒤에서 노드의 형이 |mathNode| 이상이면 그 노드는 버려진다.
 
 @<정의@>=
@@ -3705,7 +3705,7 @@ func nonDiscardable(p pointer) bool { return typ(p) < mathNode }
 
 @<정의@>=
 const (
-	@!glueNode = 10 // 글루 명세를 가리키는 노드의 |type|
+	@!glueNode = 10 // 글루 명세를 가리키는 노드의 \ID{type}
 	@!condMathGlue = 98 // 다음 노드의 글루를 억누르는 특별한 |subtype|
 	@!muGlue = 99 // 수식 글루의 |subtype|
 	@!aLeaders = 100 // 정렬된 리더의 |subtype|
@@ -3817,7 +3817,7 @@ func newSkipParam(n smallNumber) pointer {
 
 @<정의@>=
 const (
-	@!kernNode = 11 // 커닝 노드의 |type|
+	@!kernNode = 11 // 커닝 노드의 \ID{type}
 	@!explicit = 1 // \.{\\kern}과 \.{\\/}에서 온 커닝 노드의 |subtype|
 	@!accKern = 2 // 악센트에서 온 커닝 노드의 |subtype|
 )
@@ -3840,7 +3840,7 @@ func newKern(w scaled) pointer {
 
 @<정의@>=
 const (
-	@!penaltyNode = 12 // 벌점 노드의 |type|
+	@!penaltyNode = 12 // 벌점 노드의 \ID{type}
 	@!infPenalty = infBad // ``무한한'' 벌점 값
 	@!ejectPenalty = -infPenalty // ``음으로 무한한'' 벌점 값
 )
@@ -3873,7 +3873,7 @@ func newPenalty(m int32) pointer {
 낱말을 함께 써도 된다(\secref{memory-word}).
 
 @<정의@>=
-const @!unsetNode = 13 // 미정 노드의 |type|
+const @!unsetNode = 13 // 미정 노드의 \ID{type}
 
 func glueStretch(p pointer) scaled              { return mem[p+glueOffset].sc } // 미정 노드의 늘어남 합계
 func setGlueStretch(p pointer, v scaled)       { mem[p+glueOffset].sc = v }
@@ -3882,7 +3882,7 @@ func setGlueShrink(p pointer, v scaled)        { setShiftAmount(p, v) }
 func spanCount(p pointer) quarterword           { return subtype(p) } // 걸친 열의 수를 나타낸다
 func setSpanCount(p pointer, v quarterword)    { setSubtype(p, v) }
 
-@ 사실 형은 더 나온다. 수식 처리에 이르면 |styleNode|의 |type|이 14임을 보게 될 것이다. 그리고
+@ 사실 형은 더 나온다. 수식 처리에 이르면 |styleNode|의 \ID{type}이 14임을 보게 될 것이다. 그리고
 수식 모드에서만 쓰이는 더 큰 형 코드도 여럿 정의할 것이다.
 
 @ 경고: 이 자료 구조의 배치를 조금이라도 바꾸면, 이를테면 노드 크기를 바꾸거나 노드 안의 낱말
@@ -11559,7 +11559,7 @@ case ifTest:
 종류의 이름이고, |ifLine|은 그것이 시작한 줄 번호다.
 
 진행 중인 조건문이 없으면 조건 스택은 특별한 상태 |condPtr=null|, |ifLimit=normal|, |curIf=0|, |ifLine=0|에
-있다. 그렇지 않으면 |condPtr|는 두 낱말짜리 노드를 가리킨다. 그 첫 낱말의 |type|, |subtype|, |link| 필드에는
+있다. 그렇지 않으면 |condPtr|는 두 낱말짜리 노드를 가리킨다. 그 첫 낱말의 \ID{type}, |subtype|, |link| 필드에는
 다음 수준의 |ifLimit|, |curIf|, |condPtr|가 들어 있고, 둘째 낱말에는 그에 해당하는 |ifLine|이 들어 있다.
 
 @<전역 변수@>=
@@ -15776,14 +15776,14 @@ func appendToVlist(b pointer) {
 
 수식 목록은 내부에서 주로 ``노드''(noad, `노-애드'라고 읽는다)로 이루어진 연결 목록으로 나타낸다. 이 이름은 가로
 목록과 세로 목록의 조금 비슷한 ``노드''(node)와 구별하려는 것이다. 어떤 종류의 보통 노드(node)는 노드(noad)와 함께 수식 목록에
-나타날 수 있다. \TeX은 둘을 |type| 필드로 구별한다. 노드(noad)의 |type|은 언제나 노드(node)의 것보다 크기 때문이다.
+나타날 수 있다. \TeX은 둘을 \ID{type} 필드로 구별한다. 노드(noad)의 \ID{type}은 언제나 노드(node)의 것보다 크기 때문이다.
 수식 목록에는 문자 노드, 가로 목록 노드, 세로 목록 노드, 수식 노드, 합자 노드, 미정 노드가 들어 있지 않다. 특히
-수식 목록의 항목은 모두 |mem|의 가변 크기 부분에 나타나므로 |type| 필드가 언제나 있다.
+수식 목록의 항목은 모두 |mem|의 가변 크기 부분에 나타나므로 \ID{type} 필드가 언제나 있다.
 
 이 문서에서는 둘을 다 그냥 노드라고 부르되, 헷갈릴 만한 곳에서는 노드(noad)와 노드(node)처럼
 원어를 덧붙인다.
 
-@ 노드(noad)는 저마다 네 낱말 이상의 길이다. 첫 낱말에는 이미 우리에게 아주 익숙한 |type|과 |subtype|과 |link| 필드가 들어
+@ 노드(noad)는 저마다 네 낱말 이상의 길이다. 첫 낱말에는 이미 우리에게 아주 익숙한 \ID{type}과 |subtype|과 |link| 필드가 들어
 있다. 둘째, 셋째, 넷째 낱말은 노드의 |nucleus|, |subscr|, |supscr| 필드라고 부른다.
 
 이를테면 간단한 수식 `\.{\$x\^2\$}'를 생각해 보자. 이것은 |ordNoad|라고 부르는 원소 하나를 담은 수식 목록으로
@@ -15844,14 +15844,14 @@ func setFam(p pointer, v quarterword) { setFontField(p, v) }
 
 @<정의@>=
 const (
-	@!ordNoad = unsetNode + 3 // Ord로 분류된 노드의 |type|
-	@!opNoad = ordNoad + 1 // Op로 분류된 노드의 |type|
-	@!binNoad = ordNoad + 2 // Bin으로 분류된 노드의 |type|
-	@!relNoad = ordNoad + 3 // Rel로 분류된 노드의 |type|
-	@!openNoad = ordNoad + 4 // Open으로 분류된 노드의 |type|
-	@!closeNoad = ordNoad + 5 // Close로 분류된 노드의 |type|
-	@!punctNoad = ordNoad + 6 // Punct로 분류된 노드의 |type|
-	@!innerNoad = ordNoad + 7 // Inner로 분류된 노드의 |type|
+	@!ordNoad = unsetNode + 3 // Ord로 분류된 노드의 \ID{type}
+	@!opNoad = ordNoad + 1 // Op로 분류된 노드의 \ID{type}
+	@!binNoad = ordNoad + 2 // Bin으로 분류된 노드의 \ID{type}
+	@!relNoad = ordNoad + 3 // Rel로 분류된 노드의 \ID{type}
+	@!openNoad = ordNoad + 4 // Open으로 분류된 노드의 \ID{type}
+	@!closeNoad = ordNoad + 5 // Close로 분류된 노드의 \ID{type}
+	@!punctNoad = ordNoad + 6 // Punct로 분류된 노드의 \ID{type}
+	@!innerNoad = ordNoad + 7 // Inner로 분류된 노드의 \ID{type}
 	@!limits = 1 // 첨자가 위아래에 오는 |opNoad|의 |subtype|
 	@!noLimits = 2 // 첨자가 보통 자리에 오는 |opNoad|의 |subtype|
 )
@@ -15875,9 +15875,9 @@ const (
 
 @<정의@>=
 const (
-	@!radicalNoad = innerNoad + 1 // 제곱근을 위한 노드의 |type|
+	@!radicalNoad = innerNoad + 1 // 제곱근을 위한 노드의 \ID{type}
 	@!radicalNoadSize = 5 // 근호 노드의 |mem| 낱말 수
-	@!fractionNoad = radicalNoad + 1 // 일반화된 분수를 위한 노드의 |type|
+	@!fractionNoad = radicalNoad + 1 // 일반화된 분수를 위한 노드의 \ID{type}
 	@!fractionNoadSize = 6 // 분수 노드의 |mem| 낱말 수
 	@!defaultCode = 0o10000000000 // |defaultRuleThickness|를 나타낸다
 )
@@ -15937,13 +15937,13 @@ func newNoad() pointer {
 
 @<정의@>=
 const (
-	@!underNoad = fractionNoad + 1 // 밑줄을 위한 노드의 |type|
-	@!overNoad = underNoad + 1 // 윗줄을 위한 노드의 |type|
-	@!accentNoad = overNoad + 1 // 악센트 붙은 하위 수식을 위한 노드의 |type|
+	@!underNoad = fractionNoad + 1 // 밑줄을 위한 노드의 \ID{type}
+	@!overNoad = underNoad + 1 // 윗줄을 위한 노드의 \ID{type}
+	@!accentNoad = overNoad + 1 // 악센트 붙은 하위 수식을 위한 노드의 \ID{type}
 	@!accentNoadSize = 5 // 악센트 노드의 |mem| 낱말 수
-	@!vcenterNoad = accentNoad + 1 // \.{\\vcenter}를 위한 노드의 |type|
-	@!leftNoad = vcenterNoad + 1 // \.{\\left}를 위한 노드의 |type|
-	@!rightNoad = leftNoad + 1 // \.{\\right}를 위한 노드의 |type|
+	@!vcenterNoad = accentNoad + 1 // \.{\\vcenter}를 위한 노드의 \ID{type}
+	@!leftNoad = vcenterNoad + 1 // \.{\\left}를 위한 노드의 \ID{type}
+	@!rightNoad = leftNoad + 1 // \.{\\right}를 위한 노드의 \ID{type}
 )
 
 func accentChr(p pointer) pointer { return p + 4 } // 악센트 노드의 |accentChr| 필드
@@ -15962,7 +15962,7 @@ func scriptsAllowed(p pointer) bool { return typ(p) >= ordNoad && typ(p) < leftN
 
 @<함수들@>=
 const (
-	@!styleNode = unsetNode + 1 // 모양 노드의 |type|
+	@!styleNode = unsetNode + 1 // 모양 노드의 \ID{type}
 	@!styleNodeSize = 3 // 모양 노드의 낱말 수
 	@!displayStyle = 0 // \.{\\displaystyle}의 |subtype|
 	@!textStyle = 2 // \.{\\textstyle}의 |subtype|
@@ -15984,7 +15984,7 @@ func newStyle(s smallNumber) pointer { // 모양 노드를 만든다
 하위 필드 |displayMlist|, |textMlist|, |scriptMlist|, |scriptScriptMlist|가 있다.
 
 @<함수들@>=
-const @!choiceNode = unsetNode + 2 // 선택 노드의 |type|
+const @!choiceNode = unsetNode + 2 // 선택 노드의 \ID{type}
 
 func displayMlist(p pointer) pointer       { return info(p + 1) } // 따로 세운 모양에 쓸 수식 목록
 func setDisplayMlist(p pointer, v pointer) { setInfo(p+1, v) }
@@ -16709,8 +16709,8 @@ func mlistToHlist() {
 	var saveStyle smallNumber // 재귀하는 동안 |curStyle|을 담아 둔다
 	var q pointer // 수식 목록을 훑는다
 	var r pointer // |q| 앞의 가장 최근 노드
-	var rType smallNumber // 노드 |r|의 |type|, |r=null|이면 |opNoad|
-	var t smallNumber // 둘째 훑기에서 노드 |q|의 실질적인 |type|
+	var rType smallNumber // 노드 |r|의 \ID{type}, |r=null|이면 |opNoad|
+	var t smallNumber // 둘째 훑기에서 노드 |q|의 실질적인 \ID{type}
 	var p, x, y, z pointer // 목록을 만드는 임시 레지스터들
 	var pen int32 // 넣을 벌점
 	var s smallNumber // 지울 노드의 크기
@@ -17615,7 +17615,7 @@ $$\vbox{\halign{\.{#}\hfil\qquad&(#)\hfil\cr
 {}\\alignrecord, width $-\infty$&3열의 서문 정보\cr
 {}\\glue 1pt plus 1fil&3열 뒤의 tabskip\cr}}$$
 이 ``alignrecord''(정렬 기록) 항목들은 |unsetNode|와 크기가 같다. 나중에 그런 노드로 바뀌기 때문이다. 그러나 지금은
-|type|이나 |subtype| 필드가 없다. 대신 |info| 필드가 있고, 아래에서 설명할 까닭으로 이 |info| 필드의 처음 값은 |endSpan|이다.
+\ID{type}이나 |subtype| 필드가 없다. 대신 |info| 필드가 있고, 아래에서 설명할 까닭으로 이 |info| 필드의 처음 값은 |endSpan|이다.
 게다가 정렬 기록 노드에는 |height|나 |depth| 필드가 없다. 이것들은 |uPart|와 |vPart|로 이름이 바뀌고, 정렬의 틀을 나타내는
 토큰 목록을 가리킨다. 이를테면 첫 정렬 기록의 |uPart| 필드는 토큰 목록 `\.{u1}', 곧 1열의 `\.\#' 앞에 있는 틀을 가리킨다.
 
@@ -18672,7 +18672,7 @@ const (
 
 \yskip\hang|fitness|는 이 나눔점에서 끝나는 줄의 맞음새 분류다.
 
-\yskip\hang|type|은 이 나눔점이 |discNode|인지에 따라 |hyphenated|나 |unhyphenated|다.
+\yskip\hang\ID{type}은 이 나눔점이 |discNode|인지에 따라 |hyphenated|나 |unhyphenated|다.
 
 \yskip\hang|totalDemerits|는 문단의 처음부터 이 나눔점까지 이르는 모든 줄에 걸친 감점(demerit) 합의 가능한 최솟값이다.
 
@@ -18693,8 +18693,8 @@ func totalDemerits(p pointer) int32 { return mem[p+2].sc } // \TeX이 최소로 
 func setTotalDemerits(p pointer, v int32) { mem[p+2].sc = v }
 
 const (
-	@!unhyphenated = 0 // 보통 활성 나눔 노드의 |type|
-	@!hyphenated = 1 // |discNode|에서 나누는 활성 노드의 |type|
+	@!unhyphenated = 0 // 보통 활성 나눔 노드의 \ID{type}
+	@!hyphenated = 1 // |discNode|에서 나누는 활성 노드의 \ID{type}
 	@!lastActive = active // 활성 목록은 시작한 곳에서 끝난다
 )
 
@@ -18732,7 +18732,7 @@ var @!printedNode pointer // 가장 최근에 찍은 노드
 var @!passNumber halfword // 이번 훑기에서 할당한 수동 노드의 수
 
 @ 활성 목록에는 알고리즘이 각 줄의 나쁨을 계산하는 것을 돕는 ``델타'' 노드도 들어 있다. 그런 노드는 두 활성 노드 사이에만
-나타나고 |type=deltaNode|다. 두 활성 노드 |p|와 |r| 사이에 델타 노드 |q|가 있어서 |link(p)=q|이고 |link(q)=r|이면, |q|는
+나타나고 \ID{type}${}={}$|deltaNode|다. 두 활성 노드 |p|와 |r| 사이에 델타 노드 |q|가 있어서 |link(p)=q|이고 |link(q)=r|이면, |q|는
 가로 목록에서 나눔점 |p| 뒤에 시작하는 줄과 나눔점 |r| 뒤에 시작하는 줄 사이의 공간 차이를 알려 준다. 다시 말해 |p| 뒤에
 시작해서 현재 위치에서 끝나는 줄의 길이를 알면, |r| 뒤에 시작하는 줄의 대응하는 길이는 노드~|q|의 양들을 더해서 얻는다.
 델타 노드는 눈금 수 여섯 개를 담는다. 모든 차수의 무한에 대해 글루의 늘일 수 있는 양의 순변화를 기록해야 하기 때문이다.
@@ -18742,7 +18742,7 @@ var @!passNumber halfword // 이번 훑기에서 할당한 수동 노드의 수
 @<정의@>=
 const (
 	@!deltaNodeSize = 7 // 델타 노드의 낱말 수
-	@!deltaNode = 2 // 델타 노드의 |type| 필드
+	@!deltaNode = 2 // 델타 노드의 \ID{type} 필드
 )
 
 @ 알고리즘이 돌아가는 동안, 첫 활성 나눔점 뒤에서 시작해 주어진 가로 목록의 현재 위치까지 이르는 줄의 길이를 위해 델타 같은
@@ -21494,7 +21494,7 @@ func initTrie() {
 고친 세로 목록을 가리키는 포인터를 돌려준다. 다만 첫 상자나 괘선 앞에는 새로 만든 글루 노드를 실제로 놓는데, 이 글루는 뒤로
 물러서지 않고도 가능하다면 맨 위 기준선이 위 끝에서 |splitTopSkip|만큼 떨어지도록 짜여 있다.
 
-이 루틴과 뒤따르는 루틴들에서는 세로 목록에 문자 노드가 없다는 사실, 그래서 목록의 모든 노드에 |type| 필드가 있다는 사실을
+이 루틴과 뒤따르는 루틴들에서는 세로 목록에 문자 노드가 없다는 사실, 그래서 목록의 모든 노드에 \ID{type} 필드가 있다는 사실을
 이용한다.
 @^data structure assumptions@>
 
@@ -21553,7 +21553,7 @@ func vertBreak(p pointer, h, d scaled) pointer { // 최적 쪽 나눔을 찾는�
 	var leastCost int32 // 지금까지 찾은 가장 작은 나쁨과 벌점의 합
 	var bestPlace pointer // |leastCost|에 이르는 가장 최근의 나눔
 	var prevDp scaled // 목록에서 앞 상자의 깊이
-	var t smallNumber // 커닝 다음 노드의 |type|
+	var t smallNumber // 커닝 다음 노드의 \ID{type}
 	prevP = p // 처음의 글루 노드는 합법적인 나눔점이 아니다
 	leastCost = awfulBad
 	for k := int32(1); k <= 6; k++ {
@@ -21852,7 +21852,7 @@ var @!bestSize scaled // 그 |pageGoal|
 커지는 차례로 놓이고, |subtype(pageInsHead)=qi(255)|이므로 |pageInsHead|는 목록 끝의 편리한 보초 구실을 한다. 현재 쪽에
 나타나는 삽입 번호마다 레코드가 하나 있다.
 
-이 노드들의 |type| 필드는 최적 쪽 나눔을 정하기 전에 앞을 내다볼 때 일어날 수 있는 두 가능성을 구별한다. 그리고 |typ(r)=inserting|이면
+이 노드들의 \ID{type} 필드는 최적 쪽 나눔을 정하기 전에 앞을 내다볼 때 일어날 수 있는 두 가능성을 구별한다. 그리고 |typ(r)=inserting|이면
 |height(r)|에는 상자와 지금까지 본 그 모든 삽입물의 높이와 깊이 치수의 합계가 들어 있다. 또 |typ(r)=splitUp|이면 이 상자에는 더
 삽입하지 않는다. 앞선 삽입물 가운데 적어도 하나가 너무 커서 현재 쪽에 들어가지 않았기 때문이다. 그때 |brokenPtr(r)|는 \TeX이
 그 삽입물을 나누기로 정하면 나눌 노드를 가리키고, |brokenIns(r)|는 시험 삼아 나눈 삽입 노드를 가리키며, |height(r)|에는 떼어 낼
@@ -24074,7 +24074,7 @@ func appendPenalty() {
 @<상자와 목록을 만드는...@>=
 case vmode + removeItem, hmode + removeItem, mmode + removeItem: deleteLast()
 
-@ 프로시저 |deleteLast|를 부를 때 |curChr|는 있으면 지울 노드의 |type|이다.
+@ 프로시저 |deleteLast|를 부를 때 |curChr|는 있으면 지울 노드의 \ID{type}이다.
 
 @<|mainControl|이 쓰는 동작...@>=
 func deleteLast() {
@@ -27758,7 +27758,7 @@ case 16: panicking = !panicking
 @^system dependencies@>
 @^extensions to \TeX@>
 
-@ 먼저 \.{\\write}와 그 친척들에 딸린 자료를 나타내는 데 쓰는 whatsit 노드의 꼴을 생각해 보자. whatsit은 |type=whatsitNode|이고,
+@ 먼저 \.{\\write}와 그 친척들에 딸린 자료를 나타내는 데 쓰는 whatsit 노드의 꼴을 생각해 보자. whatsit은 \ID{type}${}={}$|whatsitNode|이고,
 |subtype|이 여러 종류의 whatsit을 구별한다는 것을 떠올리자. 각 노드는 두 낱말 이상을 차지한다. 그 정확한 수는 |subtype|이나 다른
 자료로 쉽게 정할 수 있기만 하면 상관없다.
 
