@@ -1,0 +1,53 @@
+% tex.bux -- gtwill이 미니 색인을 만들 때 읽는 의미들(make twill)
+%
+% tex.w의 선언에서는 읽어 낼 수 없는 이름들에게 의미를 준다. 이런 이름은 산문이나
+% 주석에만 나오는 것이라, 의미가 없으면 미니 색인에 `???'로 나온다. 형식은 CTWILL의
+% .bux와 같다. 한 줄에 @$ 하나씩, `@$이름 위치 TeX파트@>'로 쓴다. 위치는 {\TeX82}절번호
+% (이 프로그램의 한 절)이거나 "문자열"(다른 프로그램이나 파일)이고, TeX파트가 \zip이면
+% 미니 색인에는 이름과 위치만 나온다. 줄이 %로 시작하면 주석이다.
+%
+% 절 번호가 붙은 것은 tex.w의 절이 늘거나 줄면 함께 고쳐야 한다. 번호가 맞는지는
+% `gtwill -P tex.w'로 짠 교정용 문서에서 확인하면 된다.
+
+% 원본 tex.web의 매크로, 레이블, 구분 기호. 이 판에서는 반복문이나 if--else로 풀어 쓰고
+% 그 자리에 `// |updateWidth|'처럼 원래 이름을 주석으로 남겨 두었다.
+@$abort "tex.web" \zip@>
+@$advanceMajorTail "tex.web" \zip@>
+@$checkShrinkage "tex.web" \zip@>
+@$combineTwoDeltas "tex.web" \zip@>
+@$contribTail "tex.web" \zip@>
+@$convertToBreakWidth "tex.web" \zip@>
+@$copyToCurActive "tex.web" \zip@>
+@$downdateWidth "tex.web" \zip@>
+@$newDeltaFromBreakWidth "tex.web" \zip@>
+@$newDeltaToBreakWidth "tex.web" \zip@>
+@$printPlus "tex.web" \zip@>
+@$setBreakWidthToBackground "tex.web" \zip@>
+@$setHeightZero "tex.web" \zip@>
+@$setPageSoFarZero "tex.web" \zip@>
+@$startHere "tex.web" \zip@>
+@$storeBackground "tex.web" \zip@>
+@$storeBreakWidth "tex.web" \zip@>
+@$tats "tex.web" \zip@>
+@$updateActive "tex.web" \zip@>
+@$updateWidth "tex.web" \zip@>
+
+% Pascal의 낱말
+@$get "Pascal" \zip@>
+@$not "Pascal" \zip@>
+@$repeat "Pascal" \zip@>
+
+% TFM 파일의 부분
+@$header "TFM" \zip@>
+@$ligKern "TFM" \zip@>
+
+% 실제 레이블. `done5: ;'처럼 뒤에 `;'이 붙어 gweave가 정의로 잡지 못한다.
+@$done5 {\TeX82}935 \twilllabel@>
+
+% 보기를 들거나 설명하려고 산문에서만 쓴 이름. 설명하는 절을 가리킨다.
+% 그 절에서만 나오는 이름은 이렇게 하면 미니 색인에서 빠진다.
+@$isNl {\TeX82}70 \zip@>
+@$reportOverflow {\TeX82}120 \zip@>
+@$P {\TeX82}745 \zip@>
+@$curHeight {\TeX82}1049 \zip@>
+@$chr {\TeX82}1313 \zip@>

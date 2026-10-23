@@ -18,6 +18,22 @@ tex-deco.pdf
 tex-deco.toc
 tex-deco.ref
 
+# make twill, make twill-deco: gtwill이 미니 색인을 붙인 판
+tex-twill.tex
+tex-twill.log
+tex-twill.pdf
+tex-twill.toc
+tex-twill.ref
+tex-twill.mref
+tex-twill.smref
+tex-twill-deco.tex
+tex-twill-deco.log
+tex-twill-deco.pdf
+tex-twill-deco.toc
+tex-twill-deco.ref
+tex-twill-deco.mref
+tex-twill-deco.smref
+
 # make trip: tests/trip.sh가 처음 돌 때 CTAN에서 받아 오는 크누스의 원본 파일들
 tests/trip/
 
