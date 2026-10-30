@@ -11,6 +11,8 @@
 #   make regress    main 가지의 TeX과 출력이 바이트까지 같은지 본다(trip을 먼저 돌린다)
 #   make pgo        프로파일 기반 최적화에 쓸 default.pgo를 새로 만든다(리눅스가 아니면 docker)
 #   make fuzz       main 가지의 TeX과 출력을 견주는 차등 퍼징을 FUZZTIME(기본 1m) 동안 돌린다
+#   make install    tex 명령이 이 TeX을 부르게 한다(PREFIX, 기본 ~/.local)
+#   make uninstall  make install로 설치한 것을 지운다
 #   make clean      만든 것을 모두 지운다
 #   make deco       테두리에 액자를 두른 문서(tex-deco.pdf)를 만든다
 #   make twill      쪽마다 미니 색인을 붙인 문서(tex-twill.pdf)를 gtwill로 만든다
@@ -18,7 +20,7 @@
 
 BUILD = build
 
-.PHONY: all build pdf check fmt story trip test regress pgo fuzz clean deco twill twill-deco
+.PHONY: all build pdf check fmt story trip test regress pgo fuzz install uninstall clean deco twill twill-deco
 
 all: build pdf
 
@@ -53,7 +55,7 @@ define movetoc
 	mv $(1)-toc.pdf $(1).pdf
 endef
 
-tex.pdf: tex.w texlion.pdf
+tex.pdf: tex.w lion.pdf
 	$(call weave,tex)
 
 pdf: tex.pdf
@@ -93,8 +95,34 @@ FUZZTIME = 1m
 fuzz: $(BUILD)/tex $(BUILD)/ref/tex
 	go test ./tests/fuzz -run=FuzzSame -fuzz=FuzzSame -fuzztime=$(FUZZTIME)
 
+# 실행 파일과 그것으로 만든 plain 포맷은 $(TEXDIR)에 두고, $(BINDIR)/tex에는 TEXFORMATS를
+# $(TEXDIR)로 놓고 그 실행 파일을 부르는 작은 스크립트를 둔다. TEXFORMATS는 TeX Live의
+# 프로그램들도 쓰는 변수이므로 셸 전체에 놓지 않고 이 스크립트 안에서만 놓는다.
+# $(BINDIR)이 PATH에서 TeX Live의 디렉터리보다 앞에 있어야 tex가 이것을 부른다.
+PREFIX = $(HOME)/.local
+BINDIR = $(PREFIX)/bin
+TEXDIR = $(PREFIX)/share/gotex
+MARK = installed by tex-the-program
+
+install: $(BUILD)/tex
+	@if [ -e $(BINDIR)/tex ] && ! grep -q '$(MARK)' $(BINDIR)/tex 2>/dev/null; then \
+	  echo "$(BINDIR)/tex가 이미 있다. 이 저장소가 설치한 것이 아니므로 덮어쓰지 않는다." >&2; exit 1; fi
+	mkdir -p $(BINDIR) $(TEXDIR)
+	cp $(BUILD)/tex $(TEXDIR)/tex
+	cd $(TEXDIR) && rm -f plain.fmt && ./tex -ini plain '\dump' </dev/null >/dev/null && rm -f plain.log
+	printf '%s\n' '#!/bin/sh' '# $(MARK)' \
+	  'TEXFORMATS="$(TEXDIR)" exec "$(TEXDIR)/tex" "$$@"' > $(BINDIR)/tex
+	chmod +x $(BINDIR)/tex
+	@echo "설치했다: $(BINDIR)/tex -> $(TEXDIR)/tex (셸에서 hash -r 한 뒤 which tex로 확인한다)"
+
+uninstall:
+	@if [ -e $(BINDIR)/tex ] && ! grep -q '$(MARK)' $(BINDIR)/tex 2>/dev/null; then \
+	  echo "$(BINDIR)/tex는 이 저장소가 설치한 것이 아니므로 지우지 않는다." >&2; exit 1; fi
+	rm -f $(BINDIR)/tex
+	rm -rf $(TEXDIR)
+
 # 액자를 두른 판은 tex-deco.pdf로 따로 만들어 tex.pdf를 건드리지 않는다
-tex-deco.pdf: tex.w tex-deco.ch texlion.pdf decoframe.pdf
+tex-deco.pdf: tex.w tex-deco.ch lion.pdf decoframe.pdf
 	$(call weave,tex-deco,tex-deco.ch)
 
 deco: tex-deco.pdf
@@ -121,13 +149,13 @@ define twill
 	$(call movetoc,$(1))
 endef
 
-tex-twill.pdf: tex.w tex.bux texlion.pdf
+tex-twill.pdf: tex.w tex.bux lion.pdf
 	$(call twill,tex-twill)
 
 twill: tex-twill.pdf
 
 # 액자도 두르려면 tex-deco.ch를 그대로 쓴다. 거기서 \twillbackground를 \FrameBG로 둔다.
-tex-twill-deco.pdf: tex.w tex.bux tex-deco.ch texlion.pdf decoframe.pdf
+tex-twill-deco.pdf: tex.w tex.bux tex-deco.ch lion.pdf decoframe.pdf
 	$(call twill,tex-twill-deco,tex-deco.ch)
 
 twill-deco: tex-twill-deco.pdf

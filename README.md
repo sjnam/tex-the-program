@@ -20,7 +20,7 @@
 | 파일 | 내용 |
 | --- | --- |
 | `tex.w` | 번역 본문. 모든 것이 여기서 나온다 |
-| `texlion.pdf` | `tex.pdf` 1쪽의 왼쪽 아래에 넣는 사자 그림 |
+| `lion.pdf` | `tex.pdf` 1쪽의 왼쪽 아래에 넣는 사자 그림 |
 | `tex-deco.ch` | 쪽마다 액자를 두르는 바꿈 파일(`make deco`) |
 | `decoframe.pdf` | `tex-deco.ch`가 쪽마다 까는 액자 그림 |
 | `Makefile` | 빌드, 조판, 테스트 |
@@ -151,6 +151,27 @@ terminal"로 멈추니, 대화가 필요 없을 때는 문서에 `\batchmode`나
 실행 중에 Ctrl-C를 누르면 원본의 `interrupt`처럼 안전한 곳에서 멈추고 다음 동작을 묻는다.
 
 출력의 날짜는 원본의 `fixDateAndTime`처럼 늘 1776년 7월 4일 정오다.
+
+### `tex` 명령으로 설치하기
+
+```sh
+make install                # ~/.local/bin/tex가 이 TeX을 부른다
+make install PREFIX=~/opt   # 다른 곳에 설치한다
+make uninstall              # 설치한 것을 지운다
+```
+
+`make install`은 실행 파일과 그것으로 만든 plain 포맷을 `$PREFIX/share/gotex`에 두고, `$PREFIX/bin/tex`에는
+`TEXFORMATS`를 그 디렉터리로 놓고 실행 파일을 부르는 작은 스크립트를 둔다. 그래서 `&plain` 없이
+`tex story`라고만 해도 plain 포맷을 읽는다. 이 포맷은 TeX Live의 것과 형식이 달라 서로 읽을 수 없으므로
+kpsewhich로 찾지 않는다. `TEXFORMATS`는 TeX Live의 프로그램들도 쓰는 변수라서 셸 전체가 아니라 이 스크립트
+안에서만 놓는다.
+
+`$PREFIX/bin`이 PATH에서 TeX Live의 디렉터리(`/Library/TeX/texbin` 따위)보다 앞에 있어야 `tex`가 이것을
+부른다. 설치한 뒤에는 셸에서 `hash -r`을 하고 `which tex`로 확인한다. 바뀌는 것은 `tex` 명령 하나뿐이고,
+`latex`나 `pdftex` 같은 TeX Live의 다른 프로그램은 그대로다. 이 TeX은 TeX Live의 `-interaction=`이나
+`-output-directory` 같은 옵션을 모른다. 맨 앞의 `-ini` 말고는 원본 TeX처럼 인자를 첫 입력 줄로 읽는다.
+`$PREFIX/bin/tex`가 이미 있는데 이 저장소가 설치한 것이 아니면, `make install`도 `make uninstall`도 그것을
+건드리지 않고 멈춘다. 실행 파일을 새로 빌드하면 포맷의 형식이 바뀌었을 수 있으니 `make install`을 다시 한다.
 
 ## 테스트
 

@@ -106,7 +106,7 @@ vardef southof(expr q) = (xpart center q, ypart llcorner bbox q) enddef;
 @.GWEB@>
 @^TeXbook@>
 \par\vfill\noindent
-\saveimageresource height 1.5in {texlion.pdf}\useimageresource\lastsavedimageresourceindex
+\saveimageresource height 1.5in {lion.pdf}\useimageresource\lastsavedimageresourceindex
 
 @ \seclabel{go-native}이 판은 실험이다. 원본 \.{tex.web}은 이식성을 무엇보다 앞세워, 어느 언어로든
 쉽게 옮길 수 있도록 웬만한 고급 언어에 다 있는 기능만 썼다. 이 번역도 처음에는 그 뜻을 따랐다.
