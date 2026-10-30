@@ -137,6 +137,9 @@ vardef southof(expr q) = (xpart center q, ypart llcorner bbox q) enddef;
 \item{$\bullet$} 입력 줄을 |ReadSlice|로 한 번에 받고(\secref{input-ln}), \.{DVI} 버퍼를 바이트 배열로 바꾸어
 그 구간을 한 번에 쓴다. 둘 다 바이트마다 함수를 부르던 것을 없앤 것이다. 3911쪽짜리 문서가 1.52초에 끝나,
 같은 기계에서 \TeX\ Live의 \.{tex}(1.55초)보다 조금 빠르다.
+\item{$\bullet$} 쪽을 내보내는 일을 두 고루틴이 나눈다(\secref{dvi-goroutine}). 본체는 상자를 훑으며 \.{DVI} 명령을
+적어 통로로 넘기고, 따로 도는 고루틴이 그것을 바이트로 바꾸어 쓰는 동안 다음 쪽을 조판한다. 3911쪽짜리 문서가 1.44초에 끝난다.
+처음 바란 대로 고루틴과 통로가 \TeX의 일을 실제로 나누어 맡는 곳이다.
 \smallskip\noindent
 결과가 정말 같은지는 \.{tests/regress.sh}로 확인한다. 이 스크립트는 \.{main} 가지의 \.{tex.w}로
 기준 프로그램을 따로 만들어, 두 프로그램의 출력을 바이트 단위로 견준다.
@@ -14877,32 +14880,40 @@ func dviPop(l int32) {
 	}
 }
 
-@ 다음은 글꼴 정의를 내보내는 프로시저다. \TeX82는 작업 하나에 서로 다른 글꼴을 많아야 256개만 쓰므로 명령 코드로는 언제나
-|fntDef1|을 쓴다.
+@ \seclabel{font-def}다음은 글꼴 정의를 내보내는 프로시저다. \TeX82는 작업 하나에 서로 다른 글꼴을 많아야 256개만 쓰므로 명령 코드로는 언제나
+|fntDef1|을 쓴다. 명령 코드와 글꼴 번호 뒤의 바이트들은 글꼴을 처음 쓸 때 본체가 함수 |fontDefBytes|로 만들어 배열
+|dviFontBytes|에 넣어 둔다(\secref{dvi-ops}). 글꼴의 정보와 이름은 본체의 배열들에 있으므로, 쪽을 내보내는 고루틴이 그것을
+직접 읽지 않게 하려는 것이다. 글꼴 하나의 정보는 불러들인 뒤로 바뀌지 않으니 미리 만들어 두어도 된다.
 
 @<함수들@>=
 func dviFontDef(f internalFontNumber) {
-	var k poolPointer // |strPool|의 첨자
 	dviOut(fntDef1)
 	dviOut(f - fontBase - 1)
-	dviOut(qo(fontCheck[f].b0()))
-	dviOut(qo(fontCheck[f].b1()))
-	dviOut(qo(fontCheck[f].b2()))
-	dviOut(qo(fontCheck[f].b3()))
-	dviFour(fontSize[f])
-	dviFour(fontDsize[f])
-	dviOut(length(fontArea[f]))
-	dviOut(length(fontName[f]))
-	@<내부 번호가 |f|인 글꼴의 이름을 출력한다@>
+	for _, b := range dviFontBytes[f] {
+		dviOut(int32(b))
+	}
 }
 
-@ 글꼴 이름은 영역과 이름을 차례로 내보낸다.
+func fontDefBytes(f internalFontNumber) []byte {
+	var k poolPointer // |strPool|의 첨자
+	q := fontCheck[f]
+	b := []byte{byte(qo(q.b0())), byte(qo(q.b1())), byte(qo(q.b2())), byte(qo(q.b3()))}
+	for _, x := range [...]int32{fontSize[f], fontDsize[f]} {
+		b = append(b, byte(x>>24), byte(x>>16), byte(x>>8), byte(x))
+	}
+	b = append(b, byte(length(fontArea[f])), byte(length(fontName[f])))
+	@<내부 번호가 |f|인 글꼴의 이름을 출력한다@>
+	return b
+}
+
+@ 글꼴 이름은 영역과 이름을 차례로 내보낸다. 정수를 바이트 넷으로 쪼갤 때는 |dviFour|와 같은 차례, 곧 높은 바이트부터
+적는다. 음수이면 2의 보수다.
 @<내부 번호가 |f|인...@>=
 for k = strStart[fontArea[f]]; k <= strStart[fontArea[f]+1]-1; k++ {
-	dviOut(so(strPool[k]))
+	b = append(b, byte(so(strPool[k])))
 }
 for k = strStart[fontName[f]]; k <= strStart[fontName[f]+1]-1; k++ {
-	dviOut(so(strPool[k]))
+	b = append(b, byte(so(strPool[k])))
 }
 
 @ \seclabel{yz-matches}작은 컴퓨터에 쓸 \TeX이라면 이 프로그램의 다음 몇 부분에 나오는 착상은 빼도 좋다. 명령 |w0|, |x0|,
@@ -14985,7 +14996,7 @@ func movement(w scaled, o eightBits) {
 	var mstate smallNumber // |y|나 |z|를 보았나?
 	var p, q pointer // 스택의 현재 노드와 맨 위 노드
 	var k int32 // |dviBuf|의 첨자, |dviBufSize|를 법으로
-	q = getNode(movementNodeSize) // 스택의 맨 위를 위한 새 노드
+	q = getMovementNode() // 스택의 맨 위를 위한 새 노드
 	setWidth(q, w)
 	setLocation(q, dviOffset+dviPtr)
 	if o == down1 {
@@ -15178,7 +15189,7 @@ func pruneMovements(l int32) { // |location>=l|인 움직임 노드들을 지운
 		}
 		p = downPtr
 		downPtr = link(p)
-		freeNode(p, movementNodeSize)
+		freeMovementNode(p)
 	}
 done:
 	for rightPtr != null {
@@ -15187,7 +15198,7 @@ done:
 		}
 		p = rightPtr
 		rightPtr = link(p)
-		freeNode(p, movementNodeSize)
+		freeMovementNode(p)
 	}
 }
 
@@ -15204,18 +15215,24 @@ done:
 
 루틴 |hlistOut|과 |vlistOut|의 중첩 깊이는 |curS|라고 부른다. 이것은 본질적으로 \.{DVI} 출력에서 |push| 명령의 깊이다.
 
+이 판에서는 두 쌍을 서로 다른 고루틴이 맡을 수 있다(\secref{dvi-goroutine}). |curH|와 |curV|는 상자를 훑는 본체의
+것이고, |dviH|, |dviV|, |dviF|, |curS|는 \.{DVI} 바이트를 만드는 쪽의 것이다. 그래서 |synchH|와 |synchV|는 직접 움직이지
+않고, |dviH=curH|나 |dviV=curV|가 되게 하라는 명령을 낸다. 실제로 움직이는 것은 |dviSynchH|와 |dviSynchV|다.
+
 @<전역 변수@>=
 func synchH() {
-	if curH != dviH {
-		movement(curH-dviH, right1)
-		dviH = curH
+	if shipAsync {
+		dviOps = append(dviOps, opSynchH, curH)
+	} else {
+		dviSynchH(curH)
 	}
 }
 
 func synchV() {
-	if curV != dviV {
-		movement(curV-dviV, down1)
-		dviV = curV
+	if shipAsync {
+		dviOps = append(dviOps, opSynchV, curV)
+	} else {
+		dviSynchV(curV)
 	}
 }
 
@@ -15225,21 +15242,20 @@ var @!dviF internalFontNumber // 현재 글꼴
 var @!curS int32 // 출력 상자 중첩의 현재 깊이, 처음에는 $-1$
 
 @ 쪽을 내보내기 시작할 때 변수들을 초기화한다. \.{DVI} 파일을 아직 열지 않았으면 열고, 첫 쪽이면 서문을 내보낸다. 서문에는
-단위를 정하는 수와 \.{\\mag}, 그리고 `\.{ TeX output 1776.07.04:1200}' 같은 주석이 들어간다.
-@<|shipOut|을 시작할 때 변수들을 초기화한다@>=
-dviH = 0
-dviV = 0
-curH = hOffset()
-dviF = nullFont
-ensureDVIOpen()
-if totalPages == 0 {
-	dviOut(pre)
-	dviOut(idByte) // 서문을 출력한다
+단위를 정하는 수와 \.{\\mag}, 그리고 `\.{ TeX output 1776.07.04:1200}' 같은 주석이 들어간다. 서문과 |bop|는 명령
+|opPageBegin| 하나로 낸다(\secref{ship-begin}). 명령에는 \.{\\count0}부터 \.{\\count9}까지의 값을 담고, 첫 쪽이면 확대
+배율과 주석 문자열도 담는다. 주석은 문자열 풀에서 만들어야 하므로 본체가 만든다.
 @^preamble of \.{DVI} file@>
-	dviFour(25400000)
-	dviFour(473628672) // sp를 위한 변환 비율
+@<|shipOut|을 시작할 때 변수들을 초기화한다@>=
+ensureDVIOpen()
+@<이 쪽을 고루틴에게 맡길지 정한다@>
+curH = hOffset()
+dviOps = append(dviOps, opPageBegin)
+for k = 0; k <= 9; k++ {
+	dviOps = append(dviOps, count(k))
+}
+if pagesBegun == 0 {
 	prepareMag()
-	dviFour(mag()) // 확대 배율이 얼어붙는다
 	oldSetting = selector
 	selector = newString
 	printStr(" TeX output ")
@@ -15252,12 +15268,16 @@ if totalPages == 0 {
 	printTwo(time() / 60)
 	printTwo(time() % 60)
 	selector = oldSetting
-	dviOut(curLength())
+	dviOps = append(dviOps, curLength(), mag())
 	for s = strStart[strPtr]; s <= poolPtr-1; s++ {
-		dviOut(so(strPool[s]))
+		dviOps = append(dviOps, so(strPool[s]))
 	}
 	poolPtr = strStart[strPtr] // 현재 문자열을 비운다
+} else {
+	dviOps = append(dviOps, -1)
 }
+flushOps()
+pagesBegun++
 
 @ 프로시저 |hlistOut|이 불리면, |tempPtr|가 가리키는 |hlistNode|가 나타내는 상자를 내보내야 한다. 그 상자의 기준점의 좌표는
 |(curH,curV)|다.
@@ -15268,9 +15288,10 @@ if totalPages == 0 {
 
 두 프로시저는 서로를 부른다. 가로 목록 안의 세로 상자는 |vlistOut|으로, 세로 목록 안의 가로 상자는 |hlistOut|으로 내보낸다.
 
-@ 재귀 프로시저 |hlistOut|과 |vlistOut|에는 저마다 지역 변수 |saveH|와 |saveV|가 있어서, 새 재귀 수준에 들어가기 바로 전의
-|dviH|와 |dviV| 값을 담아 둔다. 사실상 \TeX의 실행 시간 스택에 쌓인 |saveH|와 |saveV|의 값들은, \.{DVI}를 읽는 프로그램이
-|push|로 좌표 스택에 쌓을 |h|와 |v|의 값들에 해당한다.
+@ 재귀 프로시저 |hlistOut|과 |vlistOut|은 새 재귀 수준에 들어가기 바로 전에 |dviH|와 |dviV|를 담아 두라는 명령을 내고,
+돌아오면 되살리라는 명령을 낸다. 원래는 지역 변수 |saveH|와 |saveV|에 담았지만, 이제 그 값들은 명령을 실행하는 쪽의 스택
+|dviHV|에 쌓인다(\secref{dvi-goroutine}). 그 스택에 쌓인 값들은 \.{DVI}를 읽는 프로그램이 |push|로 좌표 스택에 쌓을 |h|와
+|v|의 값들에 해당한다.
 
 
 @<함수들@>=
@@ -15278,12 +15299,11 @@ if totalPages == 0 {
 func hlistOut() { // |hlistNode| 상자를 출력한다
 	var baseLine scaled // 이 상자의 기준선 좌표
 	var leftEdge scaled // 이 상자의 왼쪽 좌표
-	var saveH, saveV scaled // |dviH|와 |dviV|가 꺼내져 돌아갈 값
+	var saveH scaled // 리더 상자를 놓기 전의 |curH|
 	var thisBox pointer // 둘러싼 상자를 가리키는 포인터
 	var gOrder glueOrd // 글루에 적용되는 무한대의 차수
 	var gSign int32 // 글루의 종류를 고른다; |normal..shrinking|
 	var p pointer // 가로 목록의 현재 위치
-	var saveLoc int32 // 들어올 때의 \.{DVI} 바이트 위치
 	var leaderBox pointer // 되풀이하는 리더 상자
 	var leaderWd scaled // 되풀이하는 리더 상자의 너비
 	var lx scaled // 리더 상자 사이의 추가 간격
@@ -15295,22 +15315,11 @@ func hlistOut() { // |hlistNode| 상자를 출력한다
 	curG = 0; curGlue = floatConstant(0)
 	thisBox = tempPtr; gOrder = glueOrder(thisBox)
 	gSign = glueSign(thisBox); p = listPtr(thisBox)
-	curS++
-	if curS > 0 {
-		dviOut(push)
-	}
-	if curS > maxPush {
-		maxPush = curS
-	}
-	saveLoc = dviOffset + dviPtr; baseLine = curV; leftEdge = curH
+	outBoxBegin(); baseLine = curV; leftEdge = curH
 	for p != null {
 		@<|hlistOut|에서 노드 |p|를 출력하고 다음 노드로 옮겨 간다@>
 	}
-	pruneMovements(saveLoc)
-	if curS > 0 {
-		dviPop(saveLoc)
-	}
-	curS--
+	outBoxEnd()
 }
 
 @ 프로시저 |hlistOut|의 이 부분은 \TeX의 안쪽 루프에 속하므로 효율에 특별히 마음을 써야 한다. 문자 노드 |charNode|를 만나면
@@ -15328,26 +15337,42 @@ if isCharNode(p) {
 	for {
 		f = font(p)
 		c = character(p)
-		if f != dviF {
-			@<글꼴 |dviF|를 |f|로 바꾼다@>
-		}
-		if c >= qi(128) {
-			dviOut(set1)
-		}
-		dviOut(qo(c))
+		@<글꼴 |f|의 문자 |c|를 놓으라는 명령을 낸다@>
 		curH += charWidth(f, charInfo(f, c))
 		p = link(p)
 		if !isCharNode(p) {
 			break
 		}
 	}
-	dviH = curH
+	@<|dviH=curH|로 놓으라는 명령을 낸다@>
 } else {
 	@<|hlistOut|에서 |charNode|가 아닌 |p|를 출력하고 다음 노드로 옮겨 간다@>
 }
 
-@ 글꼴을 바꾸는 명령을 내보낸다. 이 글꼴을 처음 쓰는 것이면 먼저 글꼴 정의를 내보낸다. 글꼴 번호가 64 이하이면 한
-바이트짜리 \ID{fntNum} 명령을 쓴다.
+@ 문자 하나를 놓는 명령은 낱말 |f*256+c| 하나다(\secref{dvi-ops}). 글꼴 |f|를 처음 쓰는 것이면 글꼴 정의의 바이트들을
+먼저 만들어 |dviFontBytes|에 넣어 둔다. 글꼴 정보를 읽는 일은 본체에서 해야 하기 때문이다(\secref{font-def}).
+
+@<글꼴 |f|의 문자 |c|를...@>=
+if dviFontBytes[f] == nil {
+	dviFontBytes[f] = fontDefBytes(f)
+}
+if shipAsync {
+	dviOps = append(dviOps, f*256+c)
+} else {
+	dviChar(f, c)
+}
+
+@ 문자들을 놓고 나면 |dviH|는 |curH|와 같아진다. 문자 명령은 너비를 모르므로 그 값을 알려 준다.
+
+@<|dviH=curH|로...@>=
+if shipAsync {
+	dviOps = append(dviOps, opSetH, curH)
+} else {
+	dviH = curH
+}
+
+@ 글꼴을 바꾸는 명령을 내보낸다. 함수 |dviChar|의 일부다. 이 글꼴을 처음 쓰는 것이면 먼저 글꼴 정의를 내보낸다. 글꼴
+번호가 64 이하이면 한 바이트짜리 \ID{fntNum} 명령을 쓴다.
 @<글꼴 |dviF|를 |f|로...@>=
 if !fontUsed[f] {
 	dviFontDef(f)
@@ -15386,13 +15411,12 @@ nextP: // 노드 |p|를 다 처리했으면 여기로 간다
 p = link(p)
 
 @ 가로 목록 안의 상자를 내보낸다. 빈 상자이면 너비만큼 지나가기만 한다. 그렇지 않으면 상자를 |shiftAmount|만큼 내려 재귀로
-내보내고, 돌아오면 |dviH|와 |dviV|를 되살린 다음 상자의 너비만큼 오른쪽으로 간다.
+내보내고, 돌아오면 |dviH|와 |dviV|를 되살리라는 명령을 낸 다음 상자의 너비만큼 오른쪽으로 간다.
 @<가로 목록에서 상자를...@>=
 if listPtr(p) == null {
 	curH += width(p)
 } else {
-	saveH = dviH
-	saveV = dviV
+	outSaveHV()
 	curV = baseLine + shiftAmount(p) // 상자를 아래로 옮긴다
 	tempPtr = p
 	edge = curH
@@ -15401,8 +15425,7 @@ if listPtr(p) == null {
 	} else {
 		hlistOut()
 	}
-	dviH = saveH
-	dviV = saveV
+	outRestoreHV()
 	curH = edge + width(p)
 	curV = baseLine
 }
@@ -15421,11 +15444,12 @@ if ruleHt > 0 && ruleWd > 0 { // 빈 괘선은 출력하지 않는다
 	synchH()
 	curV = baseLine + ruleDp
 	synchV()
-	dviOut(setRule)
-	dviFour(ruleHt)
-	dviFour(ruleWd)
+	if shipAsync {
+		dviOps = append(dviOps, opSetRule, ruleHt, ruleWd)
+	} else {
+		dviSetRule(ruleHt, ruleWd)
+	}
 	curV = baseLine
-	dviH += ruleWd
 }
 
 @ 글루만큼 오른쪽으로 움직인다. 글루를 늘이거나 줄였다면 지금까지의 늘어남이나 줄어듦을 |curGlue|에 쌓아 두고, 상자의 글루
@@ -15548,14 +15572,15 @@ if subtype(p) == aLeaders {
 }
 
 @ 리더 상자 하나를 지금 자리에 내보내고 다음 자리로 간다. 여기의 `\ID{synch}' 연산들은 \.{DVI} 출력에서 가로와 세로 움직임을
-지정하는 데 드는 바이트 수를 줄이려는 것이다.
+지정하는 데 드는 바이트 수를 줄이려는 것이다. 원래는 |synchH| 바로 뒤의 |dviH|를 |saveH|에 담았는데, 그때는 |dviH=curH|이므로
+이제는 |curH|를 담는다. 본체는 |dviH|를 모르기 때문이다.
 
 @<|curH|에 리더 상자...@>=
 curV = baseLine + shiftAmount(leaderBox)
 synchV()
-saveV = dviV
 synchH()
-saveH = dviH
+saveH = curH
+outSaveHV()
 tempPtr = leaderBox
 outerDoingLeaders = doingLeaders
 doingLeaders = true
@@ -15565,8 +15590,7 @@ if typ(leaderBox) == vlistNode {
 	hlistOut()
 }
 doingLeaders = outerDoingLeaders
-dviV = saveV
-dviH = saveH
+outRestoreHV()
 curV = baseLine
 curH = saveH + leaderWd + lx
 
@@ -15576,12 +15600,11 @@ curH = saveH + leaderWd + lx
 func vlistOut() { // |vlistNode| 상자를 출력한다
 	var leftEdge scaled // 이 상자의 왼쪽 좌표
 	var topEdge scaled // 이 상자의 위쪽 좌표
-	var saveH, saveV scaled // |dviH|와 |dviV|가 꺼내져 돌아갈 값
+	var saveV scaled // 하위 상자나 리더 상자의 기준선의 |curV|
 	var thisBox pointer // 둘러싼 상자를 가리키는 포인터
 	var gOrder glueOrd // 글루에 적용되는 무한대의 차수
 	var gSign int32 // 글루의 종류를 고른다; |normal..shrinking|
 	var p pointer // 세로 목록의 현재 위치
-	var saveLoc int32 // 들어올 때의 \.{DVI} 바이트 위치
 	var leaderBox pointer // 되풀이하는 리더 상자
 	var leaderHt scaled // 되풀이하는 리더 상자의 높이
 	var lx scaled // 리더 상자 사이의 추가 간격
@@ -15593,23 +15616,12 @@ func vlistOut() { // |vlistNode| 상자를 출력한다
 	curG = 0; curGlue = floatConstant(0)
 	thisBox = tempPtr; gOrder = glueOrder(thisBox)
 	gSign = glueSign(thisBox); p = listPtr(thisBox)
-	curS++
-	if curS > 0 {
-		dviOut(push)
-	}
-	if curS > maxPush {
-		maxPush = curS
-	}
-	saveLoc = dviOffset + dviPtr; leftEdge = curH; curV -= height(thisBox)
+	outBoxBegin(); leftEdge = curH; curV -= height(thisBox)
 	topEdge = curV
 	for p != null {
 		@<|vlistOut|에서 노드 |p|를 출력하고 다음 노드로 옮겨 간다@>
 	}
-	pruneMovements(saveLoc)
-	if curS > 0 {
-		dviPop(saveLoc)
-	}
-	curS--
+	outBoxEnd()
 }
 
 @ 다음 코드는 |vlistOut|에서 노드 |p|를 내보내고 다음 노드로 옮겨 가되, 조건 |curH=leftEdge|를 지킨다.
@@ -15652,8 +15664,8 @@ if listPtr(p) == null {
 } else {
 	curV += height(p)
 	synchV()
-	saveH = dviH
-	saveV = dviV
+	saveV = curV
+	outSaveHV()
 	curH = leftEdge + shiftAmount(p) // 상자를 오른쪽으로 옮긴다
 	tempPtr = p
 	if typ(p) == vlistNode {
@@ -15661,8 +15673,7 @@ if listPtr(p) == null {
 	} else {
 		hlistOut()
 	}
-	dviH = saveH
-	dviV = saveV
+	outRestoreHV()
 	curV = saveV + depth(p)
 	curH = leftEdge
 }
@@ -15678,9 +15689,11 @@ curV += ruleHt
 if ruleHt > 0 && ruleWd > 0 { // 빈 괘선은 출력하지 않는다
 	synchH()
 	synchV()
-	dviOut(putRule)
-	dviFour(ruleHt)
-	dviFour(ruleWd)
+	if shipAsync {
+		dviOps = append(dviOps, opPutRule, ruleHt, ruleWd)
+	} else {
+		dviPutRule(ruleHt, ruleWd)
+	}
 }
 goto nextP
 
@@ -15754,10 +15767,10 @@ if subtype(p) == aLeaders {
 @<|curV|에 리더 상자...@>=
 curH = leftEdge + shiftAmount(leaderBox)
 synchH()
-saveH = dviH
 curV += height(leaderBox)
 synchV()
-saveV = dviV
+saveV = curV
+outSaveHV()
 tempPtr = leaderBox
 outerDoingLeaders = doingLeaders
 doingLeaders = true
@@ -15767,8 +15780,7 @@ if typ(leaderBox) == vlistNode {
 	hlistOut()
 }
 doingLeaders = outerDoingLeaders
-dviV = saveV
-dviH = saveH
+outRestoreHV()
 curH = leftEdge
 curV = saveV - height(leaderBox) + leaderHt + lx
 
@@ -15776,7 +15788,6 @@ curV = saveV - height(leaderBox) + leaderHt + lx
 
 @<함수들@>=
 func shipOut(p pointer) { // 상자 |p|를 출력한다
-	var pageLoc int32 // 현재 |bop|의 위치
 	var j, k int32 // 처음 열 개의 \.{\\count} 레지스터의 첨자; |0..9|
 	var s poolPointer // |strPool|의 첨자
 	var oldSetting int32 // 저장한 |selector| 설정; |0 .. maxSelector|
@@ -15844,17 +15855,11 @@ if stat {
 }
 
 @ 상자 |p|를 쪽 하나로 내보낸다. 명령 |bop|에는 \.{\\count0}부터 \.{\\count9}까지와 앞 |bop|의 위치를 적고, 기준점을
-\.{\\hoffset}과 \.{\\voffset}만큼 옮긴 자리에서 상자를 내보낸 다음 |eop|를 적는다.
+\.{\\hoffset}과 \.{\\voffset}만큼 옮긴 자리에서 상자를 내보낸 다음 |eop|를 적는다. 이 판에서는 이 일들도 명령으로 낸다.
+비동기식이면 쪽을 다 훑은 뒤 쌓인 명령을 고루틴에게 넘긴다(\secref{dvi-goroutine}).
 @<상자 |p|를 내보낸다@>=
 @<|maxH|와 |maxV|의 값을 갱신하되, 쪽이 너무 크면 |goto done|@>
 @<|shipOut|을 시작할 때...@>
-pageLoc = dviOffset + dviPtr
-dviOut(bop)
-for k = 0; k <= 9; k++ {
-	dviFour(count(k))
-}
-dviFour(lastBop)
-lastBop = pageLoc
 curV = height(p) + vOffset()
 tempPtr = p
 if typ(p) == vlistNode {
@@ -15862,9 +15867,12 @@ if typ(p) == vlistNode {
 } else {
 	hlistOut()
 }
-dviOut(eop)
-totalPages++
-curS = -1
+dviOps = append(dviOps, opPageEnd)
+if shipAsync {
+	sendPage()
+} else {
+	flushOps()
+}
 done:
 
 @ 사용자가 다른 오류 메시지들을 무시하다가 거대한 쪽을 만들 때가 있다. 그런 쪽은 인쇄 소프트웨어를 헷갈리게 할 수 있으므로
@@ -15895,13 +15903,16 @@ if width(p)+hOffset() > maxH {
 	maxH = width(p) + hOffset()
 }
 
-@ 프로그램이 끝날 때는 후문을 써서 일을 마무리해야 한다. 쪽 수 |totalPages|가 0이면 \.{DVI} 파일은 한 번도 열리지 않았다. 그 값이
+@ \seclabel{dvi-finish}프로그램이 끝날 때는 후문을 써서 일을 마무리해야 한다. 쪽 수 |totalPages|가 0이면 \.{DVI} 파일은 한 번도 열리지 않았다. 그 값이
 65536 이상이면 \.{DVI} 파일은 거짓말을 할 것이다. 그리고 |maxPush>=65536|이면 사용자는 무슨 혼돈이 뒤따르든 받아 마땅하다.
-출력 루틴이 도중에 중단되었다면 아직 닫지 않은 |push|와 쪽을 먼저 닫는다.
+출력 루틴이 도중에 중단되었다면 아직 닫지 않은 |push|와 쪽을 먼저 닫는다. 그 전에 고루틴이 받은 쪽을 모두 내보낼 때까지
+기다린다(\secref{dvi-goroutine}). 쪽을 내보내는 도중에 치명적인 오류로 여기 왔다면 아직 넘기지 않은 반쪽짜리 명령도 이때
+넘긴다. 그러면 \.{DVI} 파일에는 원래처럼 오류가 난 자리까지가 남는다.
 
 이 루틴에 쓸 정수 변수 |k|는 나중에 선언한다.
 
 @<\.{DVI} 파일을 마무리한다@>=
+waitDVI()
 for curS > -1 {
 	if curS > 0 {
 		dviOut(pop)
@@ -15963,6 +15974,358 @@ for fontPtr > fontBase {
 		dviFontDef(fontPtr)
 	}
 	fontPtr--
+}
+
+@ \seclabel{dvi-goroutine}여기까지가 원본의 쪽 내보내기다. 이 판에서는 그 일을 두 고루틴이 나누어 한다(2026년 10월
+31일). 쪽 하나를 내보내는 데에는 일이 두 가지 섞여 있다. 하나는 상자를 훑으며 글루를 계산하고, 리더를 되풀이하고,
+\.{\\write}를 펼치고, \.{\\special}의 문자열을 만드는 일이다. 이것은 \TeX의 나머지 상태와 얽혀 있으므로 본체가 원래 순서대로
+해야 한다. 다른 하나는 그 결과를 \.{DVI} 바이트로 바꾸는 일이다. 움직임을 |w|, |x|, |y|, |z|로 줄이고(\secref{movement}),
+글꼴을 바꾸고, |push|와 |pop|을 맞추고, 버퍼를 파일에 쓴다. 이 일은 |dviH|, |dviV|, |dviF|, |curS|, 움직임 스택, 버퍼처럼 이
+일에만 쓰는 변수만 건드린다. 긴 문서에서 조판 시간의 6\pct!쯤이 여기에 든다.
+
+그래서 본체는 두 번째 일을 직접 하지 않고 작은 {\it \.{DVI} 명령\/}으로 적어 둔다. 쪽을 다 훑으면 명령들을 통로로 따로 도는
+고루틴에게 넘기고, 고루틴이 그것을 실행하는 동안 본체는 다음 쪽을 조판한다. 명령을 실행하는 함수는 원래 코드에서 그대로
+옮겨 왔으므로 \.{DVI} 파일은 한 바이트도 달라지지 않는다. 쪽을 내보내는 도중에 치명적인 오류가 나도 그때까지 쌓인 명령만
+실행하면 원래와 똑같은 반쪽짜리 쪽이 남고, 후문이 그것을 닫는다(\secref{dvi-finish}).
+
+하나 달라지는 것이 있다. 움직임 노드는 원래 |getNode|로 |mem|에서 얻는데, 고루틴은 본체와 함께 |mem|의 할당기를 쓸 수
+없다. 그래서 고루틴은 배열 |mem|에서 \TeX이 쓰지 않는 |memMax| 뒤쪽에서 움직임 노드를 얻는다(\secref{mem-array}). 그러면
+본체의 가변 크기 메모리에서 노드 몇 개가 잠깐 할당되었다가 풀리는 일이 일어나지 않는다. 사용량은 어차피 쪽을 마치면 그대로
+돌아오지만, 빈자리 목록의 모양은 조금 달라질 수 있다. 이 차이가 드러날 수 있는 곳은 메모리 통계뿐이므로,
+\.{\\tracingstats}가 양수이면 쪽을 예전처럼 본체에서 바로 내보낸다. 이렇게 한 쪽씩 동기식과 비동기식을 고르는 것은
+\secref{ship-mode}에서 한다.
+
+@ \seclabel{dvi-ops}\.{DVI} 명령은 |int32|의 슬라이스 |dviOps|에 쌓는다. 가장 흔한 명령인 문자 놓기는 낱말 하나 |f*256+c|로
+적고, 나머지 명령은 음수 코드 하나 뒤에 인자를 붙인다. 문자 명령은 늘 0 이상이므로 둘을 헷갈릴 일이 없다.
+
+@<정의@>=
+const (
+	@!opSynchH = -1 - iota // |dviSynchH(h)|; 인자 |h|
+	@!opSynchV // |dviSynchV(v)|; 인자 |v|
+	@!opSetH // |dviH=h|; 인자 |h|
+	@!opSaveHV // |dviSaveHV()|
+	@!opRestoreHV // |dviRestoreHV()|
+	@!opBoxBegin // |dviBoxBegin()|
+	@!opBoxEnd // |dviBoxEnd()|
+	@!opSetRule // |dviSetRule(ht,wd)|; 인자 |ht|, |wd|
+	@!opPutRule // |dviPutRule(ht,wd)|; 인자 |ht|, |wd|
+	@!opSpecial // |xxx1|이나 |xxx4|; 인자 $n$과 바이트 $n$개
+	@!opPageBegin // 서문과 |bop|; \secref{ship-begin}
+	@!opPageEnd // |eop|
+)
+
+@ 쪽 하나를 동기식으로 내보낼지 비동기식으로 내보낼지는 |shipAsync|가 정한다. 동기식이면 명령을 쌓는 함수가 쌓지 않고
+곧바로 실행 함수를 부르므로, 원래의 쪽 내보내기와 똑같은 순서로 일이 일어난다. 전역 변수 |pagesBegun|은 본체가 시작한 쪽의
+수다. 첫 쪽에 서문을 붙일지 알려고 원래는 |totalPages|를 보았지만, 그 변수는 이제 고루틴의 것이다.
+
+@<전역 변수@>=
+var @!dviOps []int32 // 아직 실행하지 않은 \.{DVI} 명령들
+var @!shipAsync bool // 지금 쪽을 고루틴에게 맡기는가?
+var @!pagesBegun int32 // 본체가 내보내기 시작한 쪽의 수
+var @!dviFontBytes [fontMax + 1][]byte // 글꼴 정의의 바이트들, 처음 쓸 때 만든다
+
+@ 동기식일 때 쌓인 명령을 곧바로 실행하는 함수다. 명령을 낱낱이 쌓지 않고 몇 개를 한꺼번에 쌓는 곳(서문, |eop|, \.{\\special})에서 부른다.
+
+@<함수들@>=
+func flushOps() {
+	if !shipAsync {
+		dviExec(dviOps)
+		dviOps = dviOps[:0]
+	}
+}
+
+@ 상자 하나의 시작과 끝, 그리고 |dviH|와 |dviV|의 저장과 복원은 |hlistOut|과 |vlistOut|이 둘 다 하므로 함수로 둔다. 모양은
+모두 같다. 비동기식이면 명령을 쌓고, 동기식이면 실행한다.
+
+@<함수들@>=
+func outBoxBegin() {
+	if shipAsync {
+		dviOps = append(dviOps, opBoxBegin)
+	} else {
+		dviBoxBegin()
+	}
+}
+
+func outBoxEnd() {
+	if shipAsync {
+		dviOps = append(dviOps, opBoxEnd)
+	} else {
+		dviBoxEnd()
+	}
+}
+
+func outSaveHV() {
+	if shipAsync {
+		dviOps = append(dviOps, opSaveHV)
+	} else {
+		dviSaveHV()
+	}
+}
+
+func outRestoreHV() {
+	if shipAsync {
+		dviOps = append(dviOps, opRestoreHV)
+	} else {
+		dviRestoreHV()
+	}
+}
+
+@ 이제 명령을 실행하는 쪽이다. 함수 |dviSynchH|와 |dviSynchV|는 원래의 |synchH|와 |synchV|에서 |curH|와 |curV| 자리에
+인자를 받게 한 것이다.
+
+@<함수들@>=
+func dviSynchH(h scaled) {
+	if h != dviH {
+		movement(h-dviH, right1)
+		dviH = h
+	}
+}
+
+func dviSynchV(v scaled) {
+	if v != dviV {
+		movement(v-dviV, down1)
+		dviV = v
+	}
+}
+
+func dviChar(f internalFontNumber, c quarterword) { // 문자 하나를 놓는다
+	if f != dviF {
+		@<글꼴 |dviF|를 |f|로 바꾼다@>
+	}
+	if c >= qi(128) {
+		dviOut(set1)
+	}
+	dviOut(qo(c))
+}
+
+@ 원래 |hlistOut|과 |vlistOut|의 지역 변수였던 |saveLoc|, |saveH|, |saveV|는 이제 실행하는 쪽의 스택 |dviLocs|와 |dviHV|에
+쌓는다. 원래는 \TeX의 실행 시간 스택에 쌓이던 것이다. 상자 하나를 시작할 때는 |push|를 내보내고 그 자리를 기억해 두며,
+끝낼 때는 움직임 스택을 그 자리까지 잘라 내고 |pop|을 내보낸다. 아무것도 내보내지 않은 상자이면 |dviPop|이 |push|를 도로
+지운다.
+
+@<전역 변수@>=
+var @!dviLocs []int32 // 열려 있는 상자들이 시작한 \.{DVI} 바이트 위치
+var @!dviHV []scaled // 저장해 둔 |dviH|와 |dviV|의 짝들
+
+@ @<함수들@>=
+func dviBoxBegin() {
+	curS++
+	if curS > 0 {
+		dviOut(push)
+	}
+	if curS > maxPush {
+		maxPush = curS
+	}
+	dviLocs = append(dviLocs, dviOffset+dviPtr)
+}
+
+func dviBoxEnd() {
+	l := dviLocs[len(dviLocs)-1]
+	dviLocs = dviLocs[:len(dviLocs)-1]
+	pruneMovements(l)
+	if curS > 0 {
+		dviPop(l)
+	}
+	curS--
+}
+
+func dviSaveHV() { dviHV = append(dviHV, dviH, dviV) }
+
+func dviRestoreHV() {
+	n := len(dviHV)
+	dviH, dviV = dviHV[n-2], dviHV[n-1]
+	dviHV = dviHV[:n-2]
+}
+
+@ 괘선은 가로 목록에서는 |setRule|로 놓고 오른쪽으로 움직이며, 세로 목록에서는 |putRule|로 놓기만 한다.
+
+@<함수들@>=
+func dviSetRule(ht, wd scaled) {
+	dviOut(setRule)
+	dviFour(ht)
+	dviFour(wd)
+	dviH += wd
+}
+
+func dviPutRule(ht, wd scaled) {
+	dviOut(putRule)
+	dviFour(ht)
+	dviFour(wd)
+}
+
+@ \seclabel{dvi-exec}함수 |dviExec|은 쌓인 명령들을 차례로 실행한다. 비동기식이면 고루틴이 쪽마다 한 번 부르고, 동기식이면
+본체가 명령 몇 개마다 부른다. 실행에 쓰는 함수는 모두 앞의 것들이다.
+
+@<함수들@>=
+func dviExec(ops []int32) {
+	for i := 0; i < len(ops); i++ {
+		x := ops[i]
+		if x >= 0 {
+			dviChar(x>>8, x&0xFF); continue
+		}
+		switch x {
+		case opSynchH: i++; dviSynchH(ops[i])
+		case opSynchV: i++; dviSynchV(ops[i])
+		case opSetH: i++; dviH = ops[i]
+		case opSaveHV: dviSaveHV()
+		case opRestoreHV: dviRestoreHV()
+		case opBoxBegin: dviBoxBegin()
+		case opBoxEnd: dviBoxEnd()
+		case opSetRule: dviSetRule(ops[i+1], ops[i+2]); i += 2
+		case opPutRule: dviPutRule(ops[i+1], ops[i+2]); i += 2
+		case opSpecial: @<\.{\\special}의 바이트들을 내보낸다@>
+		case opPageBegin: @<쪽을 시작한다@>
+		case opPageEnd: dviOut(eop); totalPages++; curS = -1
+		}
+	}
+}
+
+@ 명령 |opSpecial|의 인자는 바이트 수 $n$과 바이트들이다. 원래의 |specialOut|처럼 256바이트보다 짧으면 |xxx1|을, 아니면
+|xxx4|를 쓴다.
+
+@<\.{\\special}의 바이트들을...@>=
+n := int(ops[i+1])
+if n < 256 {
+	dviOut(xxx1); dviOut(int32(n))
+} else {
+	dviOut(xxx4); dviFour(int32(n))
+}
+for _, b := range ops[i+2 : i+2+n] {
+	dviOut(b)
+}
+i += 1 + n
+
+@ \seclabel{ship-begin}명령 |opPageBegin|의 인자는 \.{\\count0}부터 \.{\\count9}까지의 값 열 개와 주석의 길이 $n$이다.
+첫 쪽이 아니면 $n=-1$이고, 첫 쪽이면 그 뒤에 확대 배율과 주석의 바이트 $n$개가 온다. 첫 쪽이면 서문을 먼저 내보낸다.
+@^preamble of \.{DVI} file@>
+
+@<쪽을 시작한다@>=
+dviH = 0; dviV = 0; dviF = nullFont
+n := int(ops[i+11])
+if n >= 0 {
+	dviOut(pre); dviOut(idByte)
+	dviFour(25400000); dviFour(473628672) // sp를 위한 변환 비율
+	dviFour(ops[i+12]) // 확대 배율이 얼어붙는다
+	dviOut(int32(n))
+	for _, b := range ops[i+13 : i+13+n] {
+		dviOut(b)
+	}
+}
+pageLoc := dviOffset + dviPtr // 현재 |bop|의 위치
+dviOut(bop)
+for _, x := range ops[i+1 : i+11] {
+	dviFour(x)
+}
+dviFour(lastBop)
+lastBop = pageLoc
+i += 11 + max(n+1, 0)
+
+@ 움직임 노드를 얻고 돌려주는 함수다. 동기식이면 원래처럼 |getNode|와 |freeNode|를 쓴다. 비동기식이면 배열 |mem|에서
+|memMax| 뒤쪽을 고루틴의 몫으로 쓴다. 노드 크기가 하나뿐이므로 할당기는 간단하다. 돌려받은 노드는 |movFree|에서 시작하는
+목록에 꿰어 두었다가 다시 쓰고, 그 목록이 비면 |movHi|를 늘려 새 노드를 만든다. 이 영역은 |maxHalfword-memMax|낱말이므로,
+보통의 |memMax=30000|이면 \TeX의 메모리 전체보다도 크다. 움직임 노드가 그만큼 쌓이는 쪽이라면 동기식으로도 메모리가
+넘쳤을 것이다.
+
+플래그 |dviPrivate|는 지금 실행하는 쪽이 고루틴인지 알려 준다. 이 변수와 영역은 실행하는 쪽만 건드린다.
+
+@<전역 변수@>=
+var @!dviPrivate bool // 움직임 노드를 |memMax| 뒤쪽에서 얻는가?
+var @!movFree pointer // 돌려받은 움직임 노드의 목록
+var @!movHi pointer = memMax + 1 // 아직 쓰지 않은 첫 낱말
+
+@ @<함수들@>=
+func getMovementNode() pointer {
+	if !dviPrivate {
+		return getNode(movementNodeSize)
+	}
+	if movFree != null {
+		q := movFree
+		movFree = link(q)
+		return q
+	}
+	if movHi+movementNodeSize-1 > maxHalfword {
+		panic("movement nodes exhausted the area above memMax")
+	}
+	q := movHi
+	movHi += movementNodeSize
+	return q
+}
+
+func freeMovementNode(p pointer) {
+	if !dviPrivate {
+		freeNode(p, movementNodeSize); return
+	}
+	setLink(p, movFree)
+	movFree = p
+}
+
+@ \seclabel{ship-mode}쪽마다 내보내는 방식을 고른다. \.{\\tracingstats}가 양수이면 동기식이고, 아니면 비동기식이다. 시험할
+때는 환경 변수 \.{TEXDVI}를 `\.{sync}'나 `\.{async}'로 주어 한쪽으로 못 박을 수 있다. 이를테면 \.{TRIP} 시험은 거의 늘
+통계를 켜 두므로 그대로는 동기식으로만 돈다. \.{TEXDVI=async}로 돌려 보면 비동기식도 \.{TRIP}을 통과하는지 알 수 있다.
+
+동기식으로 바꿀 때는 고루틴이 앞서 받은 쪽을 다 내보낼 때까지 기다린다. 그래야 실행하는 쪽의 변수를 본체가 이어받을 수
+있다. 고루틴은 처음으로 비동기식 쪽을 내보낼 때 띄운다.
+
+@<이 쪽을 고루틴에게 맡길지 정한다@>=
+if dviMode == "async" || dviMode == "" && tracingStats() <= 0 {
+	if dviPages == nil {
+		@<\.{DVI} 명령을 실행하는 고루틴을 띄운다@>
+	}
+	shipAsync = true
+} else {
+	waitDVI(); shipAsync = false
+}
+
+@ 쪽 명령은 버퍼가 넷인 통로 |dviPages|로 넘긴다. 그러니 고루틴이 조금 밀려도 본체는 네 쪽까지 앞서 나갈 수 있다. 다 쓴
+슬라이스는 통로 |dviFree|로 돌려받아 다시 쓴다. 넘겼지만 아직 다 실행하지 않은 쪽의 수는 |dviBusy|가 센다.
+
+@<전역 변수@>=
+var @!dviMode = os.Getenv("TEXDVI") // `\.{sync}', `\.{async}', 또는 빈 문자열
+var @!dviPages chan []int32 // 고루틴에게 넘기는 쪽들
+var @!dviFree chan []int32 // 다 쓴 명령 슬라이스들
+var @!dviBusy sync.WaitGroup // 넘겼지만 아직 실행하지 않은 쪽들
+
+@ 고루틴은 쪽을 받을 때마다 실행하고, 슬라이스를 돌려준 다음 |dviBusy|를 하나 줄인다. 통로 |dviFree|가 차 있으면 슬라이스는
+그냥 버린다.
+
+@<\.{DVI} 명령을 실행하는...@>=
+dviPages = make(chan []int32, 4)
+dviFree = make(chan []int32, 8)
+go func() {
+	for ops := range dviPages {
+		dviPrivate = true
+		dviExec(ops)
+		select {
+		case dviFree <- ops[:0]:
+		default:
+		}
+		dviBusy.Done()
+	}
+}()
+
+@ 함수 |sendPage|는 쌓인 명령을 고루틴에게 넘기고, 돌려받은 슬라이스가 있으면 그것을 새 |dviOps|로 삼는다. 함수
+|waitDVI|는 넘긴 쪽을 고루틴이 모두 실행할 때까지 기다린다. 비동기식으로 쪽을 내보내다가 치명적인 오류로 여기 왔다면 아직
+넘기지 않은 반쪽짜리 명령이 남아 있으므로, 그것부터 넘긴다. 기다리고 나면 실행하는 쪽의 변수는 모두 본체의 것이 된다.
+|sync.WaitGroup|의 |Wait|가 끝나면 고루틴이 그 전에 쓴 값을 본체가 읽을 수 있음이 보장된다.
+
+@<함수들@>=
+func sendPage() {
+	dviBusy.Add(1)
+	dviPages <- dviOps
+	select {
+	case ops := <-dviFree:
+		dviOps = ops
+	default:
+		dviOps = make([]int32, 0, cap(dviOps))
+	}
+}
+
+func waitDVI() {
+	if shipAsync && len(dviOps) > 0 {
+		sendPage()
+	}
+	dviBusy.Wait()
+	dviPrivate = false
 }
 
 @* 꾸리기.
@@ -29324,7 +29687,8 @@ outWhat(p)
 outWhat(p)
 
 @ 이 모든 준비를 마치고, 드디어 요청된 자료를 실제로 내보내는 루틴들에 이르렀다. 명령 \.{\\special}부터 하자(그것이 더 쉽다). 토큰
-목록을 문자열로 바꾸어 \.{DVI} 파일의 |xxx1|이나 |xxx4| 명령에 담는다. 문자열은 쓰고 나면 바로 지운다.
+목록을 문자열로 바꾸어 \.{DVI} 파일의 |xxx1|이나 |xxx4| 명령에 담는다. 이 판에서는 그 바이트들을 명령 |opSpecial|에 실어
+보낸다(\secref{dvi-ops}). 문자열은 쓰고 나면 바로 지운다.
 
 @<|hlistOut|과 |vlistOut|에 필요한...@>=
 func specialOut(p pointer) {
@@ -29335,14 +29699,11 @@ func specialOut(p pointer) {
 	showTokenList(link(writeTokens(p)), null, poolSize-poolPtr)
 	selector = oldSetting
 	strRoom(1)
-	if curLength() < 256 {
-		dviOut(xxx1); dviOut(curLength())
-	} else {
-		dviOut(xxx4); dviFour(curLength())
-	}
+	dviOps = append(dviOps, opSpecial, curLength())
 	for k = strStart[strPtr]; k <= poolPtr-1; k++ {
-		dviOut(so(strPool[k]))
+		dviOps = append(dviOps, so(strPool[k]))
 	}
+	flushOps()
 	poolPtr = strStart[strPtr] // 문자열을 지운다
 }
 

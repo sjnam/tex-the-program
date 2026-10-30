@@ -191,6 +191,13 @@ TEXCPUPROFILE=cpu.pprof build/tex '&plain' 문서 '\end'   # 아무 문서나 CP
 Go의 CPU 프로파일러가 표본을 마지막 시스템 호출에 잘못 붙이므로, 리눅스가 아니면 도커 컨테이너
 안에서 프로파일을 뜬다.
 
+### 쪽 내보내기 고루틴
+
+TeX은 쪽을 내보낼 때 상자를 훑는 일은 본체에서 하고, DVI 바이트를 만드는 일은 따로 도는 고루틴에게
+맡긴다. `\tracingstats`가 양수인 쪽은 예전처럼 본체에서 바로 내보낸다. 환경 변수 `TEXDVI`를
+`sync`나 `async`로 주면 한쪽으로 못 박을 수 있다. `tests/regress.sh`는 TRIP 테스트를 `TEXDVI=async`로도
+돌리고, 536쪽 문서를 `TEXDVI=sync`로도 조판해 둘 다 기준과 같은지 본다.
+
 ### TRIP 테스트
 
 ```sh

@@ -8,9 +8,12 @@
 #
 # 견주는 것:
 #   - TRIP 테스트가 남기는 파일 일곱 개 (tests/trip.sh가 만든 build/trip과)
+#   - 같은 TRIP 테스트를 쪽 내보내기를 비동기식으로 못 박고(TEXDVI=async) 돌린 결과
 #   - INITEX로 plain 포맷을 만들 때의 로그(시간을 잴 때는 ini로 적는다)
-#   - story.tex(배포판에서 찾는다), tex.web을 weave한 문서(536쪽), 그 본문을 여덟 번 되풀이한 문서(3911쪽)의
+#   - story.tex(배포판에서 찾는다), tex.web을 weave한 문서(536쪽), 그 본문을 여덟 번 되풀이한 문서(3911쪽),
+#     쪽을 내보내는 도중에 \write에서 치명적인 오류가 나는 문서(fatal)의
 #     DVI(dvitype으로 풀어서, 날짜 주석은 빼고)와 로그(날짜가 든 첫 줄은 빼고)와 터미널 출력
+#   - 536쪽 문서를 쪽 내보내기를 동기식으로 못 박고(TEXDVI=sync) 조판한 결과
 #
 # 필요한 것: build/tex (make build), make trip을 이미 돌린 build/trip, gtangle, go, weave, dvitype
 set -e
@@ -40,6 +43,10 @@ echo "$BASE 가지의 TeX과 견준다"
 for f in tripin.log tripin.fot trip.log trip.fot trip.typ tripos.tex 8terminal.tex; do
   same "TRIP $f" "$W/ref/build/trip/$f" "$TOP/build/trip/$f"
 done
+TEXDVI=async "$TOP/tests/trip.sh" >/dev/null 2>&1
+for f in tripin.log tripin.fot trip.log trip.fot trip.typ tripos.tex 8terminal.tex; do
+  same "TRIP(async) $f" "$W/ref/build/trip/$f" "$TOP/build/trip/$f"
+done
 
 # 2. 견줄 문서들을 마련한다
 mkdir -p "$W/doc"
@@ -48,15 +55,20 @@ cp "$TOP/orig/tex.web" . && weave tex.web >/dev/null 2>&1
 n=$(grep -n '^\\inx' tex.tex | cut -d: -f1)
 { echo '\input webmac'; for i in 1 2 3 4 5 6 7 8; do sed -n "2,$((n-1))p" tex.tex; done
   sed -n "$n,\$p" tex.tex; } > big.tex
+# sh의 echo는 \b 따위를 제어 문자로 바꾸므로 printf '%s'로 쓴다
+{ printf '%s\n' '\batchmode' '\shipout\vbox{\hbox{First page}}'
+  printf '%s' '\shipout\vbox{\hbox{AB\special{hello}\kern3pt\vrule width 2pt C}\hbox{D\write-1{'
+  for i in $(seq 120); do printf '%s' '\undefined'; done
+  printf '%s\n' '}E}\hbox{F}}' '\end'; } > fatal.tex
 
 # 3. 저마다 plain 포맷을 만들고 문서들을 조판한다
 for who in ref ours; do
   tex=$REF; [ $who = ours ] && tex=$OURS
   mkdir -p "$W/$who/run"; cd "$W/$who/run"
-  cp "$W/doc/tex.tex" "$W/doc/big.tex" . # story.tex는 배포판에서 찾게 둔다
+  cp "$W/doc/tex.tex" "$W/doc/big.tex" "$W/doc/fatal.tex" . # story.tex는 배포판에서 찾게 둔다
   "$tex" -ini plain '\dump' </dev/null >plain.fot 2>&1
   sed 1d plain.log > plain.log1
-  for d in story tex big; do
+  for d in story tex big fatal; do
     "$tex" '&plain' "$d" '\end' </dev/null >"$d.fot" 2>&1 || true
     dvitype "$d.dvi" | grep -v 'TeX output' | sed 1d > "$d.typ"
     sed 1d "$d.log" > "$d.log1"
@@ -64,9 +76,14 @@ for who in ref ours; do
 done
 same "INITEX plain.fot" "$W/ref/run/plain.fot" "$W/ours/run/plain.fot"
 same "INITEX plain.log" "$W/ref/run/plain.log1" "$W/ours/run/plain.log1"
-for d in story tex big; do
+for d in story tex big fatal; do
   for x in typ log1 fot; do same "$d.$x" "$W/ref/run/$d.$x" "$W/ours/run/$d.$x"; done
 done
+cd "$W/ours/run"
+TEXDVI=sync "$OURS" '&plain' tex '\end' </dev/null >tex.fot 2>&1 || true
+dvitype tex.dvi | grep -v 'TeX output' | sed 1d > tex.typ
+sed 1d tex.log > tex.log1
+for x in typ log1 fot; do same "tex.$x (sync)" "$W/ref/run/tex.$x" "$W/ours/run/tex.$x"; done
 
 # 4. 원하면 걸린 시간을 견준다(다섯 번 가운데 가장 짧은 것)
 if [ "$timing" = 1 ]; then
