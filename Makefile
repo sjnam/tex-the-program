@@ -10,6 +10,7 @@
 #   make test       story와 trip을 모두 돌린다
 #   make regress    main 가지의 TeX과 출력이 바이트까지 같은지 본다(trip을 먼저 돌린다)
 #   make pgo        프로파일 기반 최적화에 쓸 default.pgo를 새로 만든다(리눅스가 아니면 docker)
+#   make fuzz       main 가지의 TeX과 출력을 견주는 차등 퍼징을 FUZZTIME(기본 1m) 동안 돌린다
 #   make clean      만든 것을 모두 지운다
 #   make deco       테두리에 액자를 두른 문서(tex-deco.pdf)를 만든다
 #   make twill      쪽마다 미니 색인을 붙인 문서(tex-twill.pdf)를 gtwill로 만든다
@@ -17,7 +18,7 @@
 
 BUILD = build
 
-.PHONY: all build pdf check fmt story trip test regress pgo clean deco twill twill-deco
+.PHONY: all build pdf check fmt story trip test regress pgo fuzz clean deco twill twill-deco
 
 all: build pdf
 
@@ -80,6 +81,17 @@ regress: $(BUILD)/tex trip
 
 pgo: tex.go
 	tests/pgo.sh
+
+# 차등 퍼징의 기준: main 가지의 tex.w로 만든 TeX
+$(BUILD)/ref/tex: .git/refs/heads/main
+	@mkdir -p $(BUILD)/ref
+	git show main:tex.w > $(BUILD)/ref/tex.w
+	cp go.mod $(BUILD)/ref/
+	cd $(BUILD)/ref && gtangle tex.w >/dev/null && go build -o tex .
+
+FUZZTIME = 1m
+fuzz: $(BUILD)/tex $(BUILD)/ref/tex
+	go test ./tests/fuzz -run=FuzzSame -fuzz=FuzzSame -fuzztime=$(FUZZTIME)
 
 # 액자를 두른 판은 tex-deco.pdf로 따로 만들어 tex.pdf를 건드리지 않는다
 tex-deco.pdf: tex.w tex-deco.ch texlion.pdf decoframe.pdf

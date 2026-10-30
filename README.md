@@ -178,6 +178,19 @@ BASE=가지이름 tests/regress.sh   # main이 아닌 가지와 견준다
 그리고 세 문서(`story.tex`, `orig/tex.web`을 weave한 536쪽 문서, 그 본문을 여덟 번 되풀이한
 3911쪽 문서)의 DVI와 로그와 터미널 출력이다. `-t`를 주면 걸린 시간도 견준다.
 
+### 차등 퍼징
+
+```sh
+make fuzz                   # 1분 동안 (FUZZTIME=10m 따위로 바꿀 수 있다)
+go test ./tests/fuzz        # 씨앗 입력만
+```
+
+`tests/fuzz`는 Go의 퍼징으로 plain TeX 입력을 만들어, `main` 가지의 `tex.w`로 만든 TeX(`build/ref/tex`)과
+이 가지의 TeX에 함께 넣는다. 그리고 터미널 출력과 남긴 파일(DVI, 로그, `\openout`으로 쓴 파일)이 바이트까지
+같은지 본다. 쪽 내보내기를 비동기식으로 못 박은 실행도 DVI와 쓴 파일을 견준다. TeX은 한 프로세스에서 되풀이해
+돌릴 수 없으므로 입력마다 실행 파일을 띄운다. macOS에서는 `sandbox-exec`로 가두어, 무작위 입력이 작업 디렉터리
+밖에 파일을 쓰지 못하게 한다. 다른 결과가 나오면 그 입력이 `tests/fuzz/testdata/fuzz/FuzzSame/`에 남는다.
+
 ### 프로파일 기반 최적화
 
 ```sh

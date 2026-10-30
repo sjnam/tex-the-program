@@ -11,7 +11,9 @@
 #   - 같은 TRIP 테스트를 쪽 내보내기를 비동기식으로 못 박고(TEXDVI=async) 돌린 결과
 #   - INITEX로 plain 포맷을 만들 때의 로그(시간을 잴 때는 ini로 적는다)
 #   - story.tex(배포판에서 찾는다), tex.web을 weave한 문서(536쪽), 그 본문을 여덟 번 되풀이한 문서(3911쪽),
-#     쪽을 내보내는 도중에 \write에서 치명적인 오류가 나는 문서(fatal)의
+#     쪽을 내보내는 도중에 \write에서 치명적인 오류가 나는 문서(fatal),
+#     536쪽 문서를 추적을 모두 켜고 조판해 기록 파일이 65MB쯤 되는 문서(trace),
+#     2만 자가 넘는 줄로 입력 버퍼를 넘치게 하는 문서(longline)의
 #     DVI(dvitype으로 풀어서, 날짜 주석은 빼고)와 로그(날짜가 든 첫 줄은 빼고)와 터미널 출력
 #   - 536쪽 문서를 쪽 내보내기를 동기식으로 못 박고(TEXDVI=sync) 조판한 결과
 #
@@ -60,23 +62,27 @@ n=$(grep -n '^\\inx' tex.tex | cut -d: -f1)
   printf '%s' '\shipout\vbox{\hbox{AB\special{hello}\kern3pt\vrule width 2pt C}\hbox{D\write-1{'
   for i in $(seq 120); do printf '%s' '\undefined'; done
   printf '%s\n' '}E}\hbox{F}}' '\end'; } > fatal.tex
+printf '%s\n' '\tracingcommands=2 \tracingmacros=2 \tracingparagraphs=1 \tracingpages=1' \
+  '\tracingoutput=1 \showboxdepth=3 \showboxbreadth=20 \input tex ' > trace.tex
+{ printf '%s\n' '\batchmode' 'Short line.'
+  for i in $(seq 3000); do printf '%s' 'abcdefgh '; done; printf '\n%s\n' '\end'; } > longline.tex
 
 # 3. 저마다 plain 포맷을 만들고 문서들을 조판한다
 for who in ref ours; do
   tex=$REF; [ $who = ours ] && tex=$OURS
   mkdir -p "$W/$who/run"; cd "$W/$who/run"
-  cp "$W/doc/tex.tex" "$W/doc/big.tex" "$W/doc/fatal.tex" . # story.tex는 배포판에서 찾게 둔다
+  cp "$W/doc/tex.tex" "$W/doc/big.tex" "$W/doc/fatal.tex" "$W/doc/trace.tex" "$W/doc/longline.tex" . # story.tex는 배포판에서 찾게 둔다
   "$tex" -ini plain '\dump' </dev/null >plain.fot 2>&1
   sed 1d plain.log > plain.log1
-  for d in story tex big fatal; do
+  for d in story tex big fatal trace longline; do
     "$tex" '&plain' "$d" '\end' </dev/null >"$d.fot" 2>&1 || true
-    dvitype "$d.dvi" | grep -v 'TeX output' | sed 1d > "$d.typ"
+    if [ -f "$d.dvi" ]; then dvitype "$d.dvi" | grep -v 'TeX output' | sed 1d > "$d.typ"; else : > "$d.typ"; fi
     sed 1d "$d.log" > "$d.log1"
   done
 done
 same "INITEX plain.fot" "$W/ref/run/plain.fot" "$W/ours/run/plain.fot"
 same "INITEX plain.log" "$W/ref/run/plain.log1" "$W/ours/run/plain.log1"
-for d in story tex big fatal; do
+for d in story tex big fatal trace longline; do
   for x in typ log1 fot; do same "$d.$x" "$W/ref/run/$d.$x" "$W/ours/run/$d.$x"; done
 done
 cd "$W/ours/run"

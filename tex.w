@@ -140,6 +140,22 @@ vardef southof(expr q) = (xpart center q, ypart llcorner bbox q) enddef;
 \item{$\bullet$} 쪽을 내보내는 일을 두 고루틴이 나눈다(\secref{dvi-goroutine}). 본체는 상자를 훑으며 \.{DVI} 명령을
 적어 통로로 넘기고, 따로 도는 고루틴이 그것을 바이트로 바꾸어 쓰는 동안 다음 쪽을 조판한다. 3911쪽짜리 문서가 1.44초에 끝난다.
 처음 바란 대로 고루틴과 통로가 \TeX의 일을 실제로 나누어 맡는 곳이다.
+\item{$\bullet$} 기록 파일과 터미널에 문자를 쓸 때 |any|를 거치지 않고(\secref{print-char}), 출력 파일의 버퍼를
+64킬로바이트로 늘렸다. 추적을 모두 켜서 기록 파일이 65메가바이트가 되는 536쪽짜리 문서가 0.93초에서 0.75초로 줄었다.
+\smallskip\noindent
+해 보았지만 얻는 것이 없어 버린 것도 적어 둔다. \.{DVI} 파일의 쓰기 버퍼를 키우는 것은 1\pct!쯤으로 재는 오차
+안이었고, 쓰레기 수집을 끄는 것은 아무 차이가 없었다. 기록 파일 쓰기를 고루틴에게 넘기는 것도 차이가 없었다.
+버퍼가 크면 시스템 호출이 이미 몇 번 안 되기 때문이다. 가장 뜨거운 |getNext|에서 흔한 경우(줄 한가운데의 글자,
+토큰 목록의 보통 토큰)를 맨 앞에서 지역 변수로 빨리 처리해 보았더니 오히려 1\pct!쯤 느려졌다. 컴파일러는
+|switch|를 이미 점프 표로 만들고 있고, 비용은 전역 변수를 읽는 데보다 토큰마다 갈리는 분기에서 나오는 듯하다.
+토큰의 두 필드를 한 번에 읽고 나눗셈을 자리 옮김으로 바꾸어 보아도 차이가 없었다. 입력 파일의 줄을 따로 도는
+고루틴이 미리 읽어 묶음으로 넘기면 2\pct!쯤 빨라졌지만 쓰지 않기로 했다. 원래보다 훨씬 멀리 앞서 읽게 되므로,
+지금 읽고 있는 입력 파일을 \.{\\openout}으로 덮어쓰는 문서에서는 결과가 달라질 수 있기 때문이다. 결과가 한
+바이트도 달라지지 않는다는 조건에 예외를 두면서까지 얻을 만한 것은 아니었다.
+
+결과가 같다는 것은 \.{tests/regress.sh}만이 아니라 \GO/의 퍼징으로도 확인한다(\.{tests/fuzz}). 무작위로 만든
+plain \TeX\ 입력을 \.{main} 가지의 \TeX과 이 판의 \TeX에 함께 넣고, 남긴 파일과 터미널 출력이 바이트까지
+같은지 본다.
 \smallskip\noindent
 결과가 정말 같은지는 \.{tests/regress.sh}로 확인한다. 이 스크립트는 \.{main} 가지의 \.{tex.w}로
 기준 프로그램을 따로 만들어, 두 프로그램의 출력을 바이트 단위로 견준다.
@@ -769,7 +785,7 @@ var @!nameLength int32 // |nameOfFile|에서 실제로 뜻이 있는 문자의 �
 
 \TeX의 파일 여는 프로시저들은 |nameOfFile|에 적힌 파일을 열 수 없으면 |false|를 돌려준다.
 파일의 외부 이름은 바로 뒤에서 정의하는 함수 |externalName|이 |nameOfFile|을 보고 만든다.
-이진 파일을 입력용으로 열 때는 첫 원소를 미리 읽어 |buf|에 넣어 둔다. 낱말 파일의 형
+텍스트 파일을 출력용으로 열면 64킬로바이트짜리 쓰기 버퍼를 둔다. 기록 파일처럼 많이 쓰는 파일은 버퍼가 클수록 시스템 호출이 준다. 낱말 파일의 형
 |wordFile|은 \secref{memory-word}에서 정의한다.
 
 @<함수들@>=
@@ -783,10 +799,13 @@ func aOpenIn(f *alphaFile) bool { // 텍스트 파일을 입력용으로 연다
 func aOpenOut(f *alphaFile) bool { // 텍스트 파일을 출력용으로 연다
 	file, err := os.Create(externalName())
 	if err != nil { return false }
-	*f = alphaFile{f: file, w: bufio.NewWriter(file)}
+	*f = alphaFile{f: file, w: bufio.NewWriterSize(file, 1<<16)}
 	return true
 }
 
+@ 이진 파일을 여는 함수들이다. 입력용으로 열 때는 첫 원소를 미리 읽어 |buf|에 넣어 둔다.
+
+@<함수들@>=
 func bOpenIn(f *byteFile) bool { // 이진 파일을 입력용으로 연다
 	file, err := os.Open(externalName())
 	if err != nil { return false }
@@ -1823,6 +1842,11 @@ func printLn() { // 줄의 끝을 찍는다
 바꾸는데, \GO/는 줄 끝의 `\.)' 뒤에 쌍반점을 저절로 넣어 버리기 때문이다. 그래서 이
 프로그램에서는 그런 절의 값을 먼저 지역 변수(여기서는 |isNl|)에 받아 두고 그 변수를 검사한다.
 
+문자 하나를 쓸 때는 |wterm|이나 |wlog| 대신 |bufio.Writer|의 |WriteByte|를 바로 부른다. 그 함수들은
+인자를 |any|로 받으므로 문자마다 가변 인자 슬라이스를 만들고 형을 가려야 한다. 추적을 켜서 기록 파일이
+수십 메가바이트가 되는 문서에서는 이것만으로 조판 시간이 15\pct!쯤 줄었다(2026년 10월 31일).
+@^inner loop@>
+
 @<기본 인쇄...@>=
 func printChar(s asciiCode) { // 문자 하나를 찍는다
 	if @<문자 |s|가 현재의 줄바꿈 문자다@> {
@@ -1842,8 +1866,8 @@ func printChar(s asciiCode) { // 문자 하나를 찍는다
 @<|selector|에 따라...@>=
 switch selector {
 case termAndLog:
-	wterm(xchr[s])
-	wlog(xchr[s])
+	termOut.w.WriteByte(xchr[s])
+	logFile.w.WriteByte(xchr[s])
 	termOffset++
 	fileOffset++
 	if termOffset == maxPrintLine {
@@ -1855,13 +1879,13 @@ case termAndLog:
 		fileOffset = 0
 	}
 case logOnly:
-	wlog(xchr[s])
+	logFile.w.WriteByte(xchr[s])
 	fileOffset++
 	if fileOffset == maxPrintLine {
 		printLn()
 	}
 case termOnly:
-	wterm(xchr[s])
+	termOut.w.WriteByte(xchr[s])
 	termOffset++
 	if termOffset == maxPrintLine {
 		printLn()
@@ -1877,7 +1901,7 @@ case newString:
 		appendChar(s)
 	} // 문자열 공간이 가득 차면 문자들을 버린다
 default:
-	write(&writeFile[selector], xchr[s])
+	writeFile[selector].w.WriteByte(xchr[s])
 }
 
 @ \seclabel{print}문자열 전체는 |printStr|를 불러서 찍는다. 표준 {\mc ASCII} 문자 하나 \.c를 찍을 때
