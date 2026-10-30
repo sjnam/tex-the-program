@@ -1,7 +1,7 @@
-% 이 파일은 크누스의 tex.web(Version 3.141592653, 2021)을 한글 GWEB(Go)로
+% 이 파일은 커누스의 tex.web(Version 3.141592653, 2021)을 한글 GWEB(Go)로
 % 옮긴 것이다. 원본 tex.web (C) 1982 Donald E. Knuth.
 % 원본의 조건(``고친 파일은 tex.web이라는 이름을 달아서는 안 된다'')에 따라
-% 이 파일은 tex.web이 아니며, 크누스의 TeX 꾸러미의 일부가 아니다.
+% 이 파일은 tex.web이 아니며, 커누스의 TeX 꾸러미의 일부가 아니다.
 % 손대지 않은 원본은 CTAN의 systems/knuth/dist/tex/tex.web에 있다.
 
 \input kotexgweb
@@ -61,25 +61,26 @@ vardef southof(expr q) = (xpart center q, ypart llcorner bbox q) enddef;
   \null\vfill
   \centerline{\titlefont \TeX: The Program}
   \vskip 15pt
-  \centerline{도널드 크누스의 \TeX\ 프로그램을 한글 \.{GWEB}으로 옮김}
+  \centerline{도널드 커누스의 \TeX\ 프로그램을 한글 \.{GWEB}으로 옮김}
   \vfill}
 \def\botofcontents{\vfill
   \ninepoint\baselineskip12pt
   \noindent 원본 \copyright\ 1982 Donald E. Knuth
   \bigskip\noindent
-  크누스의 원본 파일 \.{tex.web}은 고치지 않는 한 얼마든지 복사하고 배포할 수 있다.
+  커누스의 원본 파일 \.{tex.web}은 고치지 않는 한 얼마든지 복사하고 배포할 수 있다.
   고친 파일은 이름이 \.{tex.web}이 아닐 때에만 허용된다.
   \bigskip\noindent
   이 문서는 그 조건에 따라 원본을 한글과 \GO/로 옮긴 것이며,
-  크누스의 \TeX\ 꾸러미의 일부가 아니다. 손대지 않은 원본은
+  커누스의 \TeX\ 꾸러미의 일부가 아니다. 손대지 않은 원본은
   {\tt https://mirrors.ctan.org/systems/knuth/dist/tex/tex.web}에서
   받을 수 있다. 번역에 잘못이 있다면 그것은 옮긴이의
-  탓이지 크누스의 탓이 아니다.}
+  탓이지 커누스의 탓이 아니다.}
 
 % gweave가 형으로 알아보지 못하는 이름들.
 @s bufio.Reader int
 @s bufio.Writer int
 @s os.File int
+@s sync.WaitGroup int
 
 @* 들어가며.
 \TeX은 품질 높은 조판을 만들어 내려고 만든 문서 컴파일러다. 여기 실린 \GO/ 프로그램은
@@ -106,6 +107,27 @@ vardef southof(expr q) = (xpart center q, ypart llcorner bbox q) enddef;
 @^TeXbook@>
 \par\vfill\noindent
 \saveimageresource height 1.5in {texlion.pdf}\useimageresource\lastsavedimageresourceindex
+
+@ \seclabel{go-native}이 판은 실험이다. 바로 앞 절은 이 프로그램이 \GO/에만 있는 별난 기능을
+그리 많이 쓰지 않는다고 말한다. 원본 \.{tex.web}이 그랬듯이 이식성과 읽기 쉬움을 무엇보다 앞세운
+것이다. 나는 \.{go-native}라는 가지에서 그 반대를 해 보기로 했다(2026년 10월 31일). 고루틴과
+통로, 맵, 메서드, \.{unsafe} 꾸러미까지, \GO/가 주는 것은 무엇이든 써서 이 프로그램을 될 수 있는
+대로 빠르게 만드는 것이다. 조건은 딱 하나, 결과가 한 바이트도 달라지지 않는 것이다. DVI 파일과
+기록 파일과 터미널 출력이 고치기 전의 프로그램이 내놓던 것과 똑같아야 하고, \.{TRIP} 시험의
+결과도 그래야 한다. 포맷 파일만은 예외다. 포맷 파일의 형식은 원래 구현마다 다르니 얼마든지
+바꿔도 된다.
+
+해 보니 \TeX의 본체에는 동시에 돌릴 틈이 거의 없다. 토큰 하나가 뒤따르는 모든 것의 뜻을 바꿀
+수 있고(\.{\\catcode}나 \.{\\def}를 생각해 보라), 메모리를 어떤 순서로 쓰는지가 기록 파일의
+통계에 그대로 드러나며, \.{\\write}는 쪽을 내보내는 바로 그 순간에 전개되기 때문이다. 그래서
+고루틴은 본체의 가장자리에서 일한다. 지금까지 고친 곳은 다음과 같다.
+\smallskip
+\item{$\bullet$} 배포판에서 파일을 찾는 색인을 고루틴들이 만든다(\secref{external-name}). 그
+덕분에 plain 포맷을 만드는 데 0.38초 걸리던 것이 0.02초로, 짧은 문서 \.{story.tex}는 0.09초에서
+0.01초로, \.{tex.web}을 조판한 536쪽짜리 문서는 0.54초에서 0.27초로 줄었다.
+\smallskip\noindent
+결과가 정말 같은지는 \.{tests/regress.sh}로 확인한다. 이 스크립트는 \.{main} 가지의 \.{tex.w}로
+기준 프로그램을 따로 만들어, 두 프로그램의 출력을 바이트 단위로 견준다.
 
 @ 지금의 구현에는 꽤 긴 역사가 있다. 시작은 1977년 여름이었다. 그해 5월에 저자가 쓴
 명세를 바탕으로 마이클~F. 플래스와 프랭크~M. 리앙이 원형을 설계하고 짰다.
@@ -165,9 +187,10 @@ const banner = "This is TeX, Version 3.141592653 (GWEB)" // \TeX이 시작할 �
 
 아래의 \TeX\ 프로그램은 \GO/의 훌륭한 기능을 다 쓰지는 않는다. 웬만한 고급 언어에 다 있는
 기능만 쓰려고 애썼으므로, 코드의 대부분을 다른 언어로 기계적으로 옮길 수 있다. 이를테면
-메서드와 맵은 아예 쓰지 않았다. 슬라이스와 인터페이스(|any|)도 운영체제와 주고받는 곳과
-찍기 프로시저의 인자 같은 몇 군데에서만 쓴다. 따로 도는 고루틴은 사용자가 보내는 끼어들기
-신호를 받는 한 곳에만 있다. 자료 구조는 모두 크기가 정해진 배열 몇 개에 들어 있고,
+메서드는 아예 쓰지 않았고, 맵은 파일을 찾는 곳에서만 쓴다. 슬라이스와 인터페이스(|any|)도
+운영체제와 주고받는 곳과 찍기 프로시저의 인자 같은 몇 군데에서만 쓴다. 따로 도는 고루틴도
+사용자가 보내는 끼어들기 신호를 받는 곳과 파일 색인을 만드는 곳에만 있다. 다만 이 판은 일부러
+그 반대쪽으로 가 보는 실험이라(\secref{go-native}), 이 문단은 차츰 맞지 않게 될 것이다. 자료 구조는 모두 크기가 정해진 배열 몇 개에 들어 있고,
 포인터라고 부르는 것도 실은 그 배열의 첨자일 뿐이다. 이 밖에 프로그램 전체에 걸친 관례를
 몇 가지 적어 둔다.
 \smallskip
@@ -206,6 +229,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"io/fs"
@@ -214,7 +238,9 @@ import (
 	"os/exec"
 	"os/signal"
 	"path/filepath"
+	"runtime"
 	"strings"
+	"sync"
 )
 
 @<전역 레이블@>
@@ -785,25 +811,31 @@ func wOpenOut(f *wordFile) bool { // 낱말 파일을 출력용으로 연다
 이름이다. 요즘 시스템에서는 이런 이름이 아무 뜻이 없으므로, 함수 |externalName|이 이 머리말을
 알아보고 해당하는 파일을 대신 찾아 준다. 먼저 환경 변수 \.{TEXINPUTS}, \.{TEXFONTS},
 \.{TEXFORMATS}에 쌍점으로 나누어 적은 디렉터리들을 차례로 뒤진다. 거기서 찾지 못하면 \TeX\
-배포판의 \.{kpsewhich} 명령에게 물어본다. 다만 포맷 파일은 구현마다 형식이 달라 다른 \TeX의
-것을 읽을 수 없으므로 \.{kpsewhich}에게 묻지 않는다. 끝내 찾지 못하면 머리말을 뗀 이름을
-돌려주므로, 그런 파일이 현재 디렉터리에 있으면 그것이 열린다.
+배포판이 쓰는 방식대로 찾는다. 다만 포맷 파일은 구현마다 형식이 달라 다른 \TeX의 것을 읽을
+수 없으므로 배포판에서 찾지 않는다. 끝내 찾지 못하면 머리말을 뗀 이름을 돌려주므로, 그런
+파일이 현재 디렉터리에 있으면 그것이 열린다.
 
-\.{kpsewhich}는 부를 때마다 배포판의 파일 목록을 처음부터 읽으므로 한 번에 0.1초쯤 걸린다.
-입력 파일은 몇 개 안 되니 상관없지만, plain 포맷을 만드는 \.{INITEX}는 글꼴을 마흔 개쯤 읽으므로
-그것만으로도 4초가 넘게 걸린다. 그래서 글꼴만은 다르게 한다. 처음 글꼴을 찾을 때
-\.{kpsewhich}에게서 글꼴 디렉터리의 목록을 한 번만 받아, 그 디렉터리들을 훑으며 이름에서
-경로로 가는 표 |tfmFiles|를 만들어 둔다. 목록에 나온 순서대로 훑으면서 먼저 나온 것을 남기므로,
-같은 이름이 여럿이면 맨 앞에 있는 현재 디렉터리의 것이 이긴다. 표에 없는 글꼴만
-\.{kpsewhich}에게 따로 묻는다.
+배포판에서 파일을 찾는 것은 원래 \.{kpsewhich} 명령이 하는 일이다. 그런데 \.{kpsewhich}는
+부를 때마다 배포판의 파일 목록 데이터베이스(\.{ls-R}, 26만 항목)를 처음부터 읽으므로 한 번에
+0.1초쯤 걸린다. \.{story.tex} 같은 짧은 문서라면 \TeX이 실제로 조판하는 데 드는 시간의 스무
+배다. 그래서 나는 이 일을 \GO/답게 나누어 하기로 했다(2026년 10월 31일). 주 프로그램은
+시작하자마자 고루틴 하나를 띄워 파일 색인을 만들게 하고(\secref{texmf-index}), 자기는 그동안
+포맷 파일을 읽고 조판을 시작한다. 배포판의 파일을 처음 찾을 때에야 색인이 다 됐는지
+기다린다.
+
+색인이 답을 하나로 정하지 못할 때만 \.{kpsewhich}에게 직접 묻는다. 같은 이름이 검색 경로의
+한 원소 안에 여럿 있을 때, 그리고 이름을 아예 찾지 못했을 때가 그렇다. \.{kpsewhich}는
+여럿 가운데 하나를 고르는 나름의 순서가 있고, 찾지 못하면 대소문자를 가리지 않고 한 번 더
+찾아 본다. 이런 판단은 흉내 내기보다 그에게 맡기는 편이 안전하다. 그러면 어떤 이름에 대해서든
+\.{kpsewhich}와 똑같은 파일을 고르게 된다.
 @^system dependencies@>
 
 @<함수들@>=
 func externalName() string {
 	nm := string(nameOfFile[1 : nameLength+1])
-	for _, a := range [...]struct{ area, env string }{
-		{"TeXinputs:", "TEXINPUTS"}, {"TeXfonts:", "TEXFONTS"},
-		{"TeXformats:", "TEXFORMATS"}} {
+	for _, a := range [...]struct{ area, env, kind string }{
+		{"TeXinputs:", "TEXINPUTS", "tex"}, {"TeXfonts:", "TEXFONTS", "tfm"},
+		{"TeXformats:", "TEXFORMATS", ""}} {
 		if rest, ok := strings.CutPrefix(nm, a.area); ok {
 			nm = rest
 			for _, dir := range filepath.SplitList(os.Getenv(a.env)) {
@@ -813,13 +845,8 @@ func externalName() string {
 					}
 				}
 			}
-			if a.env == "TEXFONTS" {
-				@<글꼴 디렉터리들을 훑어 표 |tfmFiles|를 아직 안 만들었으면 만든다@>
-				if p, ok := tfmFiles[nm]; ok {
-					return p
-				}
-			}
-			if a.env != "TEXFORMATS" {
+			if a.kind != "" {
+				@<색인에서 |nm|을 찾아 하나로 정해지면 그 경로를 돌려준다@>
 				if out, err := exec.Command("kpsewhich", nm).Output(); err == nil {
 					if p := strings.TrimSpace(string(out)); p != "" {
 						return p
@@ -832,39 +859,226 @@ func externalName() string {
 	return nm
 }
 
-@ 글꼴 디렉터리의 목록은 \.{kpsewhich -show-path=tfm}이 쌍점으로 나누어 알려 준다. 끝이
-`\.{//}'인 디렉터리는 그 아래를 모두 뒤지라는 뜻이다. 앞에 붙은 `\.{!!}'는 디스크를 뒤지지
-말고 파일 목록 데이터베이스만 믿으라는 뜻인데, 여기서는 어차피 디스크를 직접 훑으므로 그냥
-떼어 낸다. 배포판이 없어서 목록이 비더라도 표는 빈 채로 만들어지므로, 다음에 글꼴을 찾을 때
-쓸데없이 다시 훑지 않는다.
+@ \seclabel{texmf-index}배포판이 파일을 찾는 길은 파일 종류마다 정해진 {\it 검색 경로\/}다.
+검색 경로는 디렉터리 이름을 쌍점으로 이어 놓은 것이고, \.{kpsewhich -show-path=tfm}처럼 물으면
+알려 준다. 경로의 원소 하나하나가 형 |texmfElt|의 값이 된다. 끝이 `\.{//}'인 원소는 그 아래를
+모두 뒤지라는 뜻이고, 앞에 `\.{!!}'가 붙은 원소는 디스크를 뒤지지 말고 파일 목록 데이터베이스만
+믿으라는 뜻이다. 데이터베이스는 디렉터리 트리의 뿌리에 놓인 \.{ls-R} 파일로, 그 트리 안의
+디렉터리마다 거기 든 파일 이름을 적어 둔 것이다. 원소 가운데 어떤 데이터베이스의 트리 안에
+드는 것은 그 데이터베이스를 보고, 그렇지 않은 것은 디스크를 직접 본다.
 
-@<글꼴 디렉터리들을 훑어...@>=
-if tfmFiles == nil {
-	tfmFiles = map[string]string{}
-	out, _ := exec.Command("kpsewhich", "-show-path=tfm").Output()
-	for _, dir := range filepath.SplitList(strings.TrimSpace(string(out))) {
-		dir = strings.TrimPrefix(dir, "!!")
-		deep := strings.HasSuffix(dir, "//")
-		root := strings.TrimRight(dir, "/")
-		filepath.WalkDir(root, func(p string, e fs.DirEntry, err error) error {
-			switch {
-			case err != nil:
-			case e.IsDir():
-				if p != root && !deep {
-					return filepath.SkipDir
-				}
-			default:
-				if _, dup := tfmFiles[e.Name()]; !dup {
-					tfmFiles[e.Name()] = p
-				}
-			}
-			return nil
-		})
+데이터베이스 하나는 형 |lsR|의 값이다. 파일 이름에서 그 이름을 담은 디렉터리들로 가는 표를
+한 장이 아니라 여러 장 둔다. \.{ls-R}을 여러 조각으로 잘라 고루틴들이 동시에 읽고, 조각마다
+표를 한 장씩 만들기 때문이다. 표들을 하나로 합치면 그만큼 시간이 더 드니 그대로 둔다. 찾을 때는
+표들을 조각의 순서대로 보면 된다.
+
+@<전역 형@>=
+type @!texmfElt struct { // 검색 경로의 원소 하나
+	dir    string // 디렉터리
+	deep   bool   // 그 아래 디렉터리까지 모두 뒤지는가?
+	onlyDB bool   // 데이터베이스만 믿는가?
+	db     *lsR   // 이 원소를 덮는 데이터베이스, 없으면 |nil|
+	sub    string // 데이터베이스의 뿌리에서 본 |dir|, `\.{./fonts/tfm}' 꼴
+	files  map[string][]string // 디스크를 훑어 얻은 표, 이름에서 경로들로
+}
+type @!lsR struct { // 파일 목록 데이터베이스 하나
+	root  string                // \.{ls-R}이 있는 디렉터리
+	parts []map[string][]string // 조각마다 이름에서 디렉터리들로 가는 표
+}
+
+@ 색인을 만드는 고루틴은 일을 마치면 통로 |texmfReady|를 닫는다. 닫힌 통로에서 받기는 언제나
+곧바로 끝나므로, 파일을 찾는 쪽은 찾을 때마다 이 통로에서 받기만 하면 된다. 처음에는 색인이
+다 될 때까지 기다리고, 그 뒤로는 기다리지 않는다. 고루틴이 |texmfPath|에 써 둔 것은 통로를
+닫기 전의 일이므로, 받기를 마친 쪽에서는 안전하게 읽을 수 있다.
+
+@<전역 변수@>=
+var @!texmfPath map[string][]texmfElt // 파일 종류(\.{tex}, \.{tfm})마다 검색 경로
+var @!texmfReady = make(chan struct{}) // 색인이 다 되면 닫힌다
+
+@ 주 프로그램은 시작하자마자 이 고루틴을 띄운다(\secref{main}). 이 고루틴의 일은 둘이다.
+검색 경로를 받는 일과, 데이터베이스를 읽는 일이다.
+
+@<파일 색인을 만들 고루틴을 띄운다@>=
+go func() {
+	defer close(texmfReady)
+	@<\.{kpsewhich}에게서 검색 경로를 받아 |texmfPath|를 채운다@>
+	@<데이터베이스와 디스크를 동시에 읽어 색인을 채운다@>
+}()
+
+@ \.{kpsewhich}에게 검색 경로를 물을 때도 데이터베이스를 다 읽는 0.1초가 든다. 그런데 경로를
+알려 주는 데에는 데이터베이스가 필요 없다. 그래서 데이터베이스 목록을 담은 변수
+\.{TEXMFDBS}를 없는 곳으로 돌려 놓고 묻는다. 그러면 거의 곧바로 답한다. \.{kpsewhich}는
+한 번에 검색 경로 하나만 알려 주므로, 고루틴 둘이 \.{tex}와 \.{tfm}의 경로를 동시에 묻는다.
+\.{kpsewhich}가 없으면 경로가 비므로, 그때는 모든 파일을 \.{kpsewhich}에게 직접 묻게
+된다(그리고 못 찾는다).
+
+이 고루틴은 데이터베이스가 어디 있는지도 스스로 알아내야 한다. `\.{!!}'가 붙은 원소에서
+위로 올라가며 \.{ls-R}이 있는 디렉터리를 찾으면, 그것이 그 원소를 덮는 데이터베이스다.
+\TeX\ 배포판의 기본 설정에서는 \.{TEXMFDBS}가 바로 이런 트리들의 목록이다.
+
+@<\.{kpsewhich}에게서 검색 경로를...@>=
+kinds, paths := [...]string{"tex", "tfm"}, [2]string{}
+var pw sync.WaitGroup
+for i, kind := range kinds {
+	pw.Go(func() {
+		cmd := exec.Command("kpsewhich", "-show-path="+kind)
+		cmd.Env = append(os.Environ(), "TEXMFDBS="+os.DevNull)
+		out, _ := cmd.Output()
+		paths[i] = strings.TrimSpace(string(out))
+	})
+}
+pw.Wait()
+texmfPath = map[string][]texmfElt{}
+dbs := map[string]*lsR{} // 뿌리 디렉터리에서 데이터베이스로
+for i, kind := range kinds {
+	for _, s := range filepath.SplitList(paths[i]) {
+		var e texmfElt
+		s, e.onlyDB = strings.CutPrefix(s, "!!")
+		e.deep = strings.HasSuffix(s, "//")
+		if e.dir = strings.TrimRight(s, "/"); e.dir == "" {
+			continue
+		}
+		if e.onlyDB {
+			@<|e.dir|에서 위로 올라가며 \.{ls-R}을 찾아 |dbs|에 올린다@>
+		}
+		texmfPath[kind] = append(texmfPath[kind], e)
 	}
 }
 
-@ @<전역 변수@>=
-var @!tfmFiles map[string]string // 글꼴 파일 이름에서 경로로 가는 표
+@ @<|e.dir|에서 위로...@>=
+for d := e.dir; d != filepath.Dir(d); d = filepath.Dir(d) {
+	if dbs[d] != nil {
+		break
+	}
+	if _, err := os.Stat(filepath.Join(d, "ls-R")); err == nil {
+		dbs[d] = &lsR{root: d}
+		break
+	}
+}
+
+@ 이제 원소마다 그것을 덮는 데이터베이스가 있는지 본다. 뿌리가 원소의 디렉터리이거나 그
+조상인 데이터베이스가 덮는다. 데이터베이스마다 그것이 덮는 원소들을 |want|에 모아 두면,
+\.{ls-R}을 읽을 때 쓸모없는 디렉터리를 건너뛸 수 있다. 데이터베이스가 덮지 않는 원소 가운데
+`\.{//}'로 끝나는 것은 디스크를 훑어서 표를 만든다. 데이터베이스마다, 그리고 훑을 원소마다
+고루틴을 하나씩 띄우고, 모두 끝나기를 |wg.Wait|로 기다린다.
+
+@<데이터베이스와 디스크를...@>=
+var wg sync.WaitGroup
+want := map[*lsR][]texmfElt{}
+for _, elts := range texmfPath {
+	for i := range elts {
+		e := &elts[i]
+		for root, db := range dbs {
+			if (e.dir == root || strings.HasPrefix(e.dir, root+"/")) &&
+				(e.db == nil || len(root) > len(e.db.root)) {
+				e.db, e.sub = db, "."+e.dir[len(root):]
+			}
+		}
+		if e.db != nil {
+			want[e.db] = append(want[e.db], *e)
+		} else if e.deep && !e.onlyDB {
+			e.files = map[string][]string{}
+			wg.Go(func() { @<디스크에서 |e.dir| 아래를 모두 훑어 |e.files|를 채운다@> })
+		}
+	}
+}
+for db, es := range want {
+	wg.Go(func() { @<\.{ls-R}을 조각내 고루틴마다 한 조각씩 읽게 한다@> })
+}
+wg.Wait()
+
+@ @<디스크에서 |e.dir| 아래를...@>=
+filepath.WalkDir(e.dir, func(p string, d fs.DirEntry, err error) error {
+	if err == nil && !d.IsDir() {
+		e.files[d.Name()] = append(e.files[d.Name()], p)
+	}
+	return nil
+})
+
+@ \.{ls-R}은 디렉터리마다 `\.{./tex/plain/base:}'처럼 쌍점으로 끝나는 머리 줄을 두고, 그
+아래에 파일 이름을 한 줄에 하나씩 적는다. 디렉터리와 디렉터리 사이에는 빈 줄이 있다. 그래서
+파일을 CPU 수만큼의 비슷한 크기로 자르되, 자르는 곳을 빈 줄 바로 다음의 머리 줄 앞으로 맞추면
+조각마다 따로 읽을 수 있다. 조각의 표는 고루틴을 띄우기 전에 |db.parts|에 차례로 달아 두므로,
+고루틴들이 어떤 순서로 끝나든 표의 순서는 파일 안의 순서와 같다.
+
+@<\.{ls-R}을 조각내...@>=
+data, err := os.ReadFile(filepath.Join(db.root, "ls-R"))
+if err != nil {
+	return
+}
+for k := runtime.NumCPU(); k > 0 && len(data) > 0; k-- {
+	cut := len(data)
+	if k > 1 {
+		if j := bytes.Index(data[cut/k:], []byte("\n\n.")); j >= 0 {
+			cut = cut/k + j + 2
+		}
+	}
+	chunk, part := data[:cut], map[string][]string{}
+	data = data[cut:]
+	db.parts = append(db.parts, part)
+	wg.Go(func() { @<조각 |chunk|를 읽어 표 |part|를 채운다@> })
+}
+
+@ 조각을 한 줄씩 읽는다. 머리 줄을 만나면 그 디렉터리가 |es|의 어느 원소에 드는지 보고,
+들지 않으면 그 아래의 파일 이름들은 건너뛴다. \.{kpsewhich}처럼 이름이 점으로 시작하는 숨은
+디렉터리도 건너뛴다. 절대 경로로 적힌 머리 줄은 드물지만, 그런 디렉터리도 건너뛰어 두면 거기
+든 파일은 \.{kpsewhich}에게 물어서 찾게 된다.
+
+@<조각 |chunk|를...@>=
+dir, keep := "", false
+for line := range bytes.Lines(chunk) {
+	line = bytes.TrimSuffix(line, []byte("\n"))
+	switch {
+	case len(line) == 0 || line[0] == '%':
+	case line[len(line)-1] == ':' && (line[0] == '.' || line[0] == '/'):
+		dir, keep = string(line[:len(line)-1]), false
+		for _, e := range es {
+			if dir == e.sub || e.deep && strings.HasPrefix(dir, e.sub+"/") {
+				keep = !strings.Contains(dir, "/.")
+				break
+			}
+		}
+	case keep:
+		part[string(line)] = append(part[string(line)], dir)
+	}
+}
+
+@ 찾는 쪽은 색인이 다 되기를 기다렸다가, 검색 경로의 원소를 차례로 본다. 데이터베이스가 덮는
+원소는 데이터베이스의 표들에서, 디스크를 훑어 둔 원소는 그 표에서 찾고, 나머지 원소(현재
+디렉터리 `\.{.}' 같은 것)는 그 디렉터리에 파일이 있는지 직접 본다. `\.{!!}'가 붙었는데
+데이터베이스를 찾지 못한 원소는 건너뛴다. 처음으로 무언가 나온 원소에서
+답이 하나뿐이면 그것이 답이다. 여럿이면 고르는 일을 \.{kpsewhich}에게 맡긴다. 데이터베이스가
+덮는데 `\.{!!}'가 없는 원소에서 못 찾았을 때도 그렇다. \.{kpsewhich}라면 이어서 디스크를
+뒤질 테니까.
+
+@<색인에서 |nm|을...@>=
+<-texmfReady
+for _, e := range texmfPath[a.kind] {
+	var found []string
+	switch {
+	case e.db != nil:
+		for _, part := range e.db.parts {
+			for _, d := range part[nm] {
+				if d == e.sub || e.deep && strings.HasPrefix(d, e.sub+"/") {
+					found = append(found, e.db.root+d[1:]+"/"+nm)
+				}
+			}
+		}
+	case e.onlyDB: // 데이터베이스를 못 찾았으니 이 원소에는 아무것도 없다
+	case e.deep:
+		found = e.files[nm]
+	default:
+		if _, err := os.Stat(filepath.Join(e.dir, nm)); err == nil {
+			found = []string{filepath.Join(e.dir, nm)}
+		}
+	}
+	if len(found) == 1 {
+		return found[0]
+	}
+	if len(found) > 1 || e.db != nil && !e.onlyDB {
+		break
+	}
+}
 
 @ 파일은 루틴 |aClose|, |bClose|, |wClose|로 닫는다. 파일 |f|의 입력이나 출력을 다 마쳤을 때
 @^system dependencies@>
@@ -28434,6 +28648,7 @@ func main() { // |startHere|
 	@<바깥 레이블로 가는 |panic|을 받을 함수를 미루어 둔다@>
 	iniVersion = len(os.Args) > 1 && os.Args[1] == "-ini"
 	@<끼어들기 신호를 받으면...@>
+	@<파일 색인을 만들 고루틴을 띄운다@>
 	history = fatalErrorStop // 초기화하는 동안 그만둘 때를 대비한다
 	tOpenOut() // 터미널을 출력용으로 연다
 	if readyAlready == 314159 {

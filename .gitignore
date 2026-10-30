@@ -34,7 +34,7 @@ tex-twill-deco.ref
 tex-twill-deco.mref
 tex-twill-deco.smref
 
-# make trip: tests/trip.sh가 처음 돌 때 CTAN에서 받아 오는 크누스의 원본 파일들
+# make trip: tests/trip.sh가 처음 돌 때 CTAN에서 받아 오는 커누스의 원본 파일들
 tests/trip/
 
 .DS_Store
