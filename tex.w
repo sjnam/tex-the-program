@@ -134,6 +134,9 @@ vardef southof(expr q) = (xpart center q, ypart llcorner bbox q) enddef;
 \item{$\bullet$} \GO/ 컴파일러의 프로파일 기반 최적화(PGO)를 쓴다. 긴 문서를 조판하며 뜬 프로파일을
 \.{default.pgo}로 두면 \.{go build}가 그것을 보고 코드를 다듬는다(\secref{main}의 앞 절). 다시
 3\pct!쯤 빨라져 3911쪽짜리 문서가 1.60초에 끝난다.
+\item{$\bullet$} 입력 줄을 |ReadSlice|로 한 번에 받고(\secref{input-ln}), \.{DVI} 버퍼를 바이트 배열로 바꾸어
+그 구간을 한 번에 쓴다. 둘 다 바이트마다 함수를 부르던 것을 없앤 것이다. 3911쪽짜리 문서가 1.52초에 끝나,
+같은 기계에서 \TeX\ Live의 \.{tex}(1.55초)보다 조금 빠르다.
 \smallskip\noindent
 결과가 정말 같은지는 \.{tests/regress.sh}로 확인한다. 이 스크립트는 \.{main} 가지의 \.{tex.w}로
 기준 프로그램을 따로 만들어, 두 프로그램의 출력을 바이트 단위로 견준다.
@@ -1192,7 +1195,7 @@ var @!first int32 // |buffer|에서 쓰이지 않는 첫 위치
 var @!last int32 // |buffer|에 방금 입력한 줄의 끝
 var @!maxBufStack int32 // |buffer|에서 쓰인 가장 큰 첨자
 
-@ 함수 |inputLn|은 지정한 파일의 다음 줄을 버퍼 배열의 빈자리로 가져오고 |true|를 돌려준다.
+@ \seclabel{input-ln}함수 |inputLn|은 지정한 파일의 다음 줄을 버퍼 배열의 빈자리로 가져오고 |true|를 돌려준다.
 파일을 이미 다 읽었다면 |false|를 돌려주고 |last=first|로 놓는다. 다시 말해 파일의 다음
 줄을 나타내는 |asciiCode| 수들은 |buffer[first]|, |buffer[first+1]|, \dots, |buffer[last-1]|에
 들어가고, 전역 변수 |last|는 |first|에 그 줄의 길이를 더한 값이 된다. 줄 끝의 공백은
@@ -1220,20 +1223,28 @@ var @!maxBufStack int32 // |buffer|에서 쓰인 가장 큰 첨자
 
 입력되는 문자는 모두 |inputLn|의 안쪽 루프를 지나므로, 이 루프는 \TeX의 ``안쪽 루프''의
 일부다. 그러니 문자 배열을 한꺼번에 읽어 들이는 특별한 루틴이 있다면 그것을 써서 시스템의
-부담을 덜어 주는 것이 현명하다. 다음 코드는 해야 할 일을 보여 주려고 한 번에 한 바이트씩
-읽지만, 시스템에 따라 대개는 더 손볼 여지가 있다.
+부담을 덜어 주는 것이 현명하다. \GO/에는 바로 그런 루틴이 있다. |bufio.Reader|의 |ReadSlice|는
+줄 끝 문자까지를 읽기 버퍼 안의 조각으로 복사 없이 내준다. 그래서 바이트마다 |ReadByte|를 부르던
+예전과 달리, 줄마다 한 번만 부르고 그 조각을 훑는다(2026년 10월 31일). 줄이 읽기 버퍼보다 길면
+앞부분만 |bufio.ErrBufferFull|과 함께 오므로, 나머지를 이어서 받는다.
 @^inner loop@>
 
 @<함수들@>=
 func inputLn(f *alphaFile, bypassEoln bool) bool { // 다음 줄을 입력하거나 |false|를 돌려준다
 	last = first // 마태복음 19:30 참조
-	c, err := f.r.ReadByte()
-	if err != nil {
+	line, err := f.r.ReadSlice('\n')
+	if len(line) == 0 {
 		return false
 	}
 	lastNonblank := first // 줄 끝의 공백을 지운 |last|
-	for err == nil && c != '\n' {
-		@<문자 |c|를 |buffer|에 넣고 다음 문자를 읽는다@>
+	for {
+		for _, c := range bytes.TrimSuffix(line, []byte{'\n'}) {
+			@<문자 |c|를 |buffer|에 넣는다@>
+		}
+		if err != bufio.ErrBufferFull {
+			break
+		}
+		line, err = f.r.ReadSlice('\n')
 	}
 	last = lastNonblank
 	return true
@@ -1253,7 +1264,6 @@ if last >= maxBufStack {
 	}
 }
 buffer[last] = xord[c]
-c, err = f.r.ReadByte()
 last++
 if buffer[last-1] != ' ' {
 	lastNonblank = last
@@ -14763,11 +14773,11 @@ curS = -1
 type @!dviIndex = int32 // 출력 버퍼의 첨자; |0 .. dviBufSize|
 
 @ 어떤 시스템에서는 |dviBuf|를 바이트 배열로 꾸려 두는 편이 더 효율적일 수 있다. 네 바이트를 한꺼번에 내보내기가 더 쉬울
-수 있기 때문이다.
+수 있기 때문이다. \GO/가 바로 그렇다. 바이트 배열의 구간은 그대로 슬라이스가 되어 파일에 한 번에 쓸 수 있다(다음 절).
 @^system dependencies@>
 
 @<전역 변수@>=
-var @!dviBuf [dviBufSize + 1]eightBits // \.{DVI} 출력을 위한 버퍼
+var @!dviBuf [dviBufSize + 1]byte // \.{DVI} 출력을 위한 버퍼
 var @!halfBuf dviIndex // |dviBufSize|의 절반
 var @!dviLimit dviIndex // 현재 반쪽 버퍼의 끝
 var @!dviPtr dviIndex // 쓸 수 있는 다음 버퍼 주소
@@ -14786,17 +14796,15 @@ dviGone = 0
 @ 버퍼 구간 |dviBuf[a..b]|를 |dviFile|에 실제로 쓰는 일은 |writeDVI(a,b)|를 불러서 한다. 이 프로시저는 \TeX의 안쪽 루프의
 일부이므로, 가장 좋은 결과를 얻으려면 시스템마다 될 수 있는 대로 빨리 돌도록 손보아야 한다. 프로시저 |writeDVI(a,b)|를 부를 때 |a|와
 |b+1|은 둘 다 4의 배수라고 가정해도 안전하다. 그러니 많은 기계에서는 낱말 하나에 네 바이트를 꾸려 넣고 낱말의 배열을
-시스템 호출 한 번으로 내보내는 효율적인 방법을 쓸 수 있다.
+시스템 호출 한 번으로 내보내는 효율적인 방법을 쓸 수 있다. 여기서는 구간 |dviBuf[a:b+1]|을 슬라이스로 넘겨
+한 번에 쓴다. 바이트마다 |bPut|을 부르던 예전에는 긴 문서에서 이 일에만 조판 시간의 5\pct!쯤이 들었다(2026년 10월 31일).
 @^system dependencies@>
 @^inner loop@>
 @^defecation@>
 
 @<함수들@>=
 func writeDVI(a, b dviIndex) {
-	var k dviIndex
-	for k = a; k <= b; k++ {
-		bPut(&dviFile, dviBuf[k])
-	}
+	dviFile.w.Write(dviBuf[a : b+1])
 }
 
 @ 바이트를 버퍼에 넣는 일은 작은 함수 |dviOut|이 한다. \GO/ 컴파일러는 이 함수를 부르는 곳에 펼쳐 넣으므로, 바이트마다
@@ -14804,7 +14812,7 @@ func writeDVI(a, b dviIndex) {
 
 @<함수들@>=
 func dviOut(x int32) {
-	dviBuf[dviPtr] = x
+	dviBuf[dviPtr] = byte(x)
 	dviPtr++
 	if dviPtr == dviLimit {
 		dviSwap()
