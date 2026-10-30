@@ -9,6 +9,7 @@
 #   make trip       커누스의 TRIP 테스트를 돌린다
 #   make test       story와 trip을 모두 돌린다
 #   make regress    main 가지의 TeX과 출력이 바이트까지 같은지 본다(trip을 먼저 돌린다)
+#   make pgo        프로파일 기반 최적화에 쓸 default.pgo를 새로 만든다(리눅스가 아니면 docker)
 #   make clean      만든 것을 모두 지운다
 #   make deco       테두리에 액자를 두른 문서(tex-deco.pdf)를 만든다
 #   make twill      쪽마다 미니 색인을 붙인 문서(tex-twill.pdf)를 gtwill로 만든다
@@ -16,14 +17,15 @@
 
 BUILD = build
 
-.PHONY: all build pdf check fmt story trip test regress clean deco twill twill-deco
+.PHONY: all build pdf check fmt story trip test regress pgo clean deco twill twill-deco
 
 all: build pdf
 
 tex.go: tex.w
 	gtangle tex.w
 
-$(BUILD)/tex: tex.go go.mod
+# default.pgo가 있으면 go build가 저절로 그것으로 프로파일 기반 최적화를 한다
+$(BUILD)/tex: tex.go go.mod $(wildcard default.pgo)
 	@mkdir -p $(BUILD)
 	go build -o $(BUILD)/tex .
 
@@ -75,6 +77,9 @@ test: story trip
 
 regress: $(BUILD)/tex trip
 	tests/regress.sh -t
+
+pgo: tex.go
+	tests/pgo.sh
 
 # 액자를 두른 판은 tex-deco.pdf로 따로 만들어 tex.pdf를 건드리지 않는다
 tex-deco.pdf: tex.w tex-deco.ch texlion.pdf decoframe.pdf

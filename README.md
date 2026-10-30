@@ -81,7 +81,9 @@
   `type`은 `typ`가, 내장 이름을 가리던 `print`와 `error`는 `printStr`와 `reportError`가 되었다.
 - TeX의 정수형(`halfword`, `scaled`, `pointer` 따위)은 모두 `int32`의 별칭이다.
 - 원본의 필드 매크로 `link(p)`는 함수 `link(p)`와 `setLink(p, v)`의 짝이 된다.
-- 변형 레코드 `memoryWord`는 필드가 따로따로인 구조체가 된다.
+- 변형 레코드 `memoryWord`는 TeX Live처럼 모든 변형을 8바이트에 겹쳐 놓은 구조체다. Go에는 공용체가
+  없으므로 `unsafe`로 흉내 낸다. 진짜 필드는 `x.sc` 하나이고, 나머지는 `x.hh().rh`, `x.qqqq().b0()`,
+  `*x.gr()`처럼 메서드로 꺼낸다.
 - `init…tini`는 `if iniVersion {…}`, `stat…tats`는 `if stat {…}`, `debug…gubed`는 `if debug {…}`이다.
 - 프로시저 바깥으로 가는 `goto endOfTEX`나 `goto finalEnd`는 `panic`이 되고, 주 프로그램이
   `recover`로 받는다.
@@ -175,6 +177,19 @@ BASE=가지이름 tests/regress.sh   # main이 아닌 가지와 견준다
 견준다. 견주는 것은 TRIP 테스트가 남기는 파일 일곱 개, plain 포맷을 만들 때의 터미널 출력과 로그,
 그리고 세 문서(`story.tex`, `orig/tex.web`을 weave한 536쪽 문서, 그 본문을 여덟 번 되풀이한
 3911쪽 문서)의 DVI와 로그와 터미널 출력이다. `-t`를 주면 걸린 시간도 견준다.
+
+### 프로파일 기반 최적화
+
+```sh
+make pgo                    # tests/pgo.sh: default.pgo를 새로 만든다
+TEXCPUPROFILE=cpu.pprof build/tex '&plain' 문서 '\end'   # 아무 문서나 CPU 프로파일을 뜬다
+```
+
+저장소 맨 위의 `default.pgo`는 Go 컴파일러의 프로파일 기반 최적화(PGO)에 쓰는 CPU 프로파일이다.
+`go build`가 저절로 읽는다. `tests/pgo.sh`는 plain 포맷을 만들 때와 3911쪽 문서를 조판할 때의
+프로파일을 합쳐 이 파일을 만든다. 코드를 크게 고친 뒤에는 다시 만들어 두는 것이 좋다. macOS에서는
+Go의 CPU 프로파일러가 표본을 마지막 시스템 호출에 잘못 붙이므로, 리눅스가 아니면 도커 컨테이너
+안에서 프로파일을 뜬다.
 
 ### TRIP 테스트
 
