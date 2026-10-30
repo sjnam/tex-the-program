@@ -105,7 +105,7 @@ vardef southof(expr q) = (xpart center q, ypart llcorner bbox q) enddef;
 여기고 쓴 글이다.
 @.GWEB@>
 @^TeXbook@>
-\par\vfill\noindent
+\par\vskip 0pt plus 1filll\noindent % gtwill이 왼쪽 쪽 끝에 덧붙이는 \vfill보다 차수가 높아야 사자가 바닥에 붙는다
 \saveimageresource height 1.5in {lion.pdf}\useimageresource\lastsavedimageresourceindex
 
 @ \seclabel{go-native}이 판은 실험이다. 원본 \.{tex.web}은 이식성을 무엇보다 앞세워, 어느 언어로든

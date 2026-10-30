@@ -21,5 +21,7 @@
     \global\setbox\sbox=\vbox{}\global\vsize=\pageheight \gdef\lr{L}%
   \fi}
 
+% 본문을 액자 아랫변까지 늘여, 액자와 내용 사이가 위아래 모두 39pt쯤 되게 한다
+\pageheight=9.6in \vsize=\pageheight
 \def\title{\TeX82}
 @z
