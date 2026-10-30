@@ -1,6 +1,6 @@
 # TeX: 한글 GWEB 판
 
-도널드 크누스(Donald E. Knuth)의 조판 프로그램 TeX의 문학적 프로그램 `tex.web`(판 3.141592653)을
+도널드 커누스(Donald E. Knuth)의 조판 프로그램 TeX의 문학적 프로그램 `tex.web`(판 3.141592653)을
 한글과 Go로 옮긴 것이다. 원본은 영어 설명과 Pascal 코드로 되어 있는데, 이 번역은 설명을 한글로,
 코드를 Go로 바꾸어 GWEB(Go로 쓰는 WEB)의 `.w` 파일 하나(`tex.w`)에 담았다.
 
@@ -8,19 +8,19 @@
 그래서 원본에 될 수 있는 대로 충실하게 옮겼다.
 
 - 원본의 절, 절 이름, 프로시저와 변수 이름, 프로그램의 짜임새를 그대로 따른다.
-  크누스의 책 *TeX: The Program*(Computers & Typesetting, Volume B)과 나란히 놓고 읽을 수 있다.
-- 문서는 크누스가 처음부터 GWEB과 Go로 쓴 것처럼 서술했다. Pascal에만 해당하는 설명은 걷어 내고,
+  커누스의 책 *TeX: The Program*(Computers & Typesetting, Volume B)과 나란히 놓고 읽을 수 있다.
+- 문서는 커누스가 처음부터 GWEB과 Go로 쓴 것처럼 서술했다. Pascal에만 해당하는 설명은 걷어 내고,
   Go로 옮기면서 달라진 점은 따로 떼지 않고 해당하는 절의 설명에 녹여 넣었다. TeX의 역사와
-  크누스의 농담은 그대로 두었다.
+  커누스의 농담은 그대로 두었다.
 - 같은 `tex.w`에서 사람이 읽을 문서(`tex.pdf`, 약 820쪽)와 실제로 돌아가는 프로그램(`build/tex`)이
-  함께 나온다. 이 프로그램은 실제 TeX처럼 작동하고, 크누스의 TRIP 테스트도 통과한다(아래 참조).
+  함께 나온다. 이 프로그램은 실제 TeX처럼 작동하고, 커누스의 TRIP 테스트도 통과한다(아래 참조).
 
 ## 파일
 
 | 파일 | 내용 |
 | --- | --- |
 | `tex.w` | 번역 본문. 모든 것이 여기서 나온다 |
-| `texlion.pdf` | `tex.pdf` 1쪽의 왼쪽 아래에 넣는 사자 그림 |
+| `lion.pdf` | `tex.pdf` 1쪽의 왼쪽 아래에 넣는 사자 그림 |
 | `tex-deco.ch` | 쪽마다 액자를 두르는 바꿈 파일(`make deco`) |
 | `decoframe.pdf` | `tex-deco.ch`가 쪽마다 까는 액자 그림 |
 | `Makefile` | 빌드, 조판, 테스트 |
@@ -51,7 +51,7 @@
 
 ### 어디서부터 읽을까
 
-크누스는 처음부터 차례로 읽기를 권한다. 앞부분에서 만든 도구를 뒤에서 쓰기 때문이다. 처음 읽는다면
+커누스는 처음부터 차례로 읽기를 권한다. 앞부분에서 만든 도구를 뒤에서 쓰기 때문이다. 처음 읽는다면
 다음 순서가 무난하다.
 
 1. **기초 (1–8부)**: 문자 집합, 입출력, 문자열 풀, 오류 처리, `scaled`(2^-16 pt 단위) 고정 소수점
@@ -64,8 +64,8 @@
    상자를 꾸리는 `hpack`과 `vpack`(33부).
 5. **TeX의 핵심 알고리즘들**
    - 수식 조판 (34–36부): 수식 목록을 가로 목록으로 바꾸는 `mlistToHlist`.
-   - 정렬 (37부): `\halign`과 `\valign`. 크누스 자신이 "기적"이라고 부른다.
-   - 줄 나누기 (38–39부): 문단 전체를 보고 가장 좋은 나눔점들을 찾는 크누스–플래스 알고리즘.
+   - 정렬 (37부): `\halign`과 `\valign`. 커누스 자신이 "기적"이라고 부른다.
+   - 줄 나누기 (38–39부): 문단 전체를 보고 가장 좋은 나눔점들을 찾는 커누스–플래스 알고리즘.
      `tryBreak`와 델타 노드가 핵심이다.
    - 하이픈 넣기 (40–43부): 리앙(Liang)의 패턴과 트라이(trie).
    - 쪽 나누기 (44–45부): `vertBreak`와 쪽 조립기 `buildPage`, 삽입물 처리.
@@ -81,7 +81,9 @@
   `type`은 `typ`가, 내장 이름을 가리던 `print`와 `error`는 `printStr`와 `reportError`가 되었다.
 - TeX의 정수형(`halfword`, `scaled`, `pointer` 따위)은 모두 `int32`의 별칭이다.
 - 원본의 필드 매크로 `link(p)`는 함수 `link(p)`와 `setLink(p, v)`의 짝이 된다.
-- 변형 레코드 `memoryWord`는 필드가 따로따로인 구조체가 된다.
+- 변형 레코드 `memoryWord`는 TeX Live처럼 모든 변형을 8바이트에 겹쳐 놓은 구조체다. Go에는 공용체가
+  없으므로 `unsafe`로 흉내 낸다. 진짜 필드는 `x.sc` 하나이고, 나머지는 `x.hh().rh`, `x.qqqq().b0()`,
+  `*x.gr()`처럼 메서드로 꺼낸다.
 - `init…tini`는 `if iniVersion {…}`, `stat…tats`는 `if stat {…}`, `debug…gubed`는 `if debug {…}`이다.
 - 프로시저 바깥으로 가는 `goto endOfTEX`나 `goto finalEnd`는 `panic`이 되고, 주 프로그램이
   `recover`로 받는다.
@@ -131,11 +133,14 @@ cd build
 파일은 다음과 같이 찾는다.
 
 - **입력 파일**: 먼저 현재 디렉터리에서 찾는다. 없으면 환경 변수 `TEXINPUTS`의 디렉터리들에서 찾고,
-  그래도 없으면 `kpsewhich`에게 묻는다.
-- **TFM 파일**: `TEXFONTS`의 디렉터리들에서 찾는다. 없으면 처음 한 번 `kpsewhich -show-path=tfm`이
-  알려 주는 글꼴 디렉터리들(맨 앞이 현재 디렉터리)을 훑어 만든 표에서 찾는다. 글꼴마다 `kpsewhich`를
-  부르면 한 번에 0.1초쯤 들어 plain 포맷을 만드는 데만 4초가 넘게 걸리던 것이 0.4초로 줄었다.
-  표에도 없으면 `kpsewhich`에게 묻고, 그래도 없으면 현재 디렉터리에서 찾는다.
+  그래도 없으면 배포판의 파일 색인에서 찾는다.
+- **TFM 파일**: `TEXFONTS`의 디렉터리들에서 찾는다. 없으면 배포판의 파일 색인에서 찾는다.
+- **배포판의 파일 색인**: TeX은 시작하자마자 고루틴을 띄워, `kpsewhich`에게서 `tex`와 `tfm`의 검색
+  경로를 받고 배포판의 파일 목록 데이터베이스(`ls-R`)를 여러 고루틴으로 나누어 읽는다. 그동안 TeX은
+  포맷을 읽고 조판을 시작한다. 같은 이름이 검색 경로의 한 원소 안에 여럿 있거나 이름을 찾지 못하면
+  그 이름만 `kpsewhich`에게 직접 묻는다. 그러니 고르는 파일은 늘 `kpsewhich`와 같다. 파일마다
+  `kpsewhich`를 부르면 한 번에 0.1초쯤 드는데(그때마다 `ls-R`을 처음부터 읽는다), 이렇게 바꾸고
+  나서 plain 포맷을 만드는 데 0.38초 걸리던 것이 0.02초로, `story.tex`는 0.09초에서 0.01초로 줄었다.
 - **포맷 파일**: `&plain`은 먼저 현재 디렉터리의 `plain.fmt`를 찾고, 없으면 `TEXFORMATS`의 디렉터리들에서 찾는다.
 - **경로**: 원본은 `>`와 `:`로만 디렉터리를 가르지만, 이 번역은 `/`도 디렉터리 구분자로 알아본다.
   그래서 `./tex '&plain' ../doc/paper`라고 하면 `../doc/paper.tex`를 읽고, 출력은 현재 디렉터리의
@@ -146,6 +151,27 @@ terminal"로 멈추니, 대화가 필요 없을 때는 문서에 `\batchmode`나
 실행 중에 Ctrl-C를 누르면 원본의 `interrupt`처럼 안전한 곳에서 멈추고 다음 동작을 묻는다.
 
 출력의 날짜는 원본의 `fixDateAndTime`처럼 늘 1776년 7월 4일 정오다.
+
+### `tex` 명령으로 설치하기
+
+```sh
+make install                # ~/.local/bin/tex가 이 TeX을 부른다
+make install PREFIX=~/opt   # 다른 곳에 설치한다
+make uninstall              # 설치한 것을 지운다
+```
+
+`make install`은 실행 파일과 그것으로 만든 plain 포맷을 `$PREFIX/share/gotex`에 두고, `$PREFIX/bin/tex`에는
+`TEXFORMATS`를 그 디렉터리로 놓고 실행 파일을 부르는 작은 스크립트를 둔다. 그래서 `&plain` 없이
+`tex story`라고만 해도 plain 포맷을 읽는다. 이 포맷은 TeX Live의 것과 형식이 달라 서로 읽을 수 없으므로
+kpsewhich로 찾지 않는다. `TEXFORMATS`는 TeX Live의 프로그램들도 쓰는 변수라서 셸 전체가 아니라 이 스크립트
+안에서만 놓는다.
+
+`$PREFIX/bin`이 PATH에서 TeX Live의 디렉터리(`/Library/TeX/texbin` 따위)보다 앞에 있어야 `tex`가 이것을
+부른다. 설치한 뒤에는 셸에서 `hash -r`을 하고 `which tex`로 확인한다. 바뀌는 것은 `tex` 명령 하나뿐이고,
+`latex`나 `pdftex` 같은 TeX Live의 다른 프로그램은 그대로다. 이 TeX은 TeX Live의 `-interaction=`이나
+`-output-directory` 같은 옵션을 모른다. 맨 앞의 `-ini` 말고는 원본 TeX처럼 인자를 첫 입력 줄로 읽는다.
+`$PREFIX/bin/tex`가 이미 있는데 이 저장소가 설치한 것이 아니면, `make install`도 `make uninstall`도 그것을
+건드리지 않고 멈춘다. 실행 파일을 새로 빌드하면 포맷의 형식이 바뀌었을 수 있으니 `make install`을 다시 한다.
 
 ## 테스트
 
@@ -160,6 +186,52 @@ tests/compare.sh 문서이름    # kpsewhich로 찾을 수 있는 plain TeX 문�
 두 DVI를 `dvitype`으로 풀어 비교한다. 날짜가 들어 있는 DVI 머리의 주석은 빼고 비교한다.
 `story.tex`의 DVI는 진짜 TeX의 것과 같다.
 
+### 고치기 전의 이 프로그램과 비교하기
+
+```sh
+make regress                # make trip을 돌린 다음 tests/regress.sh -t
+BASE=가지이름 tests/regress.sh   # main이 아닌 가지와 견준다
+```
+
+`go-native` 가지는 이식성 대신 Go의 기능을 마음껏 써서 빠르게 만들어 보는 실험이다. 무엇을 고치든
+출력이 한 바이트도 달라져서는 안 되므로, `main` 가지의 `tex.w`로 기준 TeX을 따로 만들어 출력을
+견준다. 견주는 것은 TRIP 테스트가 남기는 파일 일곱 개, plain 포맷을 만들 때의 터미널 출력과 로그,
+그리고 세 문서(`story.tex`, `orig/tex.web`을 weave한 536쪽 문서, 그 본문을 여덟 번 되풀이한
+3911쪽 문서)의 DVI와 로그와 터미널 출력이다. `-t`를 주면 걸린 시간도 견준다.
+
+### 차등 퍼징
+
+```sh
+make fuzz                   # 1분 동안 (FUZZTIME=10m 따위로 바꿀 수 있다)
+go test ./tests/fuzz        # 씨앗 입력만
+```
+
+`tests/fuzz`는 Go의 퍼징으로 plain TeX 입력을 만들어, `main` 가지의 `tex.w`로 만든 TeX(`build/ref/tex`)과
+이 가지의 TeX에 함께 넣는다. 그리고 터미널 출력과 남긴 파일(DVI, 로그, `\openout`으로 쓴 파일)이 바이트까지
+같은지 본다. 쪽 내보내기를 비동기식으로 못 박은 실행도 DVI와 쓴 파일을 견준다. TeX은 한 프로세스에서 되풀이해
+돌릴 수 없으므로 입력마다 실행 파일을 띄운다. macOS에서는 `sandbox-exec`로 가두어, 무작위 입력이 작업 디렉터리
+밖에 파일을 쓰지 못하게 한다. 다른 결과가 나오면 그 입력이 `tests/fuzz/testdata/fuzz/FuzzSame/`에 남는다.
+
+### 프로파일 기반 최적화
+
+```sh
+make pgo                    # tests/pgo.sh: default.pgo를 새로 만든다
+TEXCPUPROFILE=cpu.pprof build/tex '&plain' 문서 '\end'   # 아무 문서나 CPU 프로파일을 뜬다
+```
+
+저장소 맨 위의 `default.pgo`는 Go 컴파일러의 프로파일 기반 최적화(PGO)에 쓰는 CPU 프로파일이다.
+`go build`가 저절로 읽는다. `tests/pgo.sh`는 plain 포맷을 만들 때와 3911쪽 문서를 조판할 때의
+프로파일을 합쳐 이 파일을 만든다. 코드를 크게 고친 뒤에는 다시 만들어 두는 것이 좋다. macOS에서는
+Go의 CPU 프로파일러가 표본을 마지막 시스템 호출에 잘못 붙이므로, 리눅스가 아니면 도커 컨테이너
+안에서 프로파일을 뜬다.
+
+### 쪽 내보내기 고루틴
+
+TeX은 쪽을 내보낼 때 상자를 훑는 일은 본체에서 하고, DVI 바이트를 만드는 일은 따로 도는 고루틴에게
+맡긴다. `\tracingstats`가 양수인 쪽은 예전처럼 본체에서 바로 내보낸다. 환경 변수 `TEXDVI`를
+`sync`나 `async`로 주면 한쪽으로 못 박을 수 있다. `tests/regress.sh`는 TRIP 테스트를 `TEXDVI=async`로도
+돌리고, 536쪽 문서를 `TEXDVI=sync`로도 조판해 둘 다 기준과 같은지 본다.
+
 ### TRIP 테스트
 
 ```sh
@@ -167,10 +239,10 @@ make trip                   # 요약만
 tests/trip.sh -v            # 차이를 모두 보인다
 ```
 
-TRIP은 크누스가 TeX의 구현을 검증하려고 만든 "고문 테스트"다. TeX의 거의 모든 기능을 극단적인
+TRIP은 커누스가 TeX의 구현을 검증하려고 만든 "고문 테스트"다. TeX의 거의 모든 기능을 극단적인
 경우까지 몰아붙인다. `tests/trip.sh`는 *tripman.tex* 부록 A의 절차를 그대로 따른다.
 
-1. 처음 한 번, 크누스가 배포한 테스트 파일(`trip.tex`, `trip.pl`, 그리고 결과 원본인 `tripin.log`,
+1. 처음 한 번, 커누스가 배포한 테스트 파일(`trip.tex`, `trip.pl`, 그리고 결과 원본인 `tripin.log`,
    `trip.log`, `trip.typ` 따위)을 CTAN에서 `tests/trip/`로 받는다.
 2. `trip.pl`을 `pltotf`로 `trip.tfm`으로 바꾼다.
 3. tripman이 요구하는 상수로 테스트용 INITEX를 만든다. `memMin=memBot=1`, `memTop=memMax=3000`,
@@ -192,7 +264,7 @@ TRIP은 크누스가 TeX의 구현을 검증하려고 만든 "고문 테스트"�
 
 ## 저작권과 이름
 
-원본 `tex.web`의 저작권은 크누스에게 있다(1982). 원본 머리말은 원본을 고치는 것을 허락하되,
+원본 `tex.web`의 저작권은 커누스에게 있다(1982). 원본 머리말은 원본을 고치는 것을 허락하되,
 고친 파일의 이름이 `tex.web`이 아니어야 한다고 정해 두었다. 이 번역은 `tex.w`라는 별개의 파일이다.
 
 원본 §2는 프로그램을 고치면 문제가 생겼을 때 어느 판인지 알 수 있도록 배너를 바꾸라고 하고,

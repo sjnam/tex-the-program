@@ -1,7 +1,7 @@
-% 이 파일은 크누스의 tex.web(Version 3.141592653, 2021)을 한글 GWEB(Go)로
+% 이 파일은 커누스의 tex.web(Version 3.141592653, 2021)을 한글 GWEB(Go)로
 % 옮긴 것이다. 원본 tex.web (C) 1982 Donald E. Knuth.
 % 원본의 조건(``고친 파일은 tex.web이라는 이름을 달아서는 안 된다'')에 따라
-% 이 파일은 tex.web이 아니며, 크누스의 TeX 꾸러미의 일부가 아니다.
+% 이 파일은 tex.web이 아니며, 커누스의 TeX 꾸러미의 일부가 아니다.
 % 손대지 않은 원본은 CTAN의 systems/knuth/dist/tex/tex.web에 있다.
 
 \input kotexgweb
@@ -61,25 +61,26 @@ vardef southof(expr q) = (xpart center q, ypart llcorner bbox q) enddef;
   \null\vfill
   \centerline{\titlefont \TeX: The Program}
   \vskip 15pt
-  \centerline{도널드 크누스의 \TeX\ 프로그램을 한글 \.{GWEB}으로 옮김}
+  \centerline{도널드 커누스의 \TeX\ 프로그램을 한글 \.{GWEB}으로 옮김}
   \vfill}
 \def\botofcontents{\vfill
   \ninepoint\baselineskip12pt
   \noindent 원본 \copyright\ 1982 Donald E. Knuth
   \bigskip\noindent
-  크누스의 원본 파일 \.{tex.web}은 고치지 않는 한 얼마든지 복사하고 배포할 수 있다.
+  커누스의 원본 파일 \.{tex.web}은 고치지 않는 한 얼마든지 복사하고 배포할 수 있다.
   고친 파일은 이름이 \.{tex.web}이 아닐 때에만 허용된다.
   \bigskip\noindent
   이 문서는 그 조건에 따라 원본을 한글과 \GO/로 옮긴 것이며,
-  크누스의 \TeX\ 꾸러미의 일부가 아니다. 손대지 않은 원본은
+  커누스의 \TeX\ 꾸러미의 일부가 아니다. 손대지 않은 원본은
   {\tt https://mirrors.ctan.org/systems/knuth/dist/tex/tex.web}에서
   받을 수 있다. 번역에 잘못이 있다면 그것은 옮긴이의
-  탓이지 크누스의 탓이 아니다.}
+  탓이지 커누스의 탓이 아니다.}
 
 % gweave가 형으로 알아보지 못하는 이름들.
 @s bufio.Reader int
 @s bufio.Writer int
 @s os.File int
+@s sync.WaitGroup int
 
 @* 들어가며.
 \TeX은 품질 높은 조판을 만들어 내려고 만든 문서 컴파일러다. 여기 실린 \GO/ 프로그램은
@@ -87,13 +88,13 @@ vardef southof(expr q) = (xpart center q, ypart llcorner bbox q) enddef;
 @^TeX82@>
 어떤 컴퓨터에서 돌리든 똑같은 출력을 얻을 수 있다.
 
-이 프로그램이 가장 먼저 바라는 것은 \TeX의 알고리즘을 될 수 있는 대로 또렷하게 보여 주는
-일이다. 그러다 보니 컴파일러가 이 프로그램을 어떤 기계어로 옮기든 썩 효율적인 코드가
-나오지는 않을 수도 있다. 그래도 조금만 고치면 여러 운영 환경에서 효율적으로 돌아가도록
-다듬을 수 있게 짜 두었다. 이렇게 유연할 수 있는 것은 이 문서를 \.{GWEB}으로 썼기
-때문이다. \.{GWEB}의 이름 있는 절과 변경 파일을 쓰면, 필요한 손질은 대부분 프로그램
-본문을 건드리지 않고도 할 수 있다. 다른 언어로 반쯤 자동으로 옮기는 것도 어렵지 않은데,
-아래 프로그램이 \GO/에만 있는 별난 기능을 그리 많이 쓰지 않기 때문이다.
+이 프로그램이 바라는 것은 두 가지다. 하나는 \TeX의 알고리즘을 될 수 있는 대로 또렷하게
+보여 주는 일이고, 다른 하나는 \GO/에서 될 수 있는 대로 빠르게 도는 일이다. 두 번째를 위해
+아래 프로그램은 \GO/에만 있는 별난 기능을 아낌없이 쓴다. 고루틴과 통로로 일을 나누어 동시에
+하고, 맵과 메서드는 물론 \.{unsafe} 꾸러미도 마다하지 않는다. 그러니 이 프로그램을 다른 언어로
+옮기기는 쉽지 않을 것이다. 그래도 알고리즘이 흐려지지는 않는다. 이 문서를 \.{GWEB}으로 썼기
+때문이다. 빠르게 하려고 덧댄 장치는 \.{GWEB}의 이름 있는 절에 따로 담아 그 자리에서 설명할 수
+있으므로, 알고리즘의 줄기는 그대로 드러난다. 무엇을 덧대든 출력은 한 바이트도 달라지지 않는다.
 
 \TeX\ 같은 큰 소프트웨어는 아무리 애써도 어느 수준 아래로는 줄일 수 없는 복잡함을 안고
 있다. 조각 하나하나는 꽤 단순하더라도 그렇다. \.{GWEB}은 프로그램의 조각들이 어떻게
@@ -105,7 +106,59 @@ vardef southof(expr q) = (xpart center q, ypart llcorner bbox q) enddef;
 @.GWEB@>
 @^TeXbook@>
 \par\vfill\noindent
-\saveimageresource height 1.5in {texlion.pdf}\useimageresource\lastsavedimageresourceindex
+\saveimageresource height 1.5in {lion.pdf}\useimageresource\lastsavedimageresourceindex
+
+@ \seclabel{go-native}이 판은 실험이다. 원본 \.{tex.web}은 이식성을 무엇보다 앞세워, 어느 언어로든
+쉽게 옮길 수 있도록 웬만한 고급 언어에 다 있는 기능만 썼다. 이 번역도 처음에는 그 뜻을 따랐다.
+나는 \.{go-native}라는 가지에서 그 반대를 해 보기로 했다(2026년 10월 31일). 고루틴과
+통로, 맵, 메서드, \.{unsafe} 꾸러미까지, \GO/가 주는 것은 무엇이든 써서 이 프로그램을 될 수 있는
+대로 빠르게 만드는 것이다. 조건은 딱 하나, 결과가 한 바이트도 달라지지 않는 것이다. DVI 파일과
+기록 파일과 터미널 출력이 고치기 전의 프로그램이 내놓던 것과 똑같아야 하고, \.{TRIP} 시험의
+결과도 그래야 한다. 포맷 파일만은 예외다. 포맷 파일의 형식은 원래 구현마다 다르니 얼마든지
+바꿔도 된다.
+
+해 보니 \TeX의 본체에는 동시에 돌릴 틈이 거의 없다. 토큰 하나가 뒤따르는 모든 것의 뜻을 바꿀
+수 있고(\.{\\catcode}나 \.{\\def}를 생각해 보라), 메모리를 어떤 순서로 쓰는지가 기록 파일의
+통계에 그대로 드러나며, \.{\\write}는 쪽을 내보내는 바로 그 순간에 전개되기 때문이다. 그래서
+고루틴은 본체의 가장자리에서 일한다. 지금까지 고친 곳은 다음과 같다.
+\smallskip
+\item{$\bullet$} 배포판에서 파일을 찾는 색인을 고루틴들이 만든다(\secref{external-name}). 그
+덕분에 plain 포맷을 만드는 데 0.38초 걸리던 것이 0.02초로, 짧은 문서 \.{story.tex}는 0.09초에서
+0.01초로, \.{tex.web}을 조판한 536쪽짜리 문서는 0.54초에서 0.27초로 줄었다.
+\item{$\bullet$} 낱말 |memoryWord|의 변형들을 |unsafe|로 8바이트 하나에 겹쳐 놓는다(\secref{memory-word}).
+낱말이 48바이트에서 8바이트로 줄어 캐시에 잘 들어맞게 되었다. 같은 본문을 여덟 번 되풀이한
+3911쪽짜리 문서가 1.86초에서 1.68초로 줄었고, plain 포맷 파일은 1.56메가바이트에서
+284킬로바이트가 되었다.
+\item{$\bullet$} 필드 함수들이 배열 |mem|의 첨자를 |maxHalfword|로 가려, 컴파일러가 경계 검사를 빼게
+한다(\secref{mem-array}). 3911쪽짜리 문서가 1.71초에서 1.65초로 줄었다.
+\item{$\bullet$} \GO/ 컴파일러의 프로파일 기반 최적화(PGO)를 쓴다. 긴 문서를 조판하며 뜬 프로파일을
+\.{default.pgo}로 두면 \.{go build}가 그것을 보고 코드를 다듬는다(\secref{main}의 앞 절). 다시
+3\pct!쯤 빨라져 3911쪽짜리 문서가 1.60초에 끝난다.
+\item{$\bullet$} 입력 줄을 |ReadSlice|로 한 번에 받고(\secref{input-ln}), \.{DVI} 버퍼를 바이트 배열로 바꾸어
+그 구간을 한 번에 쓴다. 둘 다 바이트마다 함수를 부르던 것을 없앤 것이다. 3911쪽짜리 문서가 1.52초에 끝나,
+같은 기계에서 \TeX\ Live의 \.{tex}(1.55초)보다 조금 빠르다.
+\item{$\bullet$} 쪽을 내보내는 일을 두 고루틴이 나눈다(\secref{dvi-goroutine}). 본체는 상자를 훑으며 \.{DVI} 명령을
+적어 통로로 넘기고, 따로 도는 고루틴이 그것을 바이트로 바꾸어 쓰는 동안 다음 쪽을 조판한다. 3911쪽짜리 문서가 1.44초에 끝난다.
+처음 바란 대로 고루틴과 통로가 \TeX의 일을 실제로 나누어 맡는 곳이다.
+\item{$\bullet$} 기록 파일과 터미널에 문자를 쓸 때 |any|를 거치지 않고(\secref{print-char}), 출력 파일의 버퍼를
+64킬로바이트로 늘렸다. 추적을 모두 켜서 기록 파일이 65메가바이트가 되는 536쪽짜리 문서가 0.93초에서 0.75초로 줄었다.
+\smallskip\noindent
+해 보았지만 얻는 것이 없어 버린 것도 적어 둔다. \.{DVI} 파일의 쓰기 버퍼를 키우는 것은 1\pct!쯤으로 재는 오차
+안이었고, 쓰레기 수집을 끄는 것은 아무 차이가 없었다. 기록 파일 쓰기를 고루틴에게 넘기는 것도 차이가 없었다.
+버퍼가 크면 시스템 호출이 이미 몇 번 안 되기 때문이다. 가장 뜨거운 |getNext|에서 흔한 경우(줄 한가운데의 글자,
+토큰 목록의 보통 토큰)를 맨 앞에서 지역 변수로 빨리 처리해 보았더니 오히려 1\pct!쯤 느려졌다. 컴파일러는
+|switch|를 이미 점프 표로 만들고 있고, 비용은 전역 변수를 읽는 데보다 토큰마다 갈리는 분기에서 나오는 듯하다.
+토큰의 두 필드를 한 번에 읽고 나눗셈을 자리 옮김으로 바꾸어 보아도 차이가 없었다. 입력 파일의 줄을 따로 도는
+고루틴이 미리 읽어 묶음으로 넘기면 2\pct!쯤 빨라졌지만 쓰지 않기로 했다. 원래보다 훨씬 멀리 앞서 읽게 되므로,
+지금 읽고 있는 입력 파일을 \.{\\openout}으로 덮어쓰는 문서에서는 결과가 달라질 수 있기 때문이다. 결과가 한
+바이트도 달라지지 않는다는 조건에 예외를 두면서까지 얻을 만한 것은 아니었다.
+
+결과가 같다는 것은 \.{tests/regress.sh}만이 아니라 \GO/의 퍼징으로도 확인한다(\.{tests/fuzz}). 무작위로 만든
+plain \TeX\ 입력을 \.{main} 가지의 \TeX과 이 판의 \TeX에 함께 넣고, 남긴 파일과 터미널 출력이 바이트까지
+같은지 본다.
+\smallskip\noindent
+결과가 정말 같은지는 \.{tests/regress.sh}로 확인한다. 이 스크립트는 \.{main} 가지의 \.{tex.w}로
+기준 프로그램을 따로 만들어, 두 프로그램의 출력을 바이트 단위로 견준다.
 
 @ 지금의 구현에는 꽤 긴 역사가 있다. 시작은 1977년 여름이었다. 그해 5월에 저자가 쓴
 명세를 바탕으로 마이클~F. 플래스와 프랭크~M. 리앙이 원형을 설계하고 짰다.
@@ -163,11 +216,11 @@ const banner = "This is TeX, Version 3.141592653 (GWEB)" // \TeX이 시작할 �
 찾아보기의 `system dependencies' 항목에 그 절 번호를 모두 모아 두었다.
 @^system dependencies@>
 
-아래의 \TeX\ 프로그램은 \GO/의 훌륭한 기능을 다 쓰지는 않는다. 웬만한 고급 언어에 다 있는
-기능만 쓰려고 애썼으므로, 코드의 대부분을 다른 언어로 기계적으로 옮길 수 있다. 이를테면
-메서드와 맵은 아예 쓰지 않았다. 슬라이스와 인터페이스(|any|)도 운영체제와 주고받는 곳과
-찍기 프로시저의 인자 같은 몇 군데에서만 쓴다. 따로 도는 고루틴은 사용자가 보내는 끼어들기
-신호를 받는 한 곳에만 있다. 자료 구조는 모두 크기가 정해진 배열 몇 개에 들어 있고,
+아래의 \TeX\ 프로그램은 \GO/의 기능을 가리지 않고 쓴다. 다만 처음부터 그렇게 짠 것은 아니다.
+뼈대는 원본처럼 웬만한 고급 언어에 다 있는 기능으로 짰고, 거기에 \GO/의 기능을 하나씩 덧대어
+가는 중이다(\secref{go-native}). 그래서 지금은 코드의 대부분이 아직 그 뼈대의 모습이다. 따로 도는
+고루틴은 사용자가 보내는 끼어들기 신호를 받는 곳과 파일 색인을 만드는 곳에 있다. 자료 구조는
+모두 크기가 정해진 배열 몇 개에 들어 있고,
 포인터라고 부르는 것도 실은 그 배열의 첨자일 뿐이다. 이 밖에 프로그램 전체에 걸친 관례를
 몇 가지 적어 둔다.
 \smallskip
@@ -206,6 +259,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"io/fs"
@@ -214,7 +268,11 @@ import (
 	"os/exec"
 	"os/signal"
 	"path/filepath"
+	"runtime"
+	"runtime/pprof"
 	"strings"
+	"sync"
+	"unsafe"
 )
 
 @<전역 레이블@>
@@ -727,7 +785,7 @@ var @!nameLength int32 // |nameOfFile|에서 실제로 뜻이 있는 문자의 �
 
 \TeX의 파일 여는 프로시저들은 |nameOfFile|에 적힌 파일을 열 수 없으면 |false|를 돌려준다.
 파일의 외부 이름은 바로 뒤에서 정의하는 함수 |externalName|이 |nameOfFile|을 보고 만든다.
-이진 파일을 입력용으로 열 때는 첫 원소를 미리 읽어 |buf|에 넣어 둔다. 낱말 파일의 형
+텍스트 파일을 출력용으로 열면 64킬로바이트짜리 쓰기 버퍼를 둔다. 기록 파일처럼 많이 쓰는 파일은 버퍼가 클수록 시스템 호출이 준다. 낱말 파일의 형
 |wordFile|은 \secref{memory-word}에서 정의한다.
 
 @<함수들@>=
@@ -741,10 +799,13 @@ func aOpenIn(f *alphaFile) bool { // 텍스트 파일을 입력용으로 연다
 func aOpenOut(f *alphaFile) bool { // 텍스트 파일을 출력용으로 연다
 	file, err := os.Create(externalName())
 	if err != nil { return false }
-	*f = alphaFile{f: file, w: bufio.NewWriter(file)}
+	*f = alphaFile{f: file, w: bufio.NewWriterSize(file, 1<<16)}
 	return true
 }
 
+@ 이진 파일을 여는 함수들이다. 입력용으로 열 때는 첫 원소를 미리 읽어 |buf|에 넣어 둔다.
+
+@<함수들@>=
 func bOpenIn(f *byteFile) bool { // 이진 파일을 입력용으로 연다
 	file, err := os.Open(externalName())
 	if err != nil { return false }
@@ -785,25 +846,31 @@ func wOpenOut(f *wordFile) bool { // 낱말 파일을 출력용으로 연다
 이름이다. 요즘 시스템에서는 이런 이름이 아무 뜻이 없으므로, 함수 |externalName|이 이 머리말을
 알아보고 해당하는 파일을 대신 찾아 준다. 먼저 환경 변수 \.{TEXINPUTS}, \.{TEXFONTS},
 \.{TEXFORMATS}에 쌍점으로 나누어 적은 디렉터리들을 차례로 뒤진다. 거기서 찾지 못하면 \TeX\
-배포판의 \.{kpsewhich} 명령에게 물어본다. 다만 포맷 파일은 구현마다 형식이 달라 다른 \TeX의
-것을 읽을 수 없으므로 \.{kpsewhich}에게 묻지 않는다. 끝내 찾지 못하면 머리말을 뗀 이름을
-돌려주므로, 그런 파일이 현재 디렉터리에 있으면 그것이 열린다.
+배포판이 쓰는 방식대로 찾는다. 다만 포맷 파일은 구현마다 형식이 달라 다른 \TeX의 것을 읽을
+수 없으므로 배포판에서 찾지 않는다. 끝내 찾지 못하면 머리말을 뗀 이름을 돌려주므로, 그런
+파일이 현재 디렉터리에 있으면 그것이 열린다.
 
-\.{kpsewhich}는 부를 때마다 배포판의 파일 목록을 처음부터 읽으므로 한 번에 0.1초쯤 걸린다.
-입력 파일은 몇 개 안 되니 상관없지만, plain 포맷을 만드는 \.{INITEX}는 글꼴을 마흔 개쯤 읽으므로
-그것만으로도 4초가 넘게 걸린다. 그래서 글꼴만은 다르게 한다. 처음 글꼴을 찾을 때
-\.{kpsewhich}에게서 글꼴 디렉터리의 목록을 한 번만 받아, 그 디렉터리들을 훑으며 이름에서
-경로로 가는 표 |tfmFiles|를 만들어 둔다. 목록에 나온 순서대로 훑으면서 먼저 나온 것을 남기므로,
-같은 이름이 여럿이면 맨 앞에 있는 현재 디렉터리의 것이 이긴다. 표에 없는 글꼴만
-\.{kpsewhich}에게 따로 묻는다.
+배포판에서 파일을 찾는 것은 원래 \.{kpsewhich} 명령이 하는 일이다. 그런데 \.{kpsewhich}는
+부를 때마다 배포판의 파일 목록 데이터베이스(\.{ls-R}, 26만 항목)를 처음부터 읽으므로 한 번에
+0.1초쯤 걸린다. \.{story.tex} 같은 짧은 문서라면 \TeX이 실제로 조판하는 데 드는 시간의 스무
+배다. 그래서 나는 이 일을 \GO/답게 나누어 하기로 했다(2026년 10월 31일). 주 프로그램은
+시작하자마자 고루틴 하나를 띄워 파일 색인을 만들게 하고(\secref{texmf-index}), 자기는 그동안
+포맷 파일을 읽고 조판을 시작한다. 배포판의 파일을 처음 찾을 때에야 색인이 다 됐는지
+기다린다.
+
+색인이 답을 하나로 정하지 못할 때만 \.{kpsewhich}에게 직접 묻는다. 같은 이름이 검색 경로의
+한 원소 안에 여럿 있을 때, 그리고 이름을 아예 찾지 못했을 때가 그렇다. \.{kpsewhich}는
+여럿 가운데 하나를 고르는 나름의 순서가 있고, 찾지 못하면 대소문자를 가리지 않고 한 번 더
+찾아 본다. 이런 판단은 흉내 내기보다 그에게 맡기는 편이 안전하다. 그러면 어떤 이름에 대해서든
+\.{kpsewhich}와 똑같은 파일을 고르게 된다.
 @^system dependencies@>
 
 @<함수들@>=
 func externalName() string {
 	nm := string(nameOfFile[1 : nameLength+1])
-	for _, a := range [...]struct{ area, env string }{
-		{"TeXinputs:", "TEXINPUTS"}, {"TeXfonts:", "TEXFONTS"},
-		{"TeXformats:", "TEXFORMATS"}} {
+	for _, a := range [...]struct{ area, env, kind string }{
+		{"TeXinputs:", "TEXINPUTS", "tex"}, {"TeXfonts:", "TEXFONTS", "tfm"},
+		{"TeXformats:", "TEXFORMATS", ""}} {
 		if rest, ok := strings.CutPrefix(nm, a.area); ok {
 			nm = rest
 			for _, dir := range filepath.SplitList(os.Getenv(a.env)) {
@@ -813,13 +880,8 @@ func externalName() string {
 					}
 				}
 			}
-			if a.env == "TEXFONTS" {
-				@<글꼴 디렉터리들을 훑어 표 |tfmFiles|를 아직 안 만들었으면 만든다@>
-				if p, ok := tfmFiles[nm]; ok {
-					return p
-				}
-			}
-			if a.env != "TEXFORMATS" {
+			if a.kind != "" {
+				@<색인에서 |nm|을 찾아 하나로 정해지면 그 경로를 돌려준다@>
 				if out, err := exec.Command("kpsewhich", nm).Output(); err == nil {
 					if p := strings.TrimSpace(string(out)); p != "" {
 						return p
@@ -832,39 +894,226 @@ func externalName() string {
 	return nm
 }
 
-@ 글꼴 디렉터리의 목록은 \.{kpsewhich -show-path=tfm}이 쌍점으로 나누어 알려 준다. 끝이
-`\.{//}'인 디렉터리는 그 아래를 모두 뒤지라는 뜻이다. 앞에 붙은 `\.{!!}'는 디스크를 뒤지지
-말고 파일 목록 데이터베이스만 믿으라는 뜻인데, 여기서는 어차피 디스크를 직접 훑으므로 그냥
-떼어 낸다. 배포판이 없어서 목록이 비더라도 표는 빈 채로 만들어지므로, 다음에 글꼴을 찾을 때
-쓸데없이 다시 훑지 않는다.
+@ \seclabel{texmf-index}배포판이 파일을 찾는 길은 파일 종류마다 정해진 {\it 검색 경로\/}다.
+검색 경로는 디렉터리 이름을 쌍점으로 이어 놓은 것이고, \.{kpsewhich -show-path=tfm}처럼 물으면
+알려 준다. 경로의 원소 하나하나가 형 |texmfElt|의 값이 된다. 끝이 `\.{//}'인 원소는 그 아래를
+모두 뒤지라는 뜻이고, 앞에 `\.{!!}'가 붙은 원소는 디스크를 뒤지지 말고 파일 목록 데이터베이스만
+믿으라는 뜻이다. 데이터베이스는 디렉터리 트리의 뿌리에 놓인 \.{ls-R} 파일로, 그 트리 안의
+디렉터리마다 거기 든 파일 이름을 적어 둔 것이다. 원소 가운데 어떤 데이터베이스의 트리 안에
+드는 것은 그 데이터베이스를 보고, 그렇지 않은 것은 디스크를 직접 본다.
 
-@<글꼴 디렉터리들을 훑어...@>=
-if tfmFiles == nil {
-	tfmFiles = map[string]string{}
-	out, _ := exec.Command("kpsewhich", "-show-path=tfm").Output()
-	for _, dir := range filepath.SplitList(strings.TrimSpace(string(out))) {
-		dir = strings.TrimPrefix(dir, "!!")
-		deep := strings.HasSuffix(dir, "//")
-		root := strings.TrimRight(dir, "/")
-		filepath.WalkDir(root, func(p string, e fs.DirEntry, err error) error {
-			switch {
-			case err != nil:
-			case e.IsDir():
-				if p != root && !deep {
-					return filepath.SkipDir
-				}
-			default:
-				if _, dup := tfmFiles[e.Name()]; !dup {
-					tfmFiles[e.Name()] = p
-				}
-			}
-			return nil
-		})
+데이터베이스 하나는 형 |lsR|의 값이다. 파일 이름에서 그 이름을 담은 디렉터리들로 가는 표를
+한 장이 아니라 여러 장 둔다. \.{ls-R}을 여러 조각으로 잘라 고루틴들이 동시에 읽고, 조각마다
+표를 한 장씩 만들기 때문이다. 표들을 하나로 합치면 그만큼 시간이 더 드니 그대로 둔다. 찾을 때는
+표들을 조각의 순서대로 보면 된다.
+
+@<전역 형@>=
+type @!texmfElt struct { // 검색 경로의 원소 하나
+	dir    string // 디렉터리
+	deep   bool   // 그 아래 디렉터리까지 모두 뒤지는가?
+	onlyDB bool   // 데이터베이스만 믿는가?
+	db     *lsR   // 이 원소를 덮는 데이터베이스, 없으면 |nil|
+	sub    string // 데이터베이스의 뿌리에서 본 |dir|, `\.{./fonts/tfm}' 꼴
+	files  map[string][]string // 디스크를 훑어 얻은 표, 이름에서 경로들로
+}
+type @!lsR struct { // 파일 목록 데이터베이스 하나
+	root  string                // \.{ls-R}이 있는 디렉터리
+	parts []map[string][]string // 조각마다 이름에서 디렉터리들로 가는 표
+}
+
+@ 색인을 만드는 고루틴은 일을 마치면 통로 |texmfReady|를 닫는다. 닫힌 통로에서 받기는 언제나
+곧바로 끝나므로, 파일을 찾는 쪽은 찾을 때마다 이 통로에서 받기만 하면 된다. 처음에는 색인이
+다 될 때까지 기다리고, 그 뒤로는 기다리지 않는다. 고루틴이 |texmfPath|에 써 둔 것은 통로를
+닫기 전의 일이므로, 받기를 마친 쪽에서는 안전하게 읽을 수 있다.
+
+@<전역 변수@>=
+var @!texmfPath map[string][]texmfElt // 파일 종류(\.{tex}, \.{tfm})마다 검색 경로
+var @!texmfReady = make(chan struct{}) // 색인이 다 되면 닫힌다
+
+@ 주 프로그램은 시작하자마자 이 고루틴을 띄운다(\secref{main}). 이 고루틴의 일은 둘이다.
+검색 경로를 받는 일과, 데이터베이스를 읽는 일이다.
+
+@<파일 색인을 만들 고루틴을 띄운다@>=
+go func() {
+	defer close(texmfReady)
+	@<\.{kpsewhich}에게서 검색 경로를 받아 |texmfPath|를 채운다@>
+	@<데이터베이스와 디스크를 동시에 읽어 색인을 채운다@>
+}()
+
+@ \.{kpsewhich}에게 검색 경로를 물을 때도 데이터베이스를 다 읽는 0.1초가 든다. 그런데 경로를
+알려 주는 데에는 데이터베이스가 필요 없다. 그래서 데이터베이스 목록을 담은 변수
+\.{TEXMFDBS}를 없는 곳으로 돌려 놓고 묻는다. 그러면 거의 곧바로 답한다. \.{kpsewhich}는
+한 번에 검색 경로 하나만 알려 주므로, 고루틴 둘이 \.{tex}와 \.{tfm}의 경로를 동시에 묻는다.
+\.{kpsewhich}가 없으면 경로가 비므로, 그때는 모든 파일을 \.{kpsewhich}에게 직접 묻게
+된다(그리고 못 찾는다).
+
+이 고루틴은 데이터베이스가 어디 있는지도 스스로 알아내야 한다. `\.{!!}'가 붙은 원소에서
+위로 올라가며 \.{ls-R}이 있는 디렉터리를 찾으면, 그것이 그 원소를 덮는 데이터베이스다.
+\TeX\ 배포판의 기본 설정에서는 \.{TEXMFDBS}가 바로 이런 트리들의 목록이다.
+
+@<\.{kpsewhich}에게서 검색 경로를...@>=
+kinds, paths := [...]string{"tex", "tfm"}, [2]string{}
+var pw sync.WaitGroup
+for i, kind := range kinds {
+	pw.Go(func() {
+		cmd := exec.Command("kpsewhich", "-show-path="+kind)
+		cmd.Env = append(os.Environ(), "TEXMFDBS="+os.DevNull)
+		out, _ := cmd.Output()
+		paths[i] = strings.TrimSpace(string(out))
+	})
+}
+pw.Wait()
+texmfPath = map[string][]texmfElt{}
+dbs := map[string]*lsR{} // 뿌리 디렉터리에서 데이터베이스로
+for i, kind := range kinds {
+	for _, s := range filepath.SplitList(paths[i]) {
+		var e texmfElt
+		s, e.onlyDB = strings.CutPrefix(s, "!!")
+		e.deep = strings.HasSuffix(s, "//")
+		if e.dir = strings.TrimRight(s, "/"); e.dir == "" {
+			continue
+		}
+		if e.onlyDB {
+			@<|e.dir|에서 위로 올라가며 \.{ls-R}을 찾아 |dbs|에 올린다@>
+		}
+		texmfPath[kind] = append(texmfPath[kind], e)
 	}
 }
 
-@ @<전역 변수@>=
-var @!tfmFiles map[string]string // 글꼴 파일 이름에서 경로로 가는 표
+@ @<|e.dir|에서 위로...@>=
+for d := e.dir; d != filepath.Dir(d); d = filepath.Dir(d) {
+	if dbs[d] != nil {
+		break
+	}
+	if _, err := os.Stat(filepath.Join(d, "ls-R")); err == nil {
+		dbs[d] = &lsR{root: d}
+		break
+	}
+}
+
+@ 이제 원소마다 그것을 덮는 데이터베이스가 있는지 본다. 뿌리가 원소의 디렉터리이거나 그
+조상인 데이터베이스가 덮는다. 데이터베이스마다 그것이 덮는 원소들을 |want|에 모아 두면,
+\.{ls-R}을 읽을 때 쓸모없는 디렉터리를 건너뛸 수 있다. 데이터베이스가 덮지 않는 원소 가운데
+`\.{//}'로 끝나는 것은 디스크를 훑어서 표를 만든다. 데이터베이스마다, 그리고 훑을 원소마다
+고루틴을 하나씩 띄우고, 모두 끝나기를 |wg.Wait|로 기다린다.
+
+@<데이터베이스와 디스크를...@>=
+var wg sync.WaitGroup
+want := map[*lsR][]texmfElt{}
+for _, elts := range texmfPath {
+	for i := range elts {
+		e := &elts[i]
+		for root, db := range dbs {
+			if (e.dir == root || strings.HasPrefix(e.dir, root+"/")) &&
+				(e.db == nil || len(root) > len(e.db.root)) {
+				e.db, e.sub = db, "."+e.dir[len(root):]
+			}
+		}
+		if e.db != nil {
+			want[e.db] = append(want[e.db], *e)
+		} else if e.deep && !e.onlyDB {
+			e.files = map[string][]string{}
+			wg.Go(func() { @<디스크에서 |e.dir| 아래를 모두 훑어 |e.files|를 채운다@> })
+		}
+	}
+}
+for db, es := range want {
+	wg.Go(func() { @<\.{ls-R}을 조각내 고루틴마다 한 조각씩 읽게 한다@> })
+}
+wg.Wait()
+
+@ @<디스크에서 |e.dir| 아래를...@>=
+filepath.WalkDir(e.dir, func(p string, d fs.DirEntry, err error) error {
+	if err == nil && !d.IsDir() {
+		e.files[d.Name()] = append(e.files[d.Name()], p)
+	}
+	return nil
+})
+
+@ \.{ls-R}은 디렉터리마다 `\.{./tex/plain/base:}'처럼 쌍점으로 끝나는 머리 줄을 두고, 그
+아래에 파일 이름을 한 줄에 하나씩 적는다. 디렉터리와 디렉터리 사이에는 빈 줄이 있다. 그래서
+파일을 CPU 수만큼의 비슷한 크기로 자르되, 자르는 곳을 빈 줄 바로 다음의 머리 줄 앞으로 맞추면
+조각마다 따로 읽을 수 있다. 조각의 표는 고루틴을 띄우기 전에 |db.parts|에 차례로 달아 두므로,
+고루틴들이 어떤 순서로 끝나든 표의 순서는 파일 안의 순서와 같다.
+
+@<\.{ls-R}을 조각내...@>=
+data, err := os.ReadFile(filepath.Join(db.root, "ls-R"))
+if err != nil {
+	return
+}
+for k := runtime.NumCPU(); k > 0 && len(data) > 0; k-- {
+	cut := len(data)
+	if k > 1 {
+		if j := bytes.Index(data[cut/k:], []byte("\n\n.")); j >= 0 {
+			cut = cut/k + j + 2
+		}
+	}
+	chunk, part := data[:cut], map[string][]string{}
+	data = data[cut:]
+	db.parts = append(db.parts, part)
+	wg.Go(func() { @<조각 |chunk|를 읽어 표 |part|를 채운다@> })
+}
+
+@ 조각을 한 줄씩 읽는다. 머리 줄을 만나면 그 디렉터리가 |es|의 어느 원소에 드는지 보고,
+들지 않으면 그 아래의 파일 이름들은 건너뛴다. \.{kpsewhich}처럼 이름이 점으로 시작하는 숨은
+디렉터리도 건너뛴다. 절대 경로로 적힌 머리 줄은 드물지만, 그런 디렉터리도 건너뛰어 두면 거기
+든 파일은 \.{kpsewhich}에게 물어서 찾게 된다.
+
+@<조각 |chunk|를...@>=
+dir, keep := "", false
+for line := range bytes.Lines(chunk) {
+	line = bytes.TrimSuffix(line, []byte("\n"))
+	switch {
+	case len(line) == 0 || line[0] == '%':
+	case line[len(line)-1] == ':' && (line[0] == '.' || line[0] == '/'):
+		dir, keep = string(line[:len(line)-1]), false
+		for _, e := range es {
+			if dir == e.sub || e.deep && strings.HasPrefix(dir, e.sub+"/") {
+				keep = !strings.Contains(dir, "/.")
+				break
+			}
+		}
+	case keep:
+		part[string(line)] = append(part[string(line)], dir)
+	}
+}
+
+@ 찾는 쪽은 색인이 다 되기를 기다렸다가, 검색 경로의 원소를 차례로 본다. 데이터베이스가 덮는
+원소는 데이터베이스의 표들에서, 디스크를 훑어 둔 원소는 그 표에서 찾고, 나머지 원소(현재
+디렉터리 `\.{.}' 같은 것)는 그 디렉터리에 파일이 있는지 직접 본다. `\.{!!}'가 붙었는데
+데이터베이스를 찾지 못한 원소는 건너뛴다. 처음으로 무언가 나온 원소에서
+답이 하나뿐이면 그것이 답이다. 여럿이면 고르는 일을 \.{kpsewhich}에게 맡긴다. 데이터베이스가
+덮는데 `\.{!!}'가 없는 원소에서 못 찾았을 때도 그렇다. \.{kpsewhich}라면 이어서 디스크를
+뒤질 테니까.
+
+@<색인에서 |nm|을...@>=
+<-texmfReady
+for _, e := range texmfPath[a.kind] {
+	var found []string
+	switch {
+	case e.db != nil:
+		for _, part := range e.db.parts {
+			for _, d := range part[nm] {
+				if d == e.sub || e.deep && strings.HasPrefix(d, e.sub+"/") {
+					found = append(found, e.db.root+d[1:]+"/"+nm)
+				}
+			}
+		}
+	case e.onlyDB: // 데이터베이스를 못 찾았으니 이 원소에는 아무것도 없다
+	case e.deep:
+		found = e.files[nm]
+	default:
+		if _, err := os.Stat(filepath.Join(e.dir, nm)); err == nil {
+			found = []string{filepath.Join(e.dir, nm)}
+		}
+	}
+	if len(found) == 1 {
+		return found[0]
+	}
+	if len(found) > 1 || e.db != nil && !e.onlyDB {
+		break
+	}
+}
 
 @ 파일은 루틴 |aClose|, |bClose|, |wClose|로 닫는다. 파일 |f|의 입력이나 출력을 다 마쳤을 때
 @^system dependencies@>
@@ -968,7 +1217,7 @@ var @!first int32 // |buffer|에서 쓰이지 않는 첫 위치
 var @!last int32 // |buffer|에 방금 입력한 줄의 끝
 var @!maxBufStack int32 // |buffer|에서 쓰인 가장 큰 첨자
 
-@ 함수 |inputLn|은 지정한 파일의 다음 줄을 버퍼 배열의 빈자리로 가져오고 |true|를 돌려준다.
+@ \seclabel{input-ln}함수 |inputLn|은 지정한 파일의 다음 줄을 버퍼 배열의 빈자리로 가져오고 |true|를 돌려준다.
 파일을 이미 다 읽었다면 |false|를 돌려주고 |last=first|로 놓는다. 다시 말해 파일의 다음
 줄을 나타내는 |asciiCode| 수들은 |buffer[first]|, |buffer[first+1]|, \dots, |buffer[last-1]|에
 들어가고, 전역 변수 |last|는 |first|에 그 줄의 길이를 더한 값이 된다. 줄 끝의 공백은
@@ -996,20 +1245,28 @@ var @!maxBufStack int32 // |buffer|에서 쓰인 가장 큰 첨자
 
 입력되는 문자는 모두 |inputLn|의 안쪽 루프를 지나므로, 이 루프는 \TeX의 ``안쪽 루프''의
 일부다. 그러니 문자 배열을 한꺼번에 읽어 들이는 특별한 루틴이 있다면 그것을 써서 시스템의
-부담을 덜어 주는 것이 현명하다. 다음 코드는 해야 할 일을 보여 주려고 한 번에 한 바이트씩
-읽지만, 시스템에 따라 대개는 더 손볼 여지가 있다.
+부담을 덜어 주는 것이 현명하다. \GO/에는 바로 그런 루틴이 있다. |bufio.Reader|의 |ReadSlice|는
+줄 끝 문자까지를 읽기 버퍼 안의 조각으로 복사 없이 내준다. 그래서 바이트마다 |ReadByte|를 부르던
+예전과 달리, 줄마다 한 번만 부르고 그 조각을 훑는다(2026년 10월 31일). 줄이 읽기 버퍼보다 길면
+앞부분만 |bufio.ErrBufferFull|과 함께 오므로, 나머지를 이어서 받는다.
 @^inner loop@>
 
 @<함수들@>=
 func inputLn(f *alphaFile, bypassEoln bool) bool { // 다음 줄을 입력하거나 |false|를 돌려준다
 	last = first // 마태복음 19:30 참조
-	c, err := f.r.ReadByte()
-	if err != nil {
+	line, err := f.r.ReadSlice('\n')
+	if len(line) == 0 {
 		return false
 	}
 	lastNonblank := first // 줄 끝의 공백을 지운 |last|
-	for err == nil && c != '\n' {
-		@<문자 |c|를 |buffer|에 넣고 다음 문자를 읽는다@>
+	for {
+		for _, c := range bytes.TrimSuffix(line, []byte{'\n'}) {
+			@<문자 |c|를 |buffer|에 넣는다@>
+		}
+		if err != bufio.ErrBufferFull {
+			break
+		}
+		line, err = f.r.ReadSlice('\n')
 	}
 	last = lastNonblank
 	return true
@@ -1029,7 +1286,6 @@ if last >= maxBufStack {
 	}
 }
 buffer[last] = xord[c]
-c, err = f.r.ReadByte()
 last++
 if buffer[last-1] != ' ' {
 	lastNonblank = last
@@ -1586,6 +1842,11 @@ func printLn() { // 줄의 끝을 찍는다
 바꾸는데, \GO/는 줄 끝의 `\.)' 뒤에 쌍반점을 저절로 넣어 버리기 때문이다. 그래서 이
 프로그램에서는 그런 절의 값을 먼저 지역 변수(여기서는 |isNl|)에 받아 두고 그 변수를 검사한다.
 
+문자 하나를 쓸 때는 |wterm|이나 |wlog| 대신 |bufio.Writer|의 |WriteByte|를 바로 부른다. 그 함수들은
+인자를 |any|로 받으므로 문자마다 가변 인자 슬라이스를 만들고 형을 가려야 한다. 추적을 켜서 기록 파일이
+수십 메가바이트가 되는 문서에서는 이것만으로 조판 시간이 15\pct!쯤 줄었다(2026년 10월 31일).
+@^inner loop@>
+
 @<기본 인쇄...@>=
 func printChar(s asciiCode) { // 문자 하나를 찍는다
 	if @<문자 |s|가 현재의 줄바꿈 문자다@> {
@@ -1605,8 +1866,8 @@ func printChar(s asciiCode) { // 문자 하나를 찍는다
 @<|selector|에 따라...@>=
 switch selector {
 case termAndLog:
-	wterm(xchr[s])
-	wlog(xchr[s])
+	termOut.w.WriteByte(xchr[s])
+	logFile.w.WriteByte(xchr[s])
 	termOffset++
 	fileOffset++
 	if termOffset == maxPrintLine {
@@ -1618,13 +1879,13 @@ case termAndLog:
 		fileOffset = 0
 	}
 case logOnly:
-	wlog(xchr[s])
+	logFile.w.WriteByte(xchr[s])
 	fileOffset++
 	if fileOffset == maxPrintLine {
 		printLn()
 	}
 case termOnly:
-	wterm(xchr[s])
+	termOut.w.WriteByte(xchr[s])
 	termOffset++
 	if termOffset == maxPrintLine {
 		printLn()
@@ -1640,7 +1901,7 @@ case newString:
 		appendChar(s)
 	} // 문자열 공간이 가득 차면 문자들을 버린다
 default:
-	write(&writeFile[selector], xchr[s])
+	writeFile[selector].w.WriteByte(xchr[s])
 }
 
 @ \seclabel{print}문자열 전체는 |printStr|를 불러서 찍는다. 표준 {\mc ASCII} 문자 하나 \.c를 찍을 때
@@ -2823,11 +3084,12 @@ func floatConstant(n int32) float64 { return float64(n) } // 정수 상수를 |f
 변수 |x|의 형이 |memoryWord|라면, |x|에는 다음과 같은 이름으로 가리킬 수 있는 필드가 넷까지 있다.
 $$\vbox{\halign{\hfil#&#\hfil&#\hfil\cr
 |x|&.|sc|\qquad&(정수 하나, 또는 |scaled| 정수 하나)\cr
-|x|&.|gr|&(|glueRatio| 하나)\cr
-|x.hh.lh|, |x.hh|&.|rh|&(하프워드 필드 둘)\cr
-|x.hh.b0|, |x.hh.b1|, |x.hh|&.|rh|&(쿼터워드 필드 둘, 하프워드 필드 하나)\cr
-|x.qqqq.b0|, |x.qqqq.b1|, |x.qqqq|&.|b2|, |x.qqqq.b3|\hskip-100pt
+|*x|&.|gr()|&(|glueRatio| 하나)\cr
+|x.hh().lh|, |x.hh()|&.|rh|&(하프워드 필드 둘)\cr
+|x.hh().b0()|, |x.hh().b1()|, |x.hh()|&.|rh|&(쿼터워드 필드 둘, 하프워드 필드 하나)\cr
+|x.qqqq().b0()|, |x.qqqq().b1()|, |x.qqqq()|&.|b2()|, |x.qqqq().b3()|\hskip-100pt
   &\qquad\qquad\qquad(쿼터워드 필드 넷)\cr}}$$
+괄호가 붙은 것은 필드가 아니라 메서드다. 그 까닭은 \secref{memory-word}에서 설명한다.
 이렇게 쓰면 쓰기도 번거롭고 읽기도 그리 좋지 않다. 그래서 필드를 읽고 쓰는 짧은 함수들을
 만들어 표기를 더 짧고 알아보기 쉽게 할 것이다. 아래의 \GO/ 코드는 |memoryWord|와 그 하위 형들을
 형식적으로 정의한다. \TeX은 낱말 안에서 필드들이 서로 어떤 자리에 놓이는지에 대해서는 아무것도
@@ -2839,11 +3101,10 @@ $$\vbox{\halign{\hfil#&#\hfil&#\hfil\cr
 |memMax|를 262142까지 키울 수 있을지도 모른다. 이것은 \TeX이 세상에 나온 첫 4년 동안 누가 가졌던
 메모리보다도 여덟 배나 많다.
 
-주의할 점이 있다. 낱말 |memoryWord|의 변형들을 모두 정수 하나의 공간에 겹쳐 꾸려 넣지 않으면 메모리가
-낭비된다. 이를테면 |glueRatio|가 정수보다 크면 안 된다. 그런데 \GO/에는 변형들을 한 공간에
-겹쳐 놓는 가변 레코드가 없으므로, 여기서는 |memoryWord|를 변형마다 따로 자리를 둔 구조체로
-정의한다(\secref{memory-word}). 그래서 낱말 하나가 차지하는 메모리가 몇 배로 늘어나지만, 요즘
-컴퓨터에서는 견딜 만하다.
+주의할 점이 있다. 낱말 |memoryWord|의 변형들을 모두 정수 하나의 공간에 겹쳐 꾸려 넣지 않으면
+귀한 메모리가 끔찍하게 낭비된다. 이를테면 |glueRatio|가 정수보다 크면 안 된다. \GO/에는 변형들을
+한 공간에 겹쳐 놓는 가변 레코드가 없지만, |unsafe| 꾸러미를 쓰면 흉내 낼 수 있다(\secref{memory-word}).
+다만 |glueRatio|를 |float64|로 두었으므로 낱말 하나는 정수 둘 크기인 8바이트가 된다.
 
 지금의 구현은 가정을 거의 하지 않는다. 범위가 `|minQuarterword..maxQuarterword|'인 정수를
 쿼터워드에, 범위가 `|minHalfword..maxHalfword|'인 정수를 하프워드에 넣을 수 있기만 하면 모든
@@ -2920,11 +3181,24 @@ func ho(x halfword) int32 { return x - minHalfword } // 16비트 항목을 하�
 낱말들로 짜여 있다.
 @^system dependencies@>
 
-정수 자료와 |scaled| 자료는 같은 필드 |sc|에 들어간다. \GO/에는 가변 레코드(C의 공용체)가 없으므로
-|memoryWord|는 변형을 모두 따로 담는 구조체이고, 하프워드 필드 |lh|와 쿼터워드 필드 |b0|, |b1|도
-따로 있다. 그래도 \TeX은 한 낱말에 어떤 변형으로 쓴 값을 다른 변형으로 읽는 일이 없으므로, 필드가
-겹치든 겹치지 않든 동작은 똑같다. 쿼터워드와 하프워드는 |asciiCode|처럼 |int32|의
-별칭이다(\secref{ascii-code}).
+\GO/에는 가변 레코드(C의 공용체)가 없다. 그래서 이 번역은 처음에 |memoryWord|를 변형마다 자리를
+따로 둔 구조체로 정의했다. 정수 하나와 글루 비율 하나, 하프워드 둘과 쿼터워드 여섯이 저마다 자리를
+차지하니 낱말 하나가 48바이트나 되었다. 원본이 걱정한 바로 그 낭비다. 지금은 |unsafe| 꾸러미로
+공용체를 흉내 내어 모든 변형을 8바이트 하나에 겹쳐 놓는다. 그래서 큰 배열 |mem|이
+1.4메가바이트에서 240킬로바이트로 줄었다(2026년 10월 31일).
+
+자리는 \TeX\ Live와 똑같이 잡았다. 앞의 4바이트는 하프워드 |rh|의 자리다. 뒤의 4바이트는 하프워드
+|lh|와 정수 |sc|가 함께 쓰고, 쿼터워드 |b0|, |b1|, |b2|, |b3|은 그 4바이트를 한 바이트씩 나누어
+쓴다. 글루 비율만 8바이트를 다 쓴다. 그러니 |sc|나 쿼터워드에 무엇을 쓰든 |rh|, 곧 |link|
+필드는 다치지 않는다. \TeX은 필드의 자리를 아무것도 가정하지 않으므로 꼭 이래야 하는 것은
+아니지만, 수십 년 동안 쓰인 배치를 따르면 마음이 놓인다. 쿼터워드가 한 바이트이므로
+|maxQuarterword|는 255를 넘을 수 없다.
+
+구조체의 진짜 필드는 |sc| 하나뿐이고, 나머지 변형은 메서드로 꺼낸다(다음 절). |x.hh()|, |x.qqqq()|,
+|x.gr()|는 낱말 |x|를 저마다 |twoHalves|, |fourQuarters|, |glueRatio|로 본 포인터를 돌려준다.
+그래서 |mem[p].hh().rh=q|처럼 그 자리에 바로 쓸 수 있다. 쿼터워드는 |q.b0()|처럼 읽고
+|q.setB0(v)|처럼 쓴다. 바이트에 담긴 값을 |quarterword|, 곧 |int32|로 넓혀 돌려주므로, 부르는
+쪽에서는 쿼터워드가 바이트라는 것을 몰라도 된다.
 
 이진 파일과 마찬가지로 낱말 파일에도 현재 원소를 담는 필드 |buf|를 둔다.
 
@@ -2933,21 +3207,13 @@ type @!quarterword = int32 // 낱말의 1/4; |minQuarterword..maxQuarterword|
 type @!halfword = int32 // 낱말의 1/2; |minHalfword..maxHalfword|
 type @!twoHalves struct {
 	@!rh halfword
-	@!lh halfword // 이 필드와 다음 두 필드는 겹쳐 놓아도 된다
-	@!b0 quarterword
-	@!b1 quarterword
+	@!lh halfword // 쿼터워드 |b0|와 |b1|은 이 자리의 첫 두 바이트다
 }
-type @!fourQuarters struct {
-	b0 quarterword
-	b1 quarterword
-	@!b2 quarterword
-	@!b3 quarterword
-}
+type @!fourQuarters [4]uint8 // 쿼터워드 |b0|, |b1|, |b2|, |b3|
 type @!memoryWord struct {
-	@!sc int32 // 정수나 |scaled| 값
-	@!gr glueRatio
-	@!hh twoHalves
-	@!qqqq fourQuarters
+	_ [0]uint64 // 낱말을 8바이트 경계에 맞추어 |gr|을 읽을 수 있게 한다
+	_ halfword // |hh().rh|의 자리
+	@!sc int32 // 정수나 |scaled| 값, |hh().lh|와 같은 자리
 }
 type @!wordFile struct {
 	f      *os.File
@@ -2956,6 +3222,31 @@ type @!wordFile struct {
 	buf    memoryWord // 파일의 현재 원소
 	atEOF bool        // 파일의 끝에 이르렀는가?
 }
+
+@ 낱말의 변형을 꺼내는 메서드들이다. 어떤 포인터를 다른 형의 포인터로 바꾸려면 |unsafe.Pointer|를
+거쳐야 한다. 메서드들이 아주 짧아서 컴파일러가 모두 인라인하므로, 결국 메모리를 한 번 읽거나
+쓰는 명령 하나가 된다. 하프워드 짝의 쿼터워드 |b0|와 |b1|은 |lh|의 자리를 |fourQuarters|로 보고
+그 앞의 두 바이트를 쓴다. 그러니 낱말 |x|에서 |x.hh().b0()|와 |x.qqqq().b0()|는 같은 바이트다.
+
+@<정의@>=
+func (w *memoryWord) @!hh() *twoHalves { return (*twoHalves)(unsafe.Pointer(w)) }
+func (w *memoryWord) @!qqqq() *fourQuarters { return (*fourQuarters)(unsafe.Pointer(&w.sc)) }
+func (w *memoryWord) @!gr() *glueRatio { return (*glueRatio)(unsafe.Pointer(w)) }
+
+func (h *twoHalves) quarters() *fourQuarters { return (*fourQuarters)(unsafe.Pointer(&h.lh)) }
+func (h *twoHalves) @!b0() quarterword { return h.quarters().b0() }
+func (h *twoHalves) @!b1() quarterword { return h.quarters().b1() }
+func (h *twoHalves) setB0(v quarterword) { h.quarters().setB0(v) }
+func (h *twoHalves) setB1(v quarterword) { h.quarters().setB1(v) }
+
+func (q fourQuarters) b0() quarterword { return quarterword(q[0]) }
+func (q fourQuarters) b1() quarterword { return quarterword(q[1]) }
+func (q fourQuarters) @!b2() quarterword { return quarterword(q[2]) }
+func (q fourQuarters) @!b3() quarterword { return quarterword(q[3]) }
+func (q *fourQuarters) setB0(v quarterword) { q[0] = uint8(v) }
+func (q *fourQuarters) setB1(v quarterword) { q[1] = uint8(v) }
+func (q *fourQuarters) setB2(v quarterword) { q[2] = uint8(v) }
+func (q *fourQuarters) setB3(v quarterword) { q[3] = uint8(v) }
 
 @ 디버깅할 때에는 |memoryWord|가 어떤 형인지 모르는 채로 찍어 보고 싶을 때가 있다. 그래서 가능한
 방식으로 모두 찍는다. 정수로, 눈금 정수로, 글루 비율로, 그리고 하프워드와 쿼터워드로.
@@ -2968,24 +3259,24 @@ func printWord(w memoryWord) { // |w|를 모든 방식으로 찍는다
 	printChar(' ')
 	printScaled(w.sc)
 	printChar(' ')
-	printScaled(round(unity * float(w.gr)))
+	printScaled(round(unity * float(*w.gr())))
 	printLn()
 @^real multiplication@>
-	printInt(w.hh.lh)
+	printInt(w.hh().lh)
 	printChar('=')
-	printInt(w.hh.b0)
+	printInt(w.hh().b0())
 	printChar(':')
-	printInt(w.hh.b1)
+	printInt(w.hh().b1())
 	printChar(';')
-	printInt(w.hh.rh)
+	printInt(w.hh().rh)
 	printChar(' ')
-	printInt(w.qqqq.b0)
+	printInt(w.qqqq().b0())
 	printChar(':')
-	printInt(w.qqqq.b1)
+	printInt(w.qqqq().b1())
 	printChar(':')
-	printInt(w.qqqq.b2)
+	printInt(w.qqqq().b2())
 	printChar(':')
-	printInt(w.qqqq.b3)
+	printInt(w.qqqq().b3())
 }
 
 @* 동적 메모리 할당.
@@ -3005,7 +3296,7 @@ const @!null = minHalfword // 널 포인터
 
 var @!tempPtr pointer // 이따금 급할 때 쓰는 포인터 변수
 
-@ 배열 |mem|은 따로 할당하는 두 영역으로 나뉘지만, 두 영역 사이의 경계는 고정되어 있지 않다. 두
+@ \seclabel{mem-array}배열 |mem|은 따로 할당하는 두 영역으로 나뉘지만, 두 영역 사이의 경계는 고정되어 있지 않다. 두
 영역은 함께 자라다가 작업마다 저마다 ``알맞은'' 크기에 이른다. 위치 |loMemMax| 이하에는 낱말이 둘
 이상인 가변 길이 레코드를 둔다. 이 영역은 {\sl The Art of Computer Programming}의 연습 문제 2.5--19에
 나오는 것과 비슷한 알고리즘으로 관리한다. 다만 할당한 노드에는 크기 필드가 없다. 노드를 해제할 때 그
@@ -3058,11 +3349,21 @@ endfig;
 스택에서 얻는다. 두 영역이 마주 보고 자라므로 어느 한쪽의 크기를 미리 정해 둘 필요가 없다.
 
 배열 |mem|에서 실제로 쓰는 첨자는 |memMin..memMax|다. \GO/의 배열은 첨자가 0부터 시작하므로
-여기서는 0부터 |memMax|까지 잡는다. 위의 부등식에서 |null<=memMin|이고 |null=minHalfword=0|이므로,
-이렇게 해도 첨자를 그대로 쓸 수 있다. 첨자가 |memMin|보다 작은 낱말은 쓰지 않는다.
+여기서는 0부터 세고, 위의 부등식에서 |null<=memMin|이고 |null=minHalfword=0|이므로 첨자를 그대로
+쓸 수 있다. 첨자가 |memMin|보다 작은 낱말은 쓰지 않는다.
+
+그런데 배열의 크기는 |memMax+1|이 아니라 |maxHalfword+1|, 곧 65536이다. \GO/는 배열을 읽을
+때마다 첨자가 범위 안에 있는지 검사하는데, |link|나 |width| 같은 필드 함수는 \TeX의 안쪽 루프에서
+쉴 새 없이 불리므로 이 검사도 무시하지 못할 만큼 쌓인다. 크기가 2의 거듭제곱인 배열의 첨자를
+`|p&maxHalfword|'처럼 그 크기에서 1을 뺀 값으로 가리면, 컴파일러는 첨자가 범위를 벗어날 수 없음을
+알고 검사를 빼 버린다. 포인터는 하프워드이므로 |maxHalfword|를 넘지 않으니, 이렇게 가려도 첨자는
+조금도 바뀌지 않는다. 필드 함수들만 이렇게 고쳤는데도 긴 문서의 조판 시간이 4\pct!쯤 줄었다
+(2026년 10월 31일). 늘어난 배열의 뒷부분은 손대지 않으므로 운영체제가 실제 메모리를 내주지도
+않는다.
+@^inner loop@>
 
 @<전역 변수@>=
-var @!mem [memMax + 1]memoryWord // 큰 동적 저장 영역
+var @!mem [maxHalfword + 1]memoryWord // 큰 동적 저장 영역
 var @!loMemMax pointer // 쓰고 있는 가변 크기 메모리의 가장 큰 위치
 var @!hiMemMin pointer // 쓰고 있는 한 낱말짜리 메모리의 가장 작은 위치
 
@@ -3083,15 +3384,15 @@ $$|avail|,\;\hbox{|link(avail)|},\;\hbox{|link(link(avail))|},\;\ldots$$
 을 이룬다. 곧 빈 노드들을 |link|로 줄줄이 엮어 스택처럼 쓰는 것이다. 노드가 필요하면 맨 위의
 것을 꺼내 쓰고, 다 쓴 노드는 맨 위에 다시 얹는다.
 
-함수 |link(p)|와 |info(p)|는 |mem[p].hh.rh|와 |mem[p].hh.lh|를 읽는다. 이 필드들을 바꿀 때는
+함수 |link(p)|와 |info(p)|는 |mem[p].hh().rh|와 |mem[p].hh().lh|를 읽는다. 이 필드들을 바꿀 때는
 |setLink(p,q)|와 |setInfo(p,q)|를 부른다(\secref{conventions}). 앞으로 나오는 필드들도 모두
 이렇게 다룬다.
 
 @<전역 변수@>=
-func link(p pointer) halfword       { return mem[p].hh.rh } // 메모리 낱말의 |link| 필드
-func setLink(p pointer, v halfword) { mem[p].hh.rh = v }
-func info(p pointer) halfword       { return mem[p].hh.lh } // 메모리 낱말의 |info| 필드
-func setInfo(p pointer, v halfword) { mem[p].hh.lh = v }
+func link(p pointer) halfword       { return mem[p&maxHalfword].hh().rh } // 메모리 낱말의 |link| 필드
+func setLink(p pointer, v halfword) { mem[p&maxHalfword].hh().rh = v }
+func info(p pointer) halfword       { return mem[p&maxHalfword].hh().lh } // 메모리 낱말의 |info| 필드
+func setInfo(p pointer, v halfword) { mem[p&maxHalfword].hh().lh = v }
 
 var @!avail pointer // 쓸 수 있는 한 낱말짜리 노드 목록의 머리
 var @!memEnd pointer // |mem|에서 쓰인 마지막 한 낱말짜리 노드
@@ -3466,10 +3767,10 @@ if p < rover {
 필드와 같은 규칙에 따라 |setType|이다.
 
 @<정의@>=
-func typ(p pointer) quarterword       { return mem[p].hh.b0 } // 이것이 어떤 종류의 노드인지 밝힌다
-func setType(p pointer, v quarterword) { mem[p].hh.b0 = v }
-func subtype(p pointer) quarterword     { return mem[p].hh.b1 } // 어떤 경우의 두 번째 식별
-func setSubtype(p pointer, v quarterword) { mem[p].hh.b1 = v }
+func typ(p pointer) quarterword       { return mem[p&maxHalfword].hh().b0() } // 이것이 어떤 종류의 노드인지 밝힌다
+func setType(p pointer, v quarterword) { mem[p&maxHalfword].hh().setB0(v) }
+func subtype(p pointer) quarterword     { return mem[p&maxHalfword].hh().b1() } // 어떤 경우의 두 번째 식별
+func setSubtype(p pointer, v quarterword) { mem[p&maxHalfword].hh().setB1(v) }
 
 @ 문자 노드 |@!charNode|는 문자 하나를 나타낸다. 상자에 든 노드의 압도적 다수가 문자 노드이므로 가장
 중요한 노드다. 그래서 |charNode|가 메모리를 많이 차지하지 않도록 특별히 신경 쓴다. 이 노드는 모두 한 낱말
@@ -3566,22 +3867,26 @@ const (
 	@!glueOffset = 6 // 상자 노드에서 |glueSet|의 위치
 )
 
-func width(p pointer) scaled              { return mem[p+widthOffset].sc } // 상자의 너비, sp 단위
-func setWidth(p pointer, v scaled)       { mem[p+widthOffset].sc = v }
-func depth(p pointer) scaled              { return mem[p+depthOffset].sc } // 상자의 깊이, sp 단위
-func setDepth(p pointer, v scaled)       { mem[p+depthOffset].sc = v }
-func height(p pointer) scaled             { return mem[p+heightOffset].sc } // 상자의 높이, sp 단위
-func setHeight(p pointer, v scaled)      { mem[p+heightOffset].sc = v }
-func shiftAmount(p pointer) scaled       { return mem[p+4].sc } // 자리 옮김 거리, sp 단위
-func setShiftAmount(p pointer, v scaled) { mem[p+4].sc = v }
+@ 상자 노드의 필드를 읽고 쓰는 함수들이다. 다른 필드 함수들처럼 첨자를 |maxHalfword|로 가려
+경계 검사를 피한다(\secref{mem-array}).
+
+@<정의@>=
+func width(p pointer) scaled              { return mem[(p+widthOffset)&maxHalfword].sc } // 상자의 너비, sp 단위
+func setWidth(p pointer, v scaled)       { mem[(p+widthOffset)&maxHalfword].sc = v }
+func depth(p pointer) scaled              { return mem[(p+depthOffset)&maxHalfword].sc } // 상자의 깊이, sp 단위
+func setDepth(p pointer, v scaled)       { mem[(p+depthOffset)&maxHalfword].sc = v }
+func height(p pointer) scaled             { return mem[(p+heightOffset)&maxHalfword].sc } // 상자의 높이, sp 단위
+func setHeight(p pointer, v scaled)      { mem[(p+heightOffset)&maxHalfword].sc = v }
+func shiftAmount(p pointer) scaled       { return mem[(p+4)&maxHalfword].sc } // 자리 옮김 거리, sp 단위
+func setShiftAmount(p pointer, v scaled) { mem[(p+4)&maxHalfword].sc = v }
 func listPtr(p pointer) pointer          { return link(p + listOffset) } // 상자 안 목록의 처음
 func setListPtr(p pointer, v pointer)   { setLink(p+listOffset, v) }
 func glueOrder(p pointer) quarterword    { return subtype(p + listOffset) } // 적용되는 무한대의 차수
 func setGlueOrder(p pointer, v quarterword) { setSubtype(p+listOffset, v) }
 func glueSign(p pointer) quarterword     { return typ(p + listOffset) } // 늘이나 줄이나
 func setGlueSign(p pointer, v quarterword) { setType(p+listOffset, v) }
-func glueSet(p pointer) glueRatio       { return mem[p+glueOffset].gr } // 글루 설정을 위한 형 |glueRatio|의 낱말
-func setGlueSet(p pointer, v glueRatio) { mem[p+glueOffset].gr = v }
+func glueSet(p pointer) glueRatio       { return *mem[(p+glueOffset)&maxHalfword].gr() } // 글루 설정을 위한 형 |glueRatio|의 낱말
+func setGlueSet(p pointer, v glueRatio) { *mem[(p+glueOffset)&maxHalfword].gr() = v }
 
 @ 함수 |newNullBox|는 모든 필드가 `\.{\\hbox\{\}}'에 해당하는 값으로 채워진 |hlistNode|를 만들어 그
 포인터를 돌려준다. 곧 치수가 모두 0이고 목록이 비었으며 글루를 늘이지 않은 상자다. (|subtype| 필드는
@@ -3653,8 +3958,8 @@ const (
 	@!insNodeSize = 5 // 삽입에 할당할 낱말 수
 )
 
-func floatCost(p pointer) int32           { return mem[p+1].sc } // 쓰일 |floatingPenalty|
-func setFloatCost(p pointer, v int32)    { mem[p+1].sc = v }
+func floatCost(p pointer) int32           { return mem[(p+1)&maxHalfword].sc } // 쓰일 |floatingPenalty|
+func setFloatCost(p pointer, v int32)    { mem[(p+1)&maxHalfword].sc = v }
 func insPtr(p pointer) pointer            { return info(p + 4) } // 끼워 넣을 세로 목록
 func setInsPtr(p pointer, v pointer)     { setInfo(p+4, v) }
 func splitTopPtr(p pointer) pointer      { return link(p + 4) } // 쓰일 |splitTopSkip|
@@ -3671,8 +3976,8 @@ const (
 	@!smallNodeSize = 2 // 대부분의 노드 형에 할당할 낱말 수
 )
 
-func markPtr(p pointer) int32        { return mem[p+1].sc } // 표시의 토큰 목록의 머리
-func setMarkPtr(p pointer, v int32) { mem[p+1].sc = v }
+func markPtr(p pointer) int32        { return mem[(p+1)&maxHalfword].sc } // 표시의 토큰 목록의 머리
+func setMarkPtr(p pointer, v int32) { mem[(p+1)&maxHalfword].sc = v }
 
 @ 노드 |adjustNode|는 가로 목록에만 나오는데, 바깥의 세로 목록으로 옮겨 낼 재료를 담는다. 곧 \TeX의
 `\.{\\vadjust}' 연산을 구현하는 데 쓴다. 필드 |adjustPtr|는 그 재료를 담은 세로 목록을 가리킨다. 문단이
@@ -3860,10 +4165,10 @@ const (
 
 func glueRefCount(p pointer) halfword         { return link(p) } // 글루 명세의 참조 횟수
 func setGlueRefCount(p pointer, v halfword)  { setLink(p, v) }
-func stretch(p pointer) scaled                  { return mem[p+2].sc } // 이 글루 덩어리의 늘어남
-func setStretch(p pointer, v scaled)           { mem[p+2].sc = v }
-func shrink(p pointer) scaled                   { return mem[p+3].sc } // 이 글루 덩어리의 줄어듦
-func setShrink(p pointer, v scaled)            { mem[p+3].sc = v }
+func stretch(p pointer) scaled                  { return mem[(p+2)&maxHalfword].sc } // 이 글루 덩어리의 늘어남
+func setStretch(p pointer, v scaled)           { mem[(p+2)&maxHalfword].sc = v }
+func shrink(p pointer) scaled                   { return mem[(p+3)&maxHalfword].sc } // 이 글루 덩어리의 줄어듦
+func setShrink(p pointer, v scaled)            { mem[(p+3)&maxHalfword].sc = v }
 func stretchOrder(p pointer) quarterword       { return typ(p) } // 늘이기의 무한대 차수
 func setStretchOrder(p pointer, v quarterword) { setType(p, v) }
 func shrinkOrder(p pointer) quarterword        { return subtype(p) } // 줄이기의 무한대 차수
@@ -3970,8 +4275,8 @@ const (
 	@!ejectPenalty = -infPenalty // ``음으로 무한한'' 벌점 값
 )
 
-func penalty(p pointer) int32        { return mem[p+1].sc } // 여기서 목록을 나누는 데 드는 추가 비용
-func setPenalty(p pointer, v int32) { mem[p+1].sc = v }
+func penalty(p pointer) int32        { return mem[(p+1)&maxHalfword].sc } // 여기서 목록을 나누는 데 드는 추가 비용
+func setPenalty(p pointer, v int32) { mem[(p+1)&maxHalfword].sc = v }
 
 @ 앞의 몇 절을 읽었다면 다음에 무엇이 올지 짐작할 수 있을 것이다.
 
@@ -4000,8 +4305,8 @@ func newPenalty(m int32) pointer {
 @<정의@>=
 const @!unsetNode = 13 // 미정 노드의 \ID{type}
 
-func glueStretch(p pointer) scaled              { return mem[p+glueOffset].sc } // 미정 노드의 늘어남 합계
-func setGlueStretch(p pointer, v scaled)       { mem[p+glueOffset].sc = v }
+func glueStretch(p pointer) scaled              { return mem[(p+glueOffset)&maxHalfword].sc } // 미정 노드의 늘어남 합계
+func setGlueStretch(p pointer, v scaled)       { mem[(p+glueOffset)&maxHalfword].sc = v }
 func glueShrink(p pointer) scaled               { return shiftAmount(p) } // 미정 노드의 줄어듦 합계
 func setGlueShrink(p pointer, v scaled)        { setShiftAmount(p, v) }
 func spanCount(p pointer) quarterword           { return subtype(p) } // 걸친 열의 수를 나타낸다
@@ -4505,7 +4810,7 @@ var @!breadthMax int32 // 같은 목록 수준에서 보여 줄 항목의 최대
 \TeX을 디버깅할 때에는 그 부모 루틴 |showBox(p)|를 |p|의 아무 값으로나 안심하고 부를 수 있다. 다만
 자료가 망가져 있으면 이 프로시저는 저장할 때와 다른 변형으로 |memoryWord|를 읽을 수도 있다. 이를테면
 @^debugging@>
-|p|가 망가진 포인터이거나 아무렇게나 고른 값이라면, |mem[p]|에는 눈금 정수가 들어 있는데 |mem[p].hh|를
+|p|가 망가진 포인터이거나 아무렇게나 고른 값이라면, |mem[p]|에는 눈금 정수가 들어 있는데 |mem[p].hh()|를
 읽으려 들 수도 있다. 범위를 벗어난 포인터를 만나면 `\.{Bad link, display aborted.}'를 찍고 그만두고,
 한 수준에서 |breadthMax|개를 넘게 찍었으면 `\.{etc.}'를 찍고 그만둔다.
 
@@ -5315,7 +5620,7 @@ type @!listStateRecord struct {
 |setCurList(r)|를 쓴다.
 
 변수 |aux|의 다른 이름인 |prevDepth|, |spaceFactor|, |clang|, |incompleatNoad|도 다른 필드처럼 읽는 함수와
-쓰는 함수의 짝으로 만든다. 저마다 |aux.sc|, |aux.hh.lh|, |aux.hh.rh|, |aux.sc|를 가리킨다.
+쓰는 함수의 짝으로 만든다. 저마다 |aux.sc|, |aux.hh().lh|, |aux.hh().rh|, |aux.sc|를 가리킨다.
 
 @<전역 변수@>=
 var @!mode int32 // 현재 모드
@@ -5327,10 +5632,10 @@ var @!modeLine int32 // 목록이 시작된 원본 파일 줄 번호
 
 func prevDepth() scaled                { return aux.sc } // 세로 모드에서 |aux|의 이름
 func setPrevDepth(v scaled)           { aux.sc = v }
-func spaceFactor() halfword            { return aux.hh.lh } // 가로 모드에서 |aux|의 한 부분
-func setSpaceFactor(v halfword)       { aux.hh.lh = v }
-func clang() halfword                   { return aux.hh.rh } // 가로 모드에서 |aux|의 다른 부분
-func setClang(v halfword)              { aux.hh.rh = v }
+func spaceFactor() halfword            { return aux.hh().lh } // 가로 모드에서 |aux|의 한 부분
+func setSpaceFactor(v halfword)       { aux.hh().lh = v }
+func clang() halfword                   { return aux.hh().rh } // 가로 모드에서 |aux|의 다른 부분
+func setClang(v halfword)              { aux.hh().rh = v }
 func incompleatNoad() int32            { return aux.sc } // 수식 모드에서 |aux|의 이름
 func setIncompleatNoad(v int32)       { aux.sc = v }
 
@@ -5478,11 +5783,11 @@ case 0:
 	}
 case 1:
 	printNl("spacefactor ")
-	printInt(a.hh.lh)
+	printInt(a.hh().lh)
 	if m > 0 {
-		if a.hh.rh > 0 {
+		if a.hh().rh > 0 {
 			printStr(", current language ")
-			printInt(a.hh.rh)
+			printInt(a.hh().rh)
 		}
 	}
 case 2:
@@ -5606,16 +5911,16 @@ endfig;
 같은 원시 명령이라면 같은 명령 코드를 쓰는 명령들을 서로 구별하는 수다.
 
 @<정의@>=
-func eqLevelField(w memoryWord) quarterword { return w.hh.b1 }
-func eqTypeField(w memoryWord) quarterword  { return w.hh.b0 }
-func equivField(w memoryWord) halfword       { return w.hh.rh }
+func eqLevelField(w memoryWord) quarterword { return w.hh().b1() }
+func eqTypeField(w memoryWord) quarterword  { return w.hh().b0() }
+func equivField(w memoryWord) halfword       { return w.hh().rh }
 
 func eqLevel(p pointer) quarterword        { return eqLevelField(eqtb[p]) } // 정의의 수준
-func setEqLevel(p pointer, v quarterword) { eqtb[p].hh.b1 = v }
+func setEqLevel(p pointer, v quarterword) { eqtb[p].hh().setB1(v) }
 func eqType(p pointer) quarterword         { return eqTypeField(eqtb[p]) } // 등가물의 명령 코드
-func setEqType(p pointer, v quarterword)  { eqtb[p].hh.b0 = v }
+func setEqType(p pointer, v quarterword)  { eqtb[p].hh().setB0(v) }
 func equiv(p pointer) halfword              { return equivField(eqtb[p]) } // 등가 값
-func setEquiv(p pointer, v halfword)       { eqtb[p].hh.rh = v }
+func setEquiv(p pointer, v halfword)       { eqtb[p].hh().rh = v }
 
 const (
 	@!levelZero = minQuarterword // 정의되지 않은 양의 수준
@@ -7222,13 +7527,16 @@ label.rt(btex \eightpoint \ID{saveIndex} etex, (w+24pt,2.4r));
 endfig;
 \endmplibcode$$
 
+@ 저장 스택 항목의 세 필드는 하프워드 짝의 필드 |b0|, |b1|, |rh|에 담긴다. 항목의 종류 |saveType|이
+가질 수 있는 값도 여기서 정한다.
+
 @<정의@>=
-func saveType(p int32) quarterword        { return saveStack[p].hh.b0 } // |saveStack| 항목을 분류한다
-func setSaveType(p int32, v quarterword) { saveStack[p].hh.b0 = v }
-func saveLevel(p int32) quarterword       { return saveStack[p].hh.b1 } // 영역 5와 6을 위해 저장한 수준, 또는 그룹 코드
-func setSaveLevel(p int32, v quarterword) { saveStack[p].hh.b1 = v }
-func saveIndex(p int32) halfword          { return saveStack[p].hh.rh } // |eqtb| 위치나 토큰이나 |saveStack| 위치
-func setSaveIndex(p int32, v halfword)   { saveStack[p].hh.rh = v }
+func saveType(p int32) quarterword        { return saveStack[p].hh().b0() } // |saveStack| 항목을 분류한다
+func setSaveType(p int32, v quarterword) { saveStack[p].hh().setB0(v) }
+func saveLevel(p int32) quarterword       { return saveStack[p].hh().b1() } // 영역 5와 6을 위해 저장한 수준, 또는 그룹 코드
+func setSaveLevel(p int32, v quarterword) { saveStack[p].hh().setB1(v) }
+func saveIndex(p int32) halfword          { return saveStack[p].hh().rh } // |eqtb| 위치나 토큰이나 |saveStack| 위치
+func setSaveIndex(p int32, v halfword)   { saveStack[p].hh().rh = v }
 
 const (
 	@!restoreOldValue = iota // 값을 나중에 되살려야 할 때의 |saveType|
@@ -12034,8 +12342,8 @@ const (
 	@!orCode = 4 // \.{\\or}의 코드
 )
 
-func ifLineField(p pointer) int32        { return mem[p+1].sc }
-func setIfLineField(p pointer, v int32) { mem[p+1].sc = v }
+func ifLineField(p pointer) int32        { return mem[(p+1)&maxHalfword].sc }
+func setIfLineField(p pointer, v int32) { mem[(p+1)&maxHalfword].sc = v }
 
 var @!condPtr pointer // 조건 스택의 맨 위
 var @!ifLimit int32 // |fiOrElse| 코드의 상한; |normal..orCode|
@@ -13220,10 +13528,10 @@ const (
 	@!kernFlag = 128 + minQuarterword // 커닝 단계의 연산 코드
 )
 
-func skipByte(q fourQuarters) quarterword { return q.b0 }
-func nextChar(q fourQuarters) quarterword { return q.b1 }
-func opByte(q fourQuarters) quarterword   { return q.b2 }
-func remByte(q fourQuarters) quarterword  { return q.b3 }
+func skipByte(q fourQuarters) quarterword { return q.b0() }
+func nextChar(q fourQuarters) quarterword { return q.b1() }
+func opByte(q fourQuarters) quarterword   { return q.b2() }
+func remByte(q fourQuarters) quarterword  { return q.b3() }
 
 @ 늘일 수 있는 문자는 |@!extensibleRecipe|로 정한다. 이것은 |@!top|, |@!mid|, |@!bot|, |@!rep|라는 네 바이트로(이 순서로)
 이루어진다. 이 바이트들은 큰 기호를 쌓아 올리는 데 쓰는 조각들의 문자 코드다. 조각 |top|이나 |mid|나 |bot|이 0이면 그
@@ -13237,10 +13545,10 @@ func remByte(q fourQuarters) quarterword  { return q.b3 }
 값이다. 조각들을 세로 목록 안에서 맞붙여 쌓기 때문이다.
 
 @<정의@>=
-func extTop(q fourQuarters) quarterword { return q.b0 } // 조립법의 |top| 조각
-func extMid(q fourQuarters) quarterword { return q.b1 } // 조립법의 |mid| 조각
-func extBot(q fourQuarters) quarterword { return q.b2 } // 조립법의 |bot| 조각
-func extRep(q fourQuarters) quarterword { return q.b3 } // 조립법의 |rep| 조각
+func extTop(q fourQuarters) quarterword { return q.b0() } // 조립법의 |top| 조각
+func extMid(q fourQuarters) quarterword { return q.b1() } // 조립법의 |mid| 조각
+func extBot(q fourQuarters) quarterword { return q.b2() } // 조립법의 |bot| 조각
+func extRep(q fourQuarters) quarterword { return q.b3() } // 조립법의 |rep| 조각
 
 @ \.{TFM} 파일의 마지막 부분은 배열 |param|인데, 이것도 |fixWord| 값들이다.
 
@@ -13318,7 +13626,7 @@ var @!fontBchar [fontMax + 1]int32 // 경계 문자, 없으면 |nonChar|; |minQu
 var @!fontFalseBchar [fontMax + 1]int32 // 글꼴에 없으면 |fontBchar|, 있으면 |nonChar|
 
 @ 방금 늘어놓은 배열 말고도, |fontInfo|의 항목을 쉽게 찾아가게 해 주는 디렉터리 배열들이 있다. 이를테면 글꼴 |f|의 문자
-|c|에 대한 |charInfo| 자료는 |fontInfo[charBase[f]+c].qqqq|에 있다. 그리고 |w|가 이 낱말의 |widthIndex| 부분(|b0| 필드)이면
+|c|에 대한 |charInfo| 자료는 |fontInfo[charBase[f]+c].qqqq()|에 있다. 그리고 |w|가 이 낱말의 |widthIndex| 부분(|b0| 필드)이면
 그 문자의 너비는 |fontInfo[widthBase[f]+w].sc|다. (이 공식들은 |c|와 |w|에 이미 |minQuarterword|가 더해져 있다고 가정한다.
 \TeX은 쿼터워드를 그렇게 저장하기 때문이다.) 이렇게 글꼴마다 표의 시작 위치만 기억해 두면, 문자 하나의 너비를
 배열 두 번 읽기로 얻을 수 있다.
@@ -13376,7 +13684,7 @@ setText(frozenNullFont, str("nullfont"))
 eqtb[frozenNullFont] = eqtb[curVal]
 
 @ 물론 글꼴 정보가 실제로 어떻게 꾸려져 있는지 세세한 것을 감추는 함수들을 만들어 두고 싶다. 그래야
-$$\hbox{|fontInfo[widthBase[f]+fontInfo[charBase[f]+c].qqqq.b0].sc|}$$
+$$\hbox{|fontInfo[widthBase[f]+fontInfo[charBase[f]+c].qqqq().b0()].sc|}$$
 같은 것을 너무 자주 쓰지 않아도 된다. 여기의 정의들에서 |charInfo(f,c)|는 글꼴 |f|의 문자 |c|에 해당하는 |fourQuarters|
 낱말이다. 그런 낱말을 |q|라고 하면 |charWidth(f,q)|가 그 문자의 너비다. 그래서 위의 긴 공식은 적어도
 $$\hbox{|charWidth(f,charInfo(f,c))|}$$
@@ -13396,23 +13704,23 @@ $$b=|heightIndex|\times16+|depthIndex|$$
 
 @<정의@>=
 func charInfo(f internalFontNumber, c quarterword) fourQuarters {
-	return fontInfo[charBase[f]+c].qqqq
+	return *fontInfo[charBase[f]+c].qqqq()
 }
 func charWidth(f internalFontNumber, q fourQuarters) scaled {
-	return fontInfo[widthBase[f]+q.b0].sc
+	return fontInfo[widthBase[f]+q.b0()].sc
 }
-func charExists(q fourQuarters) bool { return q.b0 > minQuarterword }
+func charExists(q fourQuarters) bool { return q.b0() > minQuarterword }
 func charItalic(f internalFontNumber, q fourQuarters) scaled {
-	return fontInfo[italicBase[f]+(qo(q.b2))/4].sc
+	return fontInfo[italicBase[f]+(qo(q.b2()))/4].sc
 }
-func heightDepth(q fourQuarters) int32 { return qo(q.b1) }
+func heightDepth(q fourQuarters) int32 { return qo(q.b1()) }
 func charHeight(f internalFontNumber, hd int32) scaled {
 	return fontInfo[heightBase[f]+(hd)/16].sc
 }
 func charDepth(f internalFontNumber, hd int32) scaled {
 	return fontInfo[depthBase[f]+(hd)%16].sc
 }
-func charTag(q fourQuarters) int32 { return (qo(q.b2)) % 4 }
+func charTag(q fourQuarters) int32 { return (qo(q.b2())) % 4 }
 
 @ 전역 변수 |nullCharacter|는 글꼴에 없는 문자의 |charInfo| 낱말이다. 이 낱말은 모든 바이트가 0이어서 너비 첨자도
 0이므로, |charExists|가 거짓이 된다. 잘못된 상황을 다룰 때 편리하다.
@@ -13421,10 +13729,10 @@ func charTag(q fourQuarters) int32 { return (qo(q.b2)) % 4 }
 var @!nullCharacter fourQuarters // 글꼴에 없는 문자의 정보
 
 @ @<핵심 변수들의...@>=
-nullCharacter.b0 = minQuarterword
-nullCharacter.b1 = minQuarterword
-nullCharacter.b2 = minQuarterword
-nullCharacter.b3 = minQuarterword
+nullCharacter.setB0(minQuarterword)
+nullCharacter.setB1(minQuarterword)
+nullCharacter.setB2(minQuarterword)
+nullCharacter.setB3(minQuarterword)
 
 @ 다음은 합자와 커닝을 처리하는 데 도움을 주는 함수들이다. 글꼴~|f|에서 커닝 명령~|j|가 지정하는 커닝의 양을 찾으려면
 |charKern(f,j)|라고 쓴다. 낱말 |j|가 합자/커닝 프로그램이 있는 문자의 |charInfo|이면, 그 프로그램의 첫 명령은
@@ -13616,10 +13924,10 @@ readSixteen := func(x *halfword) bool { // |false|면 |abort|해야 한다
 	return true
 }
 storeFourQuarters := func(x *fourQuarters) {
-	fget(); a = fbyte(); qw.b0 = qi(a)
-	fget(); b = fbyte(); qw.b1 = qi(b)
-	fget(); c = fbyte(); qw.b2 = qi(c)
-	fget(); d = fbyte(); qw.b3 = qi(d)
+	fget(); a = fbyte(); qw.setB0(qi(a))
+	fget(); b = fbyte(); qw.setB1(qi(b))
+	fget(); c = fbyte(); qw.setB2(qi(c))
+	fget(); d = fbyte(); qw.setB3(qi(d))
 	*x = qw
 }
 
@@ -13718,7 +14026,7 @@ fontSize[f] = z
 @ 문자마다 |charInfo| 낱말을 읽고, 그 안의 첨자들이 각 표의 크기를 넘지 않는지 검사한다.
 @<문자 자료를...@>=
 for k = fmemPtr; k <= widthBase[f]-1; k++ {
-	storeFourQuarters(&fontInfo[k].qqqq)
+	storeFourQuarters(fontInfo[k].qqqq())
 	if a >= nw || b/0o20 >= nh || b%0o20 >= nd || c/4 >= ni {
 		goto badTFM
 	}
@@ -13824,7 +14132,7 @@ bchLabel = 0o77777
 bchar = 256
 if nl > 0 {
 	for k = ligKernBase[f]; k <= kernBase[f]+kernBaseOffset-1; k++ {
-		storeFourQuarters(&fontInfo[k].qqqq)
+		storeFourQuarters(fontInfo[k].qqqq())
 		if a > 128 {
 			if 256*c+d >= nl {
 				goto badTFM
@@ -13883,7 +14191,7 @@ if a < 128 {
 @ 늘일 수 있는 문자의 조립법을 읽는다. 조각으로 쓰는 문자는 모두 글꼴에 있어야 한다. 반복 조각 |rep|은 없어서는 안 된다.
 @<늘일 수 있는 문자의...@>=
 for k = extenBase[f]; k <= paramBase[f]-1; k++ {
-	storeFourQuarters(&fontInfo[k].qqqq)
+	storeFourQuarters(fontInfo[k].qqqq())
 	if a != 0 && !checkExistence(a) { goto badTFM }
 	if b != 0 && !checkExistence(b) { goto badTFM }
 	if c != 0 && !checkExistence(c) { goto badTFM }
@@ -14492,11 +14800,11 @@ curS = -1
 type @!dviIndex = int32 // 출력 버퍼의 첨자; |0 .. dviBufSize|
 
 @ 어떤 시스템에서는 |dviBuf|를 바이트 배열로 꾸려 두는 편이 더 효율적일 수 있다. 네 바이트를 한꺼번에 내보내기가 더 쉬울
-수 있기 때문이다.
+수 있기 때문이다. \GO/가 바로 그렇다. 바이트 배열의 구간은 그대로 슬라이스가 되어 파일에 한 번에 쓸 수 있다(다음 절).
 @^system dependencies@>
 
 @<전역 변수@>=
-var @!dviBuf [dviBufSize + 1]eightBits // \.{DVI} 출력을 위한 버퍼
+var @!dviBuf [dviBufSize + 1]byte // \.{DVI} 출력을 위한 버퍼
 var @!halfBuf dviIndex // |dviBufSize|의 절반
 var @!dviLimit dviIndex // 현재 반쪽 버퍼의 끝
 var @!dviPtr dviIndex // 쓸 수 있는 다음 버퍼 주소
@@ -14515,17 +14823,15 @@ dviGone = 0
 @ 버퍼 구간 |dviBuf[a..b]|를 |dviFile|에 실제로 쓰는 일은 |writeDVI(a,b)|를 불러서 한다. 이 프로시저는 \TeX의 안쪽 루프의
 일부이므로, 가장 좋은 결과를 얻으려면 시스템마다 될 수 있는 대로 빨리 돌도록 손보아야 한다. 프로시저 |writeDVI(a,b)|를 부를 때 |a|와
 |b+1|은 둘 다 4의 배수라고 가정해도 안전하다. 그러니 많은 기계에서는 낱말 하나에 네 바이트를 꾸려 넣고 낱말의 배열을
-시스템 호출 한 번으로 내보내는 효율적인 방법을 쓸 수 있다.
+시스템 호출 한 번으로 내보내는 효율적인 방법을 쓸 수 있다. 여기서는 구간 |dviBuf[a:b+1]|을 슬라이스로 넘겨
+한 번에 쓴다. 바이트마다 |bPut|을 부르던 예전에는 긴 문서에서 이 일에만 조판 시간의 5\pct!쯤이 들었다(2026년 10월 31일).
 @^system dependencies@>
 @^inner loop@>
 @^defecation@>
 
 @<함수들@>=
 func writeDVI(a, b dviIndex) {
-	var k dviIndex
-	for k = a; k <= b; k++ {
-		bPut(&dviFile, dviBuf[k])
-	}
+	dviFile.w.Write(dviBuf[a : b+1])
 }
 
 @ 바이트를 버퍼에 넣는 일은 작은 함수 |dviOut|이 한다. \GO/ 컴파일러는 이 함수를 부르는 곳에 펼쳐 넣으므로, 바이트마다
@@ -14533,7 +14839,7 @@ func writeDVI(a, b dviIndex) {
 
 @<함수들@>=
 func dviOut(x int32) {
-	dviBuf[dviPtr] = x
+	dviBuf[dviPtr] = byte(x)
 	dviPtr++
 	if dviPtr == dviLimit {
 		dviSwap()
@@ -14598,32 +14904,40 @@ func dviPop(l int32) {
 	}
 }
 
-@ 다음은 글꼴 정의를 내보내는 프로시저다. \TeX82는 작업 하나에 서로 다른 글꼴을 많아야 256개만 쓰므로 명령 코드로는 언제나
-|fntDef1|을 쓴다.
+@ \seclabel{font-def}다음은 글꼴 정의를 내보내는 프로시저다. \TeX82는 작업 하나에 서로 다른 글꼴을 많아야 256개만 쓰므로 명령 코드로는 언제나
+|fntDef1|을 쓴다. 명령 코드와 글꼴 번호 뒤의 바이트들은 글꼴을 처음 쓸 때 본체가 함수 |fontDefBytes|로 만들어 배열
+|dviFontBytes|에 넣어 둔다(\secref{dvi-ops}). 글꼴의 정보와 이름은 본체의 배열들에 있으므로, 쪽을 내보내는 고루틴이 그것을
+직접 읽지 않게 하려는 것이다. 글꼴 하나의 정보는 불러들인 뒤로 바뀌지 않으니 미리 만들어 두어도 된다.
 
 @<함수들@>=
 func dviFontDef(f internalFontNumber) {
-	var k poolPointer // |strPool|의 첨자
 	dviOut(fntDef1)
 	dviOut(f - fontBase - 1)
-	dviOut(qo(fontCheck[f].b0))
-	dviOut(qo(fontCheck[f].b1))
-	dviOut(qo(fontCheck[f].b2))
-	dviOut(qo(fontCheck[f].b3))
-	dviFour(fontSize[f])
-	dviFour(fontDsize[f])
-	dviOut(length(fontArea[f]))
-	dviOut(length(fontName[f]))
-	@<내부 번호가 |f|인 글꼴의 이름을 출력한다@>
+	for _, b := range dviFontBytes[f] {
+		dviOut(int32(b))
+	}
 }
 
-@ 글꼴 이름은 영역과 이름을 차례로 내보낸다.
+func fontDefBytes(f internalFontNumber) []byte {
+	var k poolPointer // |strPool|의 첨자
+	q := fontCheck[f]
+	b := []byte{byte(qo(q.b0())), byte(qo(q.b1())), byte(qo(q.b2())), byte(qo(q.b3()))}
+	for _, x := range [...]int32{fontSize[f], fontDsize[f]} {
+		b = append(b, byte(x>>24), byte(x>>16), byte(x>>8), byte(x))
+	}
+	b = append(b, byte(length(fontArea[f])), byte(length(fontName[f])))
+	@<내부 번호가 |f|인 글꼴의 이름을 출력한다@>
+	return b
+}
+
+@ 글꼴 이름은 영역과 이름을 차례로 내보낸다. 정수를 바이트 넷으로 쪼갤 때는 |dviFour|와 같은 차례, 곧 높은 바이트부터
+적는다. 음수이면 2의 보수다.
 @<내부 번호가 |f|인...@>=
 for k = strStart[fontArea[f]]; k <= strStart[fontArea[f]+1]-1; k++ {
-	dviOut(so(strPool[k]))
+	b = append(b, byte(so(strPool[k])))
 }
 for k = strStart[fontName[f]]; k <= strStart[fontName[f]+1]-1; k++ {
-	dviOut(so(strPool[k]))
+	b = append(b, byte(so(strPool[k])))
 }
 
 @ \seclabel{yz-matches}작은 컴퓨터에 쓸 \TeX이라면 이 프로그램의 다음 몇 부분에 나오는 착상은 빼도 좋다. 명령 |w0|, |x0|,
@@ -14682,8 +14996,8 @@ endfig;
 @<전역 변수@>=
 const @!movementNodeSize = 3 // 아래 스택과 오른쪽 스택의 항목마다의 낱말 수
 
-func location(p pointer) int32        { return mem[p+2].sc } // 움직임 명령의 \.{DVI} 바이트 번호
-func setLocation(p pointer, v int32) { mem[p+2].sc = v }
+func location(p pointer) int32        { return mem[(p+2)&maxHalfword].sc } // 움직임 명령의 \.{DVI} 바이트 번호
+func setLocation(p pointer, v int32) { mem[(p+2)&maxHalfword].sc = v }
 
 var @!downPtr, @!rightPtr pointer // 아래 스택과 오른쪽 스택의 머리
 
@@ -14706,7 +15020,7 @@ func movement(w scaled, o eightBits) {
 	var mstate smallNumber // |y|나 |z|를 보았나?
 	var p, q pointer // 스택의 현재 노드와 맨 위 노드
 	var k int32 // |dviBuf|의 첨자, |dviBufSize|를 법으로
-	q = getNode(movementNodeSize) // 스택의 맨 위를 위한 새 노드
+	q = getMovementNode() // 스택의 맨 위를 위한 새 노드
 	setWidth(q, w)
 	setLocation(q, dviOffset+dviPtr)
 	if o == down1 {
@@ -14899,7 +15213,7 @@ func pruneMovements(l int32) { // |location>=l|인 움직임 노드들을 지운
 		}
 		p = downPtr
 		downPtr = link(p)
-		freeNode(p, movementNodeSize)
+		freeMovementNode(p)
 	}
 done:
 	for rightPtr != null {
@@ -14908,7 +15222,7 @@ done:
 		}
 		p = rightPtr
 		rightPtr = link(p)
-		freeNode(p, movementNodeSize)
+		freeMovementNode(p)
 	}
 }
 
@@ -14925,18 +15239,24 @@ done:
 
 루틴 |hlistOut|과 |vlistOut|의 중첩 깊이는 |curS|라고 부른다. 이것은 본질적으로 \.{DVI} 출력에서 |push| 명령의 깊이다.
 
+이 판에서는 두 쌍을 서로 다른 고루틴이 맡을 수 있다(\secref{dvi-goroutine}). |curH|와 |curV|는 상자를 훑는 본체의
+것이고, |dviH|, |dviV|, |dviF|, |curS|는 \.{DVI} 바이트를 만드는 쪽의 것이다. 그래서 |synchH|와 |synchV|는 직접 움직이지
+않고, |dviH=curH|나 |dviV=curV|가 되게 하라는 명령을 낸다. 실제로 움직이는 것은 |dviSynchH|와 |dviSynchV|다.
+
 @<전역 변수@>=
 func synchH() {
-	if curH != dviH {
-		movement(curH-dviH, right1)
-		dviH = curH
+	if shipAsync {
+		dviOps = append(dviOps, opSynchH, curH)
+	} else {
+		dviSynchH(curH)
 	}
 }
 
 func synchV() {
-	if curV != dviV {
-		movement(curV-dviV, down1)
-		dviV = curV
+	if shipAsync {
+		dviOps = append(dviOps, opSynchV, curV)
+	} else {
+		dviSynchV(curV)
 	}
 }
 
@@ -14946,21 +15266,20 @@ var @!dviF internalFontNumber // 현재 글꼴
 var @!curS int32 // 출력 상자 중첩의 현재 깊이, 처음에는 $-1$
 
 @ 쪽을 내보내기 시작할 때 변수들을 초기화한다. \.{DVI} 파일을 아직 열지 않았으면 열고, 첫 쪽이면 서문을 내보낸다. 서문에는
-단위를 정하는 수와 \.{\\mag}, 그리고 `\.{ TeX output 1776.07.04:1200}' 같은 주석이 들어간다.
-@<|shipOut|을 시작할 때 변수들을 초기화한다@>=
-dviH = 0
-dviV = 0
-curH = hOffset()
-dviF = nullFont
-ensureDVIOpen()
-if totalPages == 0 {
-	dviOut(pre)
-	dviOut(idByte) // 서문을 출력한다
+단위를 정하는 수와 \.{\\mag}, 그리고 `\.{ TeX output 1776.07.04:1200}' 같은 주석이 들어간다. 서문과 |bop|는 명령
+|opPageBegin| 하나로 낸다(\secref{ship-begin}). 명령에는 \.{\\count0}부터 \.{\\count9}까지의 값을 담고, 첫 쪽이면 확대
+배율과 주석 문자열도 담는다. 주석은 문자열 풀에서 만들어야 하므로 본체가 만든다.
 @^preamble of \.{DVI} file@>
-	dviFour(25400000)
-	dviFour(473628672) // sp를 위한 변환 비율
+@<|shipOut|을 시작할 때 변수들을 초기화한다@>=
+ensureDVIOpen()
+@<이 쪽을 고루틴에게 맡길지 정한다@>
+curH = hOffset()
+dviOps = append(dviOps, opPageBegin)
+for k = 0; k <= 9; k++ {
+	dviOps = append(dviOps, count(k))
+}
+if pagesBegun == 0 {
 	prepareMag()
-	dviFour(mag()) // 확대 배율이 얼어붙는다
 	oldSetting = selector
 	selector = newString
 	printStr(" TeX output ")
@@ -14973,12 +15292,16 @@ if totalPages == 0 {
 	printTwo(time() / 60)
 	printTwo(time() % 60)
 	selector = oldSetting
-	dviOut(curLength())
+	dviOps = append(dviOps, curLength(), mag())
 	for s = strStart[strPtr]; s <= poolPtr-1; s++ {
-		dviOut(so(strPool[s]))
+		dviOps = append(dviOps, so(strPool[s]))
 	}
 	poolPtr = strStart[strPtr] // 현재 문자열을 비운다
+} else {
+	dviOps = append(dviOps, -1)
 }
+flushOps()
+pagesBegun++
 
 @ 프로시저 |hlistOut|이 불리면, |tempPtr|가 가리키는 |hlistNode|가 나타내는 상자를 내보내야 한다. 그 상자의 기준점의 좌표는
 |(curH,curV)|다.
@@ -14989,9 +15312,10 @@ if totalPages == 0 {
 
 두 프로시저는 서로를 부른다. 가로 목록 안의 세로 상자는 |vlistOut|으로, 세로 목록 안의 가로 상자는 |hlistOut|으로 내보낸다.
 
-@ 재귀 프로시저 |hlistOut|과 |vlistOut|에는 저마다 지역 변수 |saveH|와 |saveV|가 있어서, 새 재귀 수준에 들어가기 바로 전의
-|dviH|와 |dviV| 값을 담아 둔다. 사실상 \TeX의 실행 시간 스택에 쌓인 |saveH|와 |saveV|의 값들은, \.{DVI}를 읽는 프로그램이
-|push|로 좌표 스택에 쌓을 |h|와 |v|의 값들에 해당한다.
+@ 재귀 프로시저 |hlistOut|과 |vlistOut|은 새 재귀 수준에 들어가기 바로 전에 |dviH|와 |dviV|를 담아 두라는 명령을 내고,
+돌아오면 되살리라는 명령을 낸다. 원래는 지역 변수 |saveH|와 |saveV|에 담았지만, 이제 그 값들은 명령을 실행하는 쪽의 스택
+|dviHV|에 쌓인다(\secref{dvi-goroutine}). 그 스택에 쌓인 값들은 \.{DVI}를 읽는 프로그램이 |push|로 좌표 스택에 쌓을 |h|와
+|v|의 값들에 해당한다.
 
 
 @<함수들@>=
@@ -14999,12 +15323,11 @@ if totalPages == 0 {
 func hlistOut() { // |hlistNode| 상자를 출력한다
 	var baseLine scaled // 이 상자의 기준선 좌표
 	var leftEdge scaled // 이 상자의 왼쪽 좌표
-	var saveH, saveV scaled // |dviH|와 |dviV|가 꺼내져 돌아갈 값
+	var saveH scaled // 리더 상자를 놓기 전의 |curH|
 	var thisBox pointer // 둘러싼 상자를 가리키는 포인터
 	var gOrder glueOrd // 글루에 적용되는 무한대의 차수
 	var gSign int32 // 글루의 종류를 고른다; |normal..shrinking|
 	var p pointer // 가로 목록의 현재 위치
-	var saveLoc int32 // 들어올 때의 \.{DVI} 바이트 위치
 	var leaderBox pointer // 되풀이하는 리더 상자
 	var leaderWd scaled // 되풀이하는 리더 상자의 너비
 	var lx scaled // 리더 상자 사이의 추가 간격
@@ -15016,22 +15339,11 @@ func hlistOut() { // |hlistNode| 상자를 출력한다
 	curG = 0; curGlue = floatConstant(0)
 	thisBox = tempPtr; gOrder = glueOrder(thisBox)
 	gSign = glueSign(thisBox); p = listPtr(thisBox)
-	curS++
-	if curS > 0 {
-		dviOut(push)
-	}
-	if curS > maxPush {
-		maxPush = curS
-	}
-	saveLoc = dviOffset + dviPtr; baseLine = curV; leftEdge = curH
+	outBoxBegin(); baseLine = curV; leftEdge = curH
 	for p != null {
 		@<|hlistOut|에서 노드 |p|를 출력하고 다음 노드로 옮겨 간다@>
 	}
-	pruneMovements(saveLoc)
-	if curS > 0 {
-		dviPop(saveLoc)
-	}
-	curS--
+	outBoxEnd()
 }
 
 @ 프로시저 |hlistOut|의 이 부분은 \TeX의 안쪽 루프에 속하므로 효율에 특별히 마음을 써야 한다. 문자 노드 |charNode|를 만나면
@@ -15049,26 +15361,42 @@ if isCharNode(p) {
 	for {
 		f = font(p)
 		c = character(p)
-		if f != dviF {
-			@<글꼴 |dviF|를 |f|로 바꾼다@>
-		}
-		if c >= qi(128) {
-			dviOut(set1)
-		}
-		dviOut(qo(c))
+		@<글꼴 |f|의 문자 |c|를 놓으라는 명령을 낸다@>
 		curH += charWidth(f, charInfo(f, c))
 		p = link(p)
 		if !isCharNode(p) {
 			break
 		}
 	}
-	dviH = curH
+	@<|dviH=curH|로 놓으라는 명령을 낸다@>
 } else {
 	@<|hlistOut|에서 |charNode|가 아닌 |p|를 출력하고 다음 노드로 옮겨 간다@>
 }
 
-@ 글꼴을 바꾸는 명령을 내보낸다. 이 글꼴을 처음 쓰는 것이면 먼저 글꼴 정의를 내보낸다. 글꼴 번호가 64 이하이면 한
-바이트짜리 \ID{fntNum} 명령을 쓴다.
+@ 문자 하나를 놓는 명령은 낱말 |f*256+c| 하나다(\secref{dvi-ops}). 글꼴 |f|를 처음 쓰는 것이면 글꼴 정의의 바이트들을
+먼저 만들어 |dviFontBytes|에 넣어 둔다. 글꼴 정보를 읽는 일은 본체에서 해야 하기 때문이다(\secref{font-def}).
+
+@<글꼴 |f|의 문자 |c|를...@>=
+if dviFontBytes[f] == nil {
+	dviFontBytes[f] = fontDefBytes(f)
+}
+if shipAsync {
+	dviOps = append(dviOps, f*256+c)
+} else {
+	dviChar(f, c)
+}
+
+@ 문자들을 놓고 나면 |dviH|는 |curH|와 같아진다. 문자 명령은 너비를 모르므로 그 값을 알려 준다.
+
+@<|dviH=curH|로...@>=
+if shipAsync {
+	dviOps = append(dviOps, opSetH, curH)
+} else {
+	dviH = curH
+}
+
+@ 글꼴을 바꾸는 명령을 내보낸다. 함수 |dviChar|의 일부다. 이 글꼴을 처음 쓰는 것이면 먼저 글꼴 정의를 내보낸다. 글꼴
+번호가 64 이하이면 한 바이트짜리 \ID{fntNum} 명령을 쓴다.
 @<글꼴 |dviF|를 |f|로...@>=
 if !fontUsed[f] {
 	dviFontDef(f)
@@ -15107,13 +15435,12 @@ nextP: // 노드 |p|를 다 처리했으면 여기로 간다
 p = link(p)
 
 @ 가로 목록 안의 상자를 내보낸다. 빈 상자이면 너비만큼 지나가기만 한다. 그렇지 않으면 상자를 |shiftAmount|만큼 내려 재귀로
-내보내고, 돌아오면 |dviH|와 |dviV|를 되살린 다음 상자의 너비만큼 오른쪽으로 간다.
+내보내고, 돌아오면 |dviH|와 |dviV|를 되살리라는 명령을 낸 다음 상자의 너비만큼 오른쪽으로 간다.
 @<가로 목록에서 상자를...@>=
 if listPtr(p) == null {
 	curH += width(p)
 } else {
-	saveH = dviH
-	saveV = dviV
+	outSaveHV()
 	curV = baseLine + shiftAmount(p) // 상자를 아래로 옮긴다
 	tempPtr = p
 	edge = curH
@@ -15122,8 +15449,7 @@ if listPtr(p) == null {
 	} else {
 		hlistOut()
 	}
-	dviH = saveH
-	dviV = saveV
+	outRestoreHV()
 	curH = edge + width(p)
 	curV = baseLine
 }
@@ -15142,11 +15468,12 @@ if ruleHt > 0 && ruleWd > 0 { // 빈 괘선은 출력하지 않는다
 	synchH()
 	curV = baseLine + ruleDp
 	synchV()
-	dviOut(setRule)
-	dviFour(ruleHt)
-	dviFour(ruleWd)
+	if shipAsync {
+		dviOps = append(dviOps, opSetRule, ruleHt, ruleWd)
+	} else {
+		dviSetRule(ruleHt, ruleWd)
+	}
 	curV = baseLine
-	dviH += ruleWd
 }
 
 @ 글루만큼 오른쪽으로 움직인다. 글루를 늘이거나 줄였다면 지금까지의 늘어남이나 줄어듦을 |curGlue|에 쌓아 두고, 상자의 글루
@@ -15269,14 +15596,15 @@ if subtype(p) == aLeaders {
 }
 
 @ 리더 상자 하나를 지금 자리에 내보내고 다음 자리로 간다. 여기의 `\ID{synch}' 연산들은 \.{DVI} 출력에서 가로와 세로 움직임을
-지정하는 데 드는 바이트 수를 줄이려는 것이다.
+지정하는 데 드는 바이트 수를 줄이려는 것이다. 원래는 |synchH| 바로 뒤의 |dviH|를 |saveH|에 담았는데, 그때는 |dviH=curH|이므로
+이제는 |curH|를 담는다. 본체는 |dviH|를 모르기 때문이다.
 
 @<|curH|에 리더 상자...@>=
 curV = baseLine + shiftAmount(leaderBox)
 synchV()
-saveV = dviV
 synchH()
-saveH = dviH
+saveH = curH
+outSaveHV()
 tempPtr = leaderBox
 outerDoingLeaders = doingLeaders
 doingLeaders = true
@@ -15286,8 +15614,7 @@ if typ(leaderBox) == vlistNode {
 	hlistOut()
 }
 doingLeaders = outerDoingLeaders
-dviV = saveV
-dviH = saveH
+outRestoreHV()
 curV = baseLine
 curH = saveH + leaderWd + lx
 
@@ -15297,12 +15624,11 @@ curH = saveH + leaderWd + lx
 func vlistOut() { // |vlistNode| 상자를 출력한다
 	var leftEdge scaled // 이 상자의 왼쪽 좌표
 	var topEdge scaled // 이 상자의 위쪽 좌표
-	var saveH, saveV scaled // |dviH|와 |dviV|가 꺼내져 돌아갈 값
+	var saveV scaled // 하위 상자나 리더 상자의 기준선의 |curV|
 	var thisBox pointer // 둘러싼 상자를 가리키는 포인터
 	var gOrder glueOrd // 글루에 적용되는 무한대의 차수
 	var gSign int32 // 글루의 종류를 고른다; |normal..shrinking|
 	var p pointer // 세로 목록의 현재 위치
-	var saveLoc int32 // 들어올 때의 \.{DVI} 바이트 위치
 	var leaderBox pointer // 되풀이하는 리더 상자
 	var leaderHt scaled // 되풀이하는 리더 상자의 높이
 	var lx scaled // 리더 상자 사이의 추가 간격
@@ -15314,23 +15640,12 @@ func vlistOut() { // |vlistNode| 상자를 출력한다
 	curG = 0; curGlue = floatConstant(0)
 	thisBox = tempPtr; gOrder = glueOrder(thisBox)
 	gSign = glueSign(thisBox); p = listPtr(thisBox)
-	curS++
-	if curS > 0 {
-		dviOut(push)
-	}
-	if curS > maxPush {
-		maxPush = curS
-	}
-	saveLoc = dviOffset + dviPtr; leftEdge = curH; curV -= height(thisBox)
+	outBoxBegin(); leftEdge = curH; curV -= height(thisBox)
 	topEdge = curV
 	for p != null {
 		@<|vlistOut|에서 노드 |p|를 출력하고 다음 노드로 옮겨 간다@>
 	}
-	pruneMovements(saveLoc)
-	if curS > 0 {
-		dviPop(saveLoc)
-	}
-	curS--
+	outBoxEnd()
 }
 
 @ 다음 코드는 |vlistOut|에서 노드 |p|를 내보내고 다음 노드로 옮겨 가되, 조건 |curH=leftEdge|를 지킨다.
@@ -15373,8 +15688,8 @@ if listPtr(p) == null {
 } else {
 	curV += height(p)
 	synchV()
-	saveH = dviH
-	saveV = dviV
+	saveV = curV
+	outSaveHV()
 	curH = leftEdge + shiftAmount(p) // 상자를 오른쪽으로 옮긴다
 	tempPtr = p
 	if typ(p) == vlistNode {
@@ -15382,8 +15697,7 @@ if listPtr(p) == null {
 	} else {
 		hlistOut()
 	}
-	dviH = saveH
-	dviV = saveV
+	outRestoreHV()
 	curV = saveV + depth(p)
 	curH = leftEdge
 }
@@ -15399,9 +15713,11 @@ curV += ruleHt
 if ruleHt > 0 && ruleWd > 0 { // 빈 괘선은 출력하지 않는다
 	synchH()
 	synchV()
-	dviOut(putRule)
-	dviFour(ruleHt)
-	dviFour(ruleWd)
+	if shipAsync {
+		dviOps = append(dviOps, opPutRule, ruleHt, ruleWd)
+	} else {
+		dviPutRule(ruleHt, ruleWd)
+	}
 }
 goto nextP
 
@@ -15475,10 +15791,10 @@ if subtype(p) == aLeaders {
 @<|curV|에 리더 상자...@>=
 curH = leftEdge + shiftAmount(leaderBox)
 synchH()
-saveH = dviH
 curV += height(leaderBox)
 synchV()
-saveV = dviV
+saveV = curV
+outSaveHV()
 tempPtr = leaderBox
 outerDoingLeaders = doingLeaders
 doingLeaders = true
@@ -15488,8 +15804,7 @@ if typ(leaderBox) == vlistNode {
 	hlistOut()
 }
 doingLeaders = outerDoingLeaders
-dviV = saveV
-dviH = saveH
+outRestoreHV()
 curH = leftEdge
 curV = saveV - height(leaderBox) + leaderHt + lx
 
@@ -15497,7 +15812,6 @@ curV = saveV - height(leaderBox) + leaderHt + lx
 
 @<함수들@>=
 func shipOut(p pointer) { // 상자 |p|를 출력한다
-	var pageLoc int32 // 현재 |bop|의 위치
 	var j, k int32 // 처음 열 개의 \.{\\count} 레지스터의 첨자; |0..9|
 	var s poolPointer // |strPool|의 첨자
 	var oldSetting int32 // 저장한 |selector| 설정; |0 .. maxSelector|
@@ -15565,17 +15879,11 @@ if stat {
 }
 
 @ 상자 |p|를 쪽 하나로 내보낸다. 명령 |bop|에는 \.{\\count0}부터 \.{\\count9}까지와 앞 |bop|의 위치를 적고, 기준점을
-\.{\\hoffset}과 \.{\\voffset}만큼 옮긴 자리에서 상자를 내보낸 다음 |eop|를 적는다.
+\.{\\hoffset}과 \.{\\voffset}만큼 옮긴 자리에서 상자를 내보낸 다음 |eop|를 적는다. 이 판에서는 이 일들도 명령으로 낸다.
+비동기식이면 쪽을 다 훑은 뒤 쌓인 명령을 고루틴에게 넘긴다(\secref{dvi-goroutine}).
 @<상자 |p|를 내보낸다@>=
 @<|maxH|와 |maxV|의 값을 갱신하되, 쪽이 너무 크면 |goto done|@>
 @<|shipOut|을 시작할 때...@>
-pageLoc = dviOffset + dviPtr
-dviOut(bop)
-for k = 0; k <= 9; k++ {
-	dviFour(count(k))
-}
-dviFour(lastBop)
-lastBop = pageLoc
 curV = height(p) + vOffset()
 tempPtr = p
 if typ(p) == vlistNode {
@@ -15583,9 +15891,12 @@ if typ(p) == vlistNode {
 } else {
 	hlistOut()
 }
-dviOut(eop)
-totalPages++
-curS = -1
+dviOps = append(dviOps, opPageEnd)
+if shipAsync {
+	sendPage()
+} else {
+	flushOps()
+}
 done:
 
 @ 사용자가 다른 오류 메시지들을 무시하다가 거대한 쪽을 만들 때가 있다. 그런 쪽은 인쇄 소프트웨어를 헷갈리게 할 수 있으므로
@@ -15616,13 +15927,16 @@ if width(p)+hOffset() > maxH {
 	maxH = width(p) + hOffset()
 }
 
-@ 프로그램이 끝날 때는 후문을 써서 일을 마무리해야 한다. 쪽 수 |totalPages|가 0이면 \.{DVI} 파일은 한 번도 열리지 않았다. 그 값이
+@ \seclabel{dvi-finish}프로그램이 끝날 때는 후문을 써서 일을 마무리해야 한다. 쪽 수 |totalPages|가 0이면 \.{DVI} 파일은 한 번도 열리지 않았다. 그 값이
 65536 이상이면 \.{DVI} 파일은 거짓말을 할 것이다. 그리고 |maxPush>=65536|이면 사용자는 무슨 혼돈이 뒤따르든 받아 마땅하다.
-출력 루틴이 도중에 중단되었다면 아직 닫지 않은 |push|와 쪽을 먼저 닫는다.
+출력 루틴이 도중에 중단되었다면 아직 닫지 않은 |push|와 쪽을 먼저 닫는다. 그 전에 고루틴이 받은 쪽을 모두 내보낼 때까지
+기다린다(\secref{dvi-goroutine}). 쪽을 내보내는 도중에 치명적인 오류로 여기 왔다면 아직 넘기지 않은 반쪽짜리 명령도 이때
+넘긴다. 그러면 \.{DVI} 파일에는 원래처럼 오류가 난 자리까지가 남는다.
 
 이 루틴에 쓸 정수 변수 |k|는 나중에 선언한다.
 
 @<\.{DVI} 파일을 마무리한다@>=
+waitDVI()
 for curS > -1 {
 	if curS > 0 {
 		dviOut(pop)
@@ -15684,6 +15998,358 @@ for fontPtr > fontBase {
 		dviFontDef(fontPtr)
 	}
 	fontPtr--
+}
+
+@ \seclabel{dvi-goroutine}여기까지가 원본의 쪽 내보내기다. 이 판에서는 그 일을 두 고루틴이 나누어 한다(2026년 10월
+31일). 쪽 하나를 내보내는 데에는 일이 두 가지 섞여 있다. 하나는 상자를 훑으며 글루를 계산하고, 리더를 되풀이하고,
+\.{\\write}를 펼치고, \.{\\special}의 문자열을 만드는 일이다. 이것은 \TeX의 나머지 상태와 얽혀 있으므로 본체가 원래 순서대로
+해야 한다. 다른 하나는 그 결과를 \.{DVI} 바이트로 바꾸는 일이다. 움직임을 |w|, |x|, |y|, |z|로 줄이고(\secref{movement}),
+글꼴을 바꾸고, |push|와 |pop|을 맞추고, 버퍼를 파일에 쓴다. 이 일은 |dviH|, |dviV|, |dviF|, |curS|, 움직임 스택, 버퍼처럼 이
+일에만 쓰는 변수만 건드린다. 긴 문서에서 조판 시간의 6\pct!쯤이 여기에 든다.
+
+그래서 본체는 두 번째 일을 직접 하지 않고 작은 {\it \.{DVI} 명령\/}으로 적어 둔다. 쪽을 다 훑으면 명령들을 통로로 따로 도는
+고루틴에게 넘기고, 고루틴이 그것을 실행하는 동안 본체는 다음 쪽을 조판한다. 명령을 실행하는 함수는 원래 코드에서 그대로
+옮겨 왔으므로 \.{DVI} 파일은 한 바이트도 달라지지 않는다. 쪽을 내보내는 도중에 치명적인 오류가 나도 그때까지 쌓인 명령만
+실행하면 원래와 똑같은 반쪽짜리 쪽이 남고, 후문이 그것을 닫는다(\secref{dvi-finish}).
+
+하나 달라지는 것이 있다. 움직임 노드는 원래 |getNode|로 |mem|에서 얻는데, 고루틴은 본체와 함께 |mem|의 할당기를 쓸 수
+없다. 그래서 고루틴은 배열 |mem|에서 \TeX이 쓰지 않는 |memMax| 뒤쪽에서 움직임 노드를 얻는다(\secref{mem-array}). 그러면
+본체의 가변 크기 메모리에서 노드 몇 개가 잠깐 할당되었다가 풀리는 일이 일어나지 않는다. 사용량은 어차피 쪽을 마치면 그대로
+돌아오지만, 빈자리 목록의 모양은 조금 달라질 수 있다. 이 차이가 드러날 수 있는 곳은 메모리 통계뿐이므로,
+\.{\\tracingstats}가 양수이면 쪽을 예전처럼 본체에서 바로 내보낸다. 이렇게 한 쪽씩 동기식과 비동기식을 고르는 것은
+\secref{ship-mode}에서 한다.
+
+@ \seclabel{dvi-ops}\.{DVI} 명령은 |int32|의 슬라이스 |dviOps|에 쌓는다. 가장 흔한 명령인 문자 놓기는 낱말 하나 |f*256+c|로
+적고, 나머지 명령은 음수 코드 하나 뒤에 인자를 붙인다. 문자 명령은 늘 0 이상이므로 둘을 헷갈릴 일이 없다.
+
+@<정의@>=
+const (
+	@!opSynchH = -1 - iota // |dviSynchH(h)|; 인자 |h|
+	@!opSynchV // |dviSynchV(v)|; 인자 |v|
+	@!opSetH // |dviH=h|; 인자 |h|
+	@!opSaveHV // |dviSaveHV()|
+	@!opRestoreHV // |dviRestoreHV()|
+	@!opBoxBegin // |dviBoxBegin()|
+	@!opBoxEnd // |dviBoxEnd()|
+	@!opSetRule // |dviSetRule(ht,wd)|; 인자 |ht|, |wd|
+	@!opPutRule // |dviPutRule(ht,wd)|; 인자 |ht|, |wd|
+	@!opSpecial // |xxx1|이나 |xxx4|; 인자 $n$과 바이트 $n$개
+	@!opPageBegin // 서문과 |bop|; \secref{ship-begin}
+	@!opPageEnd // |eop|
+)
+
+@ 쪽 하나를 동기식으로 내보낼지 비동기식으로 내보낼지는 |shipAsync|가 정한다. 동기식이면 명령을 쌓는 함수가 쌓지 않고
+곧바로 실행 함수를 부르므로, 원래의 쪽 내보내기와 똑같은 순서로 일이 일어난다. 전역 변수 |pagesBegun|은 본체가 시작한 쪽의
+수다. 첫 쪽에 서문을 붙일지 알려고 원래는 |totalPages|를 보았지만, 그 변수는 이제 고루틴의 것이다.
+
+@<전역 변수@>=
+var @!dviOps []int32 // 아직 실행하지 않은 \.{DVI} 명령들
+var @!shipAsync bool // 지금 쪽을 고루틴에게 맡기는가?
+var @!pagesBegun int32 // 본체가 내보내기 시작한 쪽의 수
+var @!dviFontBytes [fontMax + 1][]byte // 글꼴 정의의 바이트들, 처음 쓸 때 만든다
+
+@ 동기식일 때 쌓인 명령을 곧바로 실행하는 함수다. 명령을 낱낱이 쌓지 않고 몇 개를 한꺼번에 쌓는 곳(서문, |eop|, \.{\\special})에서 부른다.
+
+@<함수들@>=
+func flushOps() {
+	if !shipAsync {
+		dviExec(dviOps)
+		dviOps = dviOps[:0]
+	}
+}
+
+@ 상자 하나의 시작과 끝, 그리고 |dviH|와 |dviV|의 저장과 복원은 |hlistOut|과 |vlistOut|이 둘 다 하므로 함수로 둔다. 모양은
+모두 같다. 비동기식이면 명령을 쌓고, 동기식이면 실행한다.
+
+@<함수들@>=
+func outBoxBegin() {
+	if shipAsync {
+		dviOps = append(dviOps, opBoxBegin)
+	} else {
+		dviBoxBegin()
+	}
+}
+
+func outBoxEnd() {
+	if shipAsync {
+		dviOps = append(dviOps, opBoxEnd)
+	} else {
+		dviBoxEnd()
+	}
+}
+
+func outSaveHV() {
+	if shipAsync {
+		dviOps = append(dviOps, opSaveHV)
+	} else {
+		dviSaveHV()
+	}
+}
+
+func outRestoreHV() {
+	if shipAsync {
+		dviOps = append(dviOps, opRestoreHV)
+	} else {
+		dviRestoreHV()
+	}
+}
+
+@ 이제 명령을 실행하는 쪽이다. 함수 |dviSynchH|와 |dviSynchV|는 원래의 |synchH|와 |synchV|에서 |curH|와 |curV| 자리에
+인자를 받게 한 것이다.
+
+@<함수들@>=
+func dviSynchH(h scaled) {
+	if h != dviH {
+		movement(h-dviH, right1)
+		dviH = h
+	}
+}
+
+func dviSynchV(v scaled) {
+	if v != dviV {
+		movement(v-dviV, down1)
+		dviV = v
+	}
+}
+
+func dviChar(f internalFontNumber, c quarterword) { // 문자 하나를 놓는다
+	if f != dviF {
+		@<글꼴 |dviF|를 |f|로 바꾼다@>
+	}
+	if c >= qi(128) {
+		dviOut(set1)
+	}
+	dviOut(qo(c))
+}
+
+@ 원래 |hlistOut|과 |vlistOut|의 지역 변수였던 |saveLoc|, |saveH|, |saveV|는 이제 실행하는 쪽의 스택 |dviLocs|와 |dviHV|에
+쌓는다. 원래는 \TeX의 실행 시간 스택에 쌓이던 것이다. 상자 하나를 시작할 때는 |push|를 내보내고 그 자리를 기억해 두며,
+끝낼 때는 움직임 스택을 그 자리까지 잘라 내고 |pop|을 내보낸다. 아무것도 내보내지 않은 상자이면 |dviPop|이 |push|를 도로
+지운다.
+
+@<전역 변수@>=
+var @!dviLocs []int32 // 열려 있는 상자들이 시작한 \.{DVI} 바이트 위치
+var @!dviHV []scaled // 저장해 둔 |dviH|와 |dviV|의 짝들
+
+@ @<함수들@>=
+func dviBoxBegin() {
+	curS++
+	if curS > 0 {
+		dviOut(push)
+	}
+	if curS > maxPush {
+		maxPush = curS
+	}
+	dviLocs = append(dviLocs, dviOffset+dviPtr)
+}
+
+func dviBoxEnd() {
+	l := dviLocs[len(dviLocs)-1]
+	dviLocs = dviLocs[:len(dviLocs)-1]
+	pruneMovements(l)
+	if curS > 0 {
+		dviPop(l)
+	}
+	curS--
+}
+
+func dviSaveHV() { dviHV = append(dviHV, dviH, dviV) }
+
+func dviRestoreHV() {
+	n := len(dviHV)
+	dviH, dviV = dviHV[n-2], dviHV[n-1]
+	dviHV = dviHV[:n-2]
+}
+
+@ 괘선은 가로 목록에서는 |setRule|로 놓고 오른쪽으로 움직이며, 세로 목록에서는 |putRule|로 놓기만 한다.
+
+@<함수들@>=
+func dviSetRule(ht, wd scaled) {
+	dviOut(setRule)
+	dviFour(ht)
+	dviFour(wd)
+	dviH += wd
+}
+
+func dviPutRule(ht, wd scaled) {
+	dviOut(putRule)
+	dviFour(ht)
+	dviFour(wd)
+}
+
+@ \seclabel{dvi-exec}함수 |dviExec|은 쌓인 명령들을 차례로 실행한다. 비동기식이면 고루틴이 쪽마다 한 번 부르고, 동기식이면
+본체가 명령 몇 개마다 부른다. 실행에 쓰는 함수는 모두 앞의 것들이다.
+
+@<함수들@>=
+func dviExec(ops []int32) {
+	for i := 0; i < len(ops); i++ {
+		x := ops[i]
+		if x >= 0 {
+			dviChar(x>>8, x&0xFF); continue
+		}
+		switch x {
+		case opSynchH: i++; dviSynchH(ops[i])
+		case opSynchV: i++; dviSynchV(ops[i])
+		case opSetH: i++; dviH = ops[i]
+		case opSaveHV: dviSaveHV()
+		case opRestoreHV: dviRestoreHV()
+		case opBoxBegin: dviBoxBegin()
+		case opBoxEnd: dviBoxEnd()
+		case opSetRule: dviSetRule(ops[i+1], ops[i+2]); i += 2
+		case opPutRule: dviPutRule(ops[i+1], ops[i+2]); i += 2
+		case opSpecial: @<\.{\\special}의 바이트들을 내보낸다@>
+		case opPageBegin: @<쪽을 시작한다@>
+		case opPageEnd: dviOut(eop); totalPages++; curS = -1
+		}
+	}
+}
+
+@ 명령 |opSpecial|의 인자는 바이트 수 $n$과 바이트들이다. 원래의 |specialOut|처럼 256바이트보다 짧으면 |xxx1|을, 아니면
+|xxx4|를 쓴다.
+
+@<\.{\\special}의 바이트들을...@>=
+n := int(ops[i+1])
+if n < 256 {
+	dviOut(xxx1); dviOut(int32(n))
+} else {
+	dviOut(xxx4); dviFour(int32(n))
+}
+for _, b := range ops[i+2 : i+2+n] {
+	dviOut(b)
+}
+i += 1 + n
+
+@ \seclabel{ship-begin}명령 |opPageBegin|의 인자는 \.{\\count0}부터 \.{\\count9}까지의 값 열 개와 주석의 길이 $n$이다.
+첫 쪽이 아니면 $n=-1$이고, 첫 쪽이면 그 뒤에 확대 배율과 주석의 바이트 $n$개가 온다. 첫 쪽이면 서문을 먼저 내보낸다.
+@^preamble of \.{DVI} file@>
+
+@<쪽을 시작한다@>=
+dviH = 0; dviV = 0; dviF = nullFont
+n := int(ops[i+11])
+if n >= 0 {
+	dviOut(pre); dviOut(idByte)
+	dviFour(25400000); dviFour(473628672) // sp를 위한 변환 비율
+	dviFour(ops[i+12]) // 확대 배율이 얼어붙는다
+	dviOut(int32(n))
+	for _, b := range ops[i+13 : i+13+n] {
+		dviOut(b)
+	}
+}
+pageLoc := dviOffset + dviPtr // 현재 |bop|의 위치
+dviOut(bop)
+for _, x := range ops[i+1 : i+11] {
+	dviFour(x)
+}
+dviFour(lastBop)
+lastBop = pageLoc
+i += 11 + max(n+1, 0)
+
+@ 움직임 노드를 얻고 돌려주는 함수다. 동기식이면 원래처럼 |getNode|와 |freeNode|를 쓴다. 비동기식이면 배열 |mem|에서
+|memMax| 뒤쪽을 고루틴의 몫으로 쓴다. 노드 크기가 하나뿐이므로 할당기는 간단하다. 돌려받은 노드는 |movFree|에서 시작하는
+목록에 꿰어 두었다가 다시 쓰고, 그 목록이 비면 |movHi|를 늘려 새 노드를 만든다. 이 영역은 |maxHalfword-memMax|낱말이므로,
+보통의 |memMax=30000|이면 \TeX의 메모리 전체보다도 크다. 움직임 노드가 그만큼 쌓이는 쪽이라면 동기식으로도 메모리가
+넘쳤을 것이다.
+
+플래그 |dviPrivate|는 지금 실행하는 쪽이 고루틴인지 알려 준다. 이 변수와 영역은 실행하는 쪽만 건드린다.
+
+@<전역 변수@>=
+var @!dviPrivate bool // 움직임 노드를 |memMax| 뒤쪽에서 얻는가?
+var @!movFree pointer // 돌려받은 움직임 노드의 목록
+var @!movHi pointer = memMax + 1 // 아직 쓰지 않은 첫 낱말
+
+@ @<함수들@>=
+func getMovementNode() pointer {
+	if !dviPrivate {
+		return getNode(movementNodeSize)
+	}
+	if movFree != null {
+		q := movFree
+		movFree = link(q)
+		return q
+	}
+	if movHi+movementNodeSize-1 > maxHalfword {
+		panic("movement nodes exhausted the area above memMax")
+	}
+	q := movHi
+	movHi += movementNodeSize
+	return q
+}
+
+func freeMovementNode(p pointer) {
+	if !dviPrivate {
+		freeNode(p, movementNodeSize); return
+	}
+	setLink(p, movFree)
+	movFree = p
+}
+
+@ \seclabel{ship-mode}쪽마다 내보내는 방식을 고른다. \.{\\tracingstats}가 양수이면 동기식이고, 아니면 비동기식이다. 시험할
+때는 환경 변수 \.{TEXDVI}를 `\.{sync}'나 `\.{async}'로 주어 한쪽으로 못 박을 수 있다. 이를테면 \.{TRIP} 시험은 거의 늘
+통계를 켜 두므로 그대로는 동기식으로만 돈다. \.{TEXDVI=async}로 돌려 보면 비동기식도 \.{TRIP}을 통과하는지 알 수 있다.
+
+동기식으로 바꿀 때는 고루틴이 앞서 받은 쪽을 다 내보낼 때까지 기다린다. 그래야 실행하는 쪽의 변수를 본체가 이어받을 수
+있다. 고루틴은 처음으로 비동기식 쪽을 내보낼 때 띄운다.
+
+@<이 쪽을 고루틴에게 맡길지 정한다@>=
+if dviMode == "async" || dviMode == "" && tracingStats() <= 0 {
+	if dviPages == nil {
+		@<\.{DVI} 명령을 실행하는 고루틴을 띄운다@>
+	}
+	shipAsync = true
+} else {
+	waitDVI(); shipAsync = false
+}
+
+@ 쪽 명령은 버퍼가 넷인 통로 |dviPages|로 넘긴다. 그러니 고루틴이 조금 밀려도 본체는 네 쪽까지 앞서 나갈 수 있다. 다 쓴
+슬라이스는 통로 |dviFree|로 돌려받아 다시 쓴다. 넘겼지만 아직 다 실행하지 않은 쪽의 수는 |dviBusy|가 센다.
+
+@<전역 변수@>=
+var @!dviMode = os.Getenv("TEXDVI") // `\.{sync}', `\.{async}', 또는 빈 문자열
+var @!dviPages chan []int32 // 고루틴에게 넘기는 쪽들
+var @!dviFree chan []int32 // 다 쓴 명령 슬라이스들
+var @!dviBusy sync.WaitGroup // 넘겼지만 아직 실행하지 않은 쪽들
+
+@ 고루틴은 쪽을 받을 때마다 실행하고, 슬라이스를 돌려준 다음 |dviBusy|를 하나 줄인다. 통로 |dviFree|가 차 있으면 슬라이스는
+그냥 버린다.
+
+@<\.{DVI} 명령을 실행하는...@>=
+dviPages = make(chan []int32, 4)
+dviFree = make(chan []int32, 8)
+go func() {
+	for ops := range dviPages {
+		dviPrivate = true
+		dviExec(ops)
+		select {
+		case dviFree <- ops[:0]:
+		default:
+		}
+		dviBusy.Done()
+	}
+}()
+
+@ 함수 |sendPage|는 쌓인 명령을 고루틴에게 넘기고, 돌려받은 슬라이스가 있으면 그것을 새 |dviOps|로 삼는다. 함수
+|waitDVI|는 넘긴 쪽을 고루틴이 모두 실행할 때까지 기다린다. 비동기식으로 쪽을 내보내다가 치명적인 오류로 여기 왔다면 아직
+넘기지 않은 반쪽짜리 명령이 남아 있으므로, 그것부터 넘긴다. 기다리고 나면 실행하는 쪽의 변수는 모두 본체의 것이 된다.
+|sync.WaitGroup|의 |Wait|가 끝나면 고루틴이 그 전에 쓴 값을 본체가 읽을 수 있음이 보장된다.
+
+@<함수들@>=
+func sendPage() {
+	dviBusy.Add(1)
+	dviPages <- dviOps
+	select {
+	case ops := <-dviFree:
+		dviOps = ops
+	default:
+		dviOps = make([]int32, 0, cap(dviOps))
+	}
+}
+
+func waitDVI() {
+	if shipAsync && len(dviOps) > 0 {
+		sendPage()
+	}
+	dviBusy.Wait()
+	dviPrivate = false
 }
 
 @* 꾸리기.
@@ -16464,14 +17130,14 @@ const (
 
 func leftDelimiter(p pointer) pointer  { return p + 4 } // 노드의 첫 구분자 필드
 func rightDelimiter(p pointer) pointer { return p + 5 } // 분수 노드의 둘째 구분자 필드
-func smallFam(p pointer) quarterword  { return mem[p].qqqq.b0 } // ``작은'' 구분자의 |fam|
-func setSmallFam(p pointer, v quarterword)  { mem[p].qqqq.b0 = v }
-func smallChar(p pointer) quarterword { return mem[p].qqqq.b1 } // ``작은'' 구분자의 |character|
-func setSmallChar(p pointer, v quarterword) { mem[p].qqqq.b1 = v }
-func largeFam(p pointer) quarterword  { return mem[p].qqqq.b2 } // ``큰'' 구분자의 |fam|
-func setLargeFam(p pointer, v quarterword)  { mem[p].qqqq.b2 = v }
-func largeChar(p pointer) quarterword { return mem[p].qqqq.b3 } // ``큰'' 구분자의 |character|
-func setLargeChar(p pointer, v quarterword) { mem[p].qqqq.b3 = v }
+func smallFam(p pointer) quarterword  { return mem[p&maxHalfword].qqqq().b0() } // ``작은'' 구분자의 |fam|
+func setSmallFam(p pointer, v quarterword)  { mem[p&maxHalfword].qqqq().setB0(v) }
+func smallChar(p pointer) quarterword { return mem[p&maxHalfword].qqqq().b1() } // ``작은'' 구분자의 |character|
+func setSmallChar(p pointer, v quarterword) { mem[p&maxHalfword].qqqq().setB1(v) }
+func largeFam(p pointer) quarterword  { return mem[p&maxHalfword].qqqq().b2() } // ``큰'' 구분자의 |fam|
+func setLargeFam(p pointer, v quarterword)  { mem[p&maxHalfword].qqqq().setB2(v) }
+func largeChar(p pointer) quarterword { return mem[p&maxHalfword].qqqq().b3() } // ``큰'' 구분자의 |character|
+func setLargeChar(p pointer, v quarterword) { mem[p&maxHalfword].qqqq().setB3(v) }
 func thickness(p pointer) scaled { return width(p) } // 분수 노드의 |thickness| 필드
 func setThickness(p pointer, v scaled) { setWidth(p, v) }
 func numerator(p pointer) pointer   { return supscr(p) } // 분수 노드의 |numerator| 필드
@@ -16488,10 +17154,10 @@ var @!nullDelimiter fourQuarters
 @<핵심 변수들의...@>=
 emptyField.rh = empty
 emptyField.lh = null
-nullDelimiter.b0 = 0
-nullDelimiter.b1 = minQuarterword
-nullDelimiter.b2 = 0
-nullDelimiter.b3 = minQuarterword
+nullDelimiter.setB0(0)
+nullDelimiter.setB1(minQuarterword)
+nullDelimiter.setB2(0)
+nullDelimiter.setB3(minQuarterword)
 
 @ 함수 |newNoad|는 완전히 빈 |ordNoad|를 만든다. 세 필드가 모두 비어 있다.
 
@@ -16500,9 +17166,9 @@ func newNoad() pointer {
 	p := getNode(noadSize)
 	setType(p, ordNoad)
 	setSubtype(p, normal)
-	mem[nucleus(p)].hh = emptyField
-	mem[subscr(p)].hh = emptyField
-	mem[supscr(p)].hh = emptyField
+	*mem[nucleus(p)].hh() = emptyField
+	*mem[subscr(p)].hh() = emptyField
+	*mem[supscr(p)].hh() = emptyField
 	return p
 }
 
@@ -17037,7 +17703,7 @@ func heightPlusDepth(f internalFontNumber, c quarterword) scaled {
 @<조립법 |remByte(q)|와 글꼴 |f|로...@>=
 b = newNullBox()
 setType(b, vlistNode)
-r = fontInfo[extenBase[f]+remByte(q)].qqqq
+r = *fontInfo[extenBase[f]+remByte(q)].qqqq()
 @<알맞은 최소 높이 |w|와 확장 단계 수 |n|을 계산하고 |width(b)|도 정한다@>
 c = extBot(r)
 if c != minQuarterword {
@@ -17287,8 +17953,8 @@ var @!curI fourQuarters // |mathChar|의 |charInfo|, 또는 합자/커닝 명령
 원소의 종류를 보아야 정할 수 있으므로, 첫째 훑기에서 종류를 모두 확정한 뒤에야 할 수 있다.
 
 @<정의@>=
-func newHlist(p pointer) int32 { return mem[nucleus(p)].sc } // 수식 목록의 번역
-func setNewHlist(p pointer, v int32) { mem[nucleus(p)].sc = v }
+func newHlist(p pointer) int32 { return mem[nucleus(p)&maxHalfword].sc } // 수식 목록의 번역
+func setNewHlist(p pointer, v int32) { mem[nucleus(p)&maxHalfword].sc = v }
 
 @ 다음은 |mlistToHlist|의 전체 계획과 그 지역 변수들이다.
 
@@ -17592,10 +18258,10 @@ if mathType(nucleus(q)) == mathChar {
 	fetch(nucleus(q))
 	if charTag(curI) == ligTag {
 		a = ligKernStart(curF, curI)
-		curI = fontInfo[a].qqqq
+		curI = *fontInfo[a].qqqq()
 		if skipByte(curI) > stopFlag {
 			a = ligKernRestart(curF, curI)
-			curI = fontInfo[a].qqqq
+			curI = *fontInfo[a].qqqq()
 		}
 		for {
 			if qo(nextChar(curI)) == skewChar[curF] {
@@ -17608,7 +18274,7 @@ if mathType(nucleus(q)) == mathChar {
 				goto done1
 			}
 			a = a + qo(skipByte(curI)) + 1
-			curI = fontInfo[a].qqqq
+			curI = *fontInfo[a].qqqq()
 		}
 	}
 }
@@ -17621,8 +18287,8 @@ flushNodeList(x); x = newNoad()
 mem[nucleus(x)] = mem[nucleus(q)]
 mem[supscr(x)] = mem[supscr(q)]
 mem[subscr(x)] = mem[subscr(q)]
-mem[supscr(q)].hh = emptyField
-mem[subscr(q)].hh = emptyField
+*mem[supscr(q)].hh() = emptyField
+*mem[subscr(q)].hh() = emptyField
 setMathType(nucleus(q), subMlist); setInfo(nucleus(q), x)
 x = cleanBox(nucleus(q), curStyle); delta = delta + height(x) - h; h = height(x)
 
@@ -17866,10 +18532,10 @@ restart:
 			if charTag(curI) == ligTag {
 				a = ligKernStart(curF, curI)
 				curC = character(nucleus(p))
-				curI = fontInfo[a].qqqq
+				curI = *fontInfo[a].qqqq()
 				if skipByte(curI) > stopFlag {
 					a = ligKernRestart(curF, curI)
-					curI = fontInfo[a].qqqq
+					curI = *fontInfo[a].qqqq()
 				}
 				for {
 					@<|curI|가 |curC|와의 커닝이나 합자이면 |q|와 |p|를 처리한다@>
@@ -17877,7 +18543,7 @@ restart:
 						return
 					}
 					a = a + qo(skipByte(curI)) + 1
-					curI = fontInfo[a].qqqq
+					curI = *fontInfo[a].qqqq()
 				}
 			}
 		}
@@ -18336,10 +19002,10 @@ endfig;
 할지에 관한 정보를 저장해야 하기 때문이다. 이 정보를 |extraInfo| 필드라고 부른다.
 
 @<정의@>=
-func uPart(p pointer) int32 { return mem[p+heightOffset].sc } // \<u_j> 토큰 목록을 가리키는 포인터
-func setUPart(p pointer, v int32) { mem[p+heightOffset].sc = v }
-func vPart(p pointer) int32 { return mem[p+depthOffset].sc } // \<v_j> 토큰 목록을 가리키는 포인터
-func setVPart(p pointer, v int32) { mem[p+depthOffset].sc = v }
+func uPart(p pointer) int32 { return mem[(p+heightOffset)&maxHalfword].sc } // \<u_j> 토큰 목록을 가리키는 포인터
+func setUPart(p pointer, v int32) { mem[(p+heightOffset)&maxHalfword].sc = v }
+func vPart(p pointer) int32 { return mem[(p+depthOffset)&maxHalfword].sc } // \<v_j> 토큰 목록을 가리키는 포인터
+func setVPart(p pointer, v int32) { mem[(p+depthOffset)&maxHalfword].sc = v }
 func extraInfo(p pointer) halfword { return info(p + listOffset) } // 틀을 처리하는 동안 기억할 정보
 func setExtraInfo(p pointer, v halfword) { setInfo(p+listOffset, v) }
 
@@ -19329,8 +19995,8 @@ func breakNode(p pointer) pointer { return rlink(p) } // 대응하는 수동 노
 func setBreakNode(p pointer, v pointer) { setRlink(p, v) }
 func lineNumber(p pointer) halfword { return llink(p) } // 이 나눔점에서 시작하는 줄
 func setLineNumber(p pointer, v halfword) { setLlink(p, v) }
-func totalDemerits(p pointer) int32 { return mem[p+2].sc } // \TeX이 최소로 만드는 양
-func setTotalDemerits(p pointer, v int32) { mem[p+2].sc = v }
+func totalDemerits(p pointer) int32 { return mem[(p+2)&maxHalfword].sc } // \TeX이 최소로 만드는 양
+func setTotalDemerits(p pointer, v int32) { mem[(p+2)&maxHalfword].sc = v }
 
 const (
 	@!unhyphenated = 0 // 보통 활성 나눔 노드의 \ID{type}
@@ -21088,15 +21754,15 @@ ligStack = null; setCurR()
 @<커서 자리에 합자나 커닝이...@>=
 if curL == nonChar {
 	k = bcharLabel[hf]
-	if k == nonAddress { goto done } else { q = fontInfo[k].qqqq }
+	if k == nonAddress { goto done } else { q = *fontInfo[k].qqqq() }
 } else {
 	q = charInfo(hf, curL)
 	if charTag(q) != ligTag {
 		goto done
 	}
-	k = ligKernStart(hf, q); q = fontInfo[k].qqqq
+	k = ligKernStart(hf, q); q = *fontInfo[k].qqqq()
 	if skipByte(q) > stopFlag {
-		k = ligKernRestart(hf, q); q = fontInfo[k].qqqq
+		k = ligKernRestart(hf, q); q = *fontInfo[k].qqqq()
 	}
 } // 이제 |k|는 합자/커닝 프로그램의 시작 주소다
 if curRh < nonChar { testChar = curRh } else { testChar = curR }
@@ -21108,7 +21774,7 @@ for {
 		}
 		curRh = nonChar; goto again
 	}
-	k = k + qo(skipByte(q)) + 1; q = fontInfo[k].qqqq
+	k = k + qo(skipByte(q)) + 1; q = *fontInfo[k].qqqq()
 }
 done:
 
@@ -21414,10 +22080,10 @@ type @!triePointer = int32 // |trie|의 첨자; |0 .. trieSize|
 @ @<정의@>=
 func trieLink(p triePointer) halfword { return trie[p].rh } // 트라이의 ``아래로'' 가는 링크
 func setTrieLink(p triePointer, v halfword) { trie[p].rh = v }
-func trieChar(p triePointer) quarterword { return trie[p].b1 } // 이 트라이 자리에서 맞춘 문자
-func setTrieChar(p triePointer, v quarterword) { trie[p].b1 = v }
-func trieOp(p triePointer) quarterword { return trie[p].b0 } // 이 트라이 자리의 하이픈 넣기 프로그램
-func setTrieOp(p triePointer, v quarterword) { trie[p].b0 = v }
+func trieChar(p triePointer) quarterword { return trie[p].b1() } // 이 트라이 자리에서 맞춘 문자
+func setTrieChar(p triePointer, v quarterword) { trie[p].setB1(v) }
+func trieOp(p triePointer) quarterword { return trie[p].b0() } // 이 트라이 자리의 하이픈 넣기 프로그램
+func setTrieOp(p triePointer, v quarterword) { trie[p].setB0(v) }
 
 @ 다음 배열들의 첨자는 1부터 |trieOpSize|까지이므로, 길이를 |trieOpSize+1|로 잡고 첨자 0은 쓰지 않는다. 배열 |opStart|는 언어마다
 연산 번호가 시작하는 곳을 알려 준다.
@@ -22025,7 +22691,7 @@ func triePack(p triePointer) { // 한 가족의 부분 트라이들을 채워 �
 나타내는데, 이것으로 ``빈'' 가족이 저절로 제대로 나타난다. 쓰지 않은 구멍은 모두 0으로 지운다.
 
 @<자료를 |trie|로 옮긴다@>=
-h.rh = 0; h.b0 = minQuarterword; h.b1 = minQuarterword // |trieLink=0|, |trieOp=minQuarterword|, |trieChar=qi(0)|
+h.rh = 0; h.setB0(minQuarterword); h.setB1(minQuarterword) // |trieLink=0|, |trieOp=minQuarterword|, |trieChar=qi(0)|
 if trieRoot() == 0 { // 패턴이 하나도 주어지지 않았다
 	for r = 0; r <= 256; r++ {
 		trie[r] = h
@@ -23786,13 +24452,13 @@ if charTag(mainI) != ligTag {
 if curR == nonChar {
 	goto mainLoopWrapup
 }
-mainK = ligKernStart(mainF, mainI); mainJ = fontInfo[mainK].qqqq
+mainK = ligKernStart(mainF, mainI); mainJ = *fontInfo[mainK].qqqq()
 if skipByte(mainJ) <= stopFlag {
 	goto mainLigLoop2
 }
 mainK = ligKernRestart(mainF, mainJ)
 mainLigLoop1:
-	mainJ = fontInfo[mainK].qqqq
+	mainJ = *fontInfo[mainK].qqqq()
 mainLigLoop2:
 	if nextChar(mainJ) == curR && skipByte(mainJ) <= stopFlag {
 		@<합자나 커닝 명령을 수행하고, 알맞은 곳으로 돌아간다@>
@@ -25756,9 +26422,9 @@ case mmode + radical: mathRadical()
 func mathRadical() {
 	tailAppend(getNode(radicalNoadSize))
 	setType(tail, radicalNoad); setSubtype(tail, normal)
-	mem[nucleus(tail)].hh = emptyField
-	mem[subscr(tail)].hh = emptyField
-	mem[supscr(tail)].hh = emptyField
+	*mem[nucleus(tail)].hh() = emptyField
+	*mem[subscr(tail)].hh() = emptyField
+	*mem[supscr(tail)].hh() = emptyField
 	scanDelimiter(leftDelimiter(tail), true); scanMath(nucleus(tail))
 }
 
@@ -25774,9 +26440,9 @@ func mathAc() {
 	}
 	tailAppend(getNode(accentNoadSize))
 	setType(tail, accentNoad); setSubtype(tail, normal)
-	mem[nucleus(tail)].hh = emptyField
-	mem[subscr(tail)].hh = emptyField
-	mem[supscr(tail)].hh = emptyField
+	*mem[nucleus(tail)].hh() = emptyField
+	*mem[subscr(tail)].hh() = emptyField
+	*mem[supscr(tail)].hh() = emptyField
 	setMathType(accentChr(tail), mathChar)
 	scanFifteenBitInt()
 	setCharacter(accentChr(tail), qi(curVal%256))
@@ -25964,9 +26630,9 @@ func mathFraction() {
 		setSubtype(incompleatNoad(), normal)
 		setMathType(numerator(incompleatNoad()), subMlist)
 		setInfo(numerator(incompleatNoad()), link(head))
-		mem[denominator(incompleatNoad())].hh = emptyField
-		mem[leftDelimiter(incompleatNoad())].qqqq = nullDelimiter
-		mem[rightDelimiter(incompleatNoad())].qqqq = nullDelimiter
+		*mem[denominator(incompleatNoad())].hh() = emptyField
+		*mem[leftDelimiter(incompleatNoad())].qqqq() = nullDelimiter
+		*mem[rightDelimiter(incompleatNoad())].qqqq() = nullDelimiter
 		setLink(head, null); tail = head
 		@<코드 |c|로 일반화된 분수들을 구별한다@>
 	}
@@ -26042,7 +26708,7 @@ case mathGroup:
 	if p != null && link(p) == null {
 		if typ(p) == ordNoad {
 			if mathType(subscr(p)) == empty && mathType(supscr(p)) == empty {
-				mem[saved(0)].hh = mem[nucleus(p)].hh
+				*mem[saved(0)].hh() = *mem[nucleus(p)].hh()
 				freeNode(p, noadSize)
 			}
 		} else if typ(p) == accentNoad && saved(0) == nucleus(tail) && typ(tail) == ordNoad {
@@ -27732,40 +28398,24 @@ var @!fmtFile wordFile // 포맷 정보의 입력이나 출력에 쓴다
 
 func dumpWd(w memoryWord) { fmtFile.buf = w; wPut(&fmtFile) }
 func dumpInt(x int32) { fmtFile.buf = memoryWord{sc: x}; wPut(&fmtFile) }
-func dumpHh(h twoHalves) { fmtFile.buf = memoryWord{hh: h}; wPut(&fmtFile) }
-func dumpQqqq(q fourQuarters) { fmtFile.buf = memoryWord{qqqq: q}; wPut(&fmtFile) }
+func dumpHh(h twoHalves) { *fmtFile.buf.hh() = h; wPut(&fmtFile) }
+func dumpQqqq(q fourQuarters) { fmtFile.buf = memoryWord{}; *fmtFile.buf.qqqq() = q; wPut(&fmtFile) }
 
-@ 낱말 파일의 기본 연산은 둘이다. 현재 원소 |f.buf|를 파일에 쓰는 |wPut|과, 다음 원소를 |f.buf|에 읽어 오는 |wGet|이다. 형 |memoryWord|는
-필드가 따로따로인 구조체이므로(\secref{memory-word}), 한 낱말을 쓸 때 모든 필드를 차례로 쓴다. 32비트 정수 아홉 개와 64비트 부동 소수점
-수 하나, 모두 44바이트다. 바이트 순서는 리틀 엔디언으로 정했다. 포맷 파일이 다 그렇듯이, 이 형식의 파일은 이 프로그램으로 만든
-\TeX끼리만 주고받을 수 있다.
+@ 낱말 파일의 기본 연산은 둘이다. 현재 원소 |f.buf|를 파일에 쓰는 |wPut|과, 다음 원소를 |f.buf|에 읽어 오는 |wGet|이다. 낱말은
+변형들을 겹쳐 놓은 8바이트이므로(\secref{memory-word}), 그 8바이트를 메모리에 놓인 그대로 쓰고 읽는다. 그래서 바이트 순서는 이
+프로그램이 도는 기계를 따른다. 포맷 파일이 다 그렇듯이, 이 형식의 파일은 이 프로그램으로 만든 \TeX끼리만 주고받을 수 있다.
+낱말을 하나하나 여러 필드로 풀어 44바이트씩 쓰던 예전 형식보다 포맷 파일이 5분의 1 남짓으로 줄었다.
 @^system dependencies@>
 
 @<함수들@>=
 func wPut(f *wordFile) { // |f.buf|를 파일에 쓴다
-	var b [44]byte
-	var g = math.Float64bits(f.buf.gr)
-	var v = [11]uint32{uint32(f.buf.sc), uint32(g), uint32(g >> 32),
-		uint32(f.buf.hh.rh), uint32(f.buf.hh.lh), uint32(f.buf.hh.b0), uint32(f.buf.hh.b1),
-		uint32(f.buf.qqqq.b0), uint32(f.buf.qqqq.b1), uint32(f.buf.qqqq.b2), uint32(f.buf.qqqq.b3)}
-	for i, x := range v {
-		b[4*i], b[4*i+1], b[4*i+2], b[4*i+3] = byte(x), byte(x>>8), byte(x>>16), byte(x>>24)
-	}
-	f.w.Write(b[:])
+	f.w.Write((*[8]byte)(unsafe.Pointer(&f.buf))[:])
 }
 
 func wGet(f *wordFile) { // 다음 원소를 |f.buf|에 읽어 온다
-	var b [44]byte
-	var v [11]uint32
-	if _, err := io.ReadFull(f.r, b[:]); err != nil {
-		f.atEOF = true; return
+	if _, err := io.ReadFull(f.r, (*[8]byte)(unsafe.Pointer(&f.buf))[:]); err != nil {
+		f.atEOF = true
 	}
-	for i := range v {
-		v[i] = uint32(b[4*i]) | uint32(b[4*i+1])<<8 | uint32(b[4*i+2])<<16 | uint32(b[4*i+3])<<24
-	}
-	f.buf.sc = int32(v[0]); f.buf.gr = math.Float64frombits(uint64(v[1]) | uint64(v[2])<<32)
-	f.buf.hh = twoHalves{rh: int32(v[3]), lh: int32(v[4]), b0: int32(v[5]), b1: int32(v[6])}
-	f.buf.qqqq = fourQuarters{int32(v[7]), int32(v[8]), int32(v[9]), int32(v[10])}
 }
 
 @ 언덤프 함수들은 조금 더 복잡하다. 읽어 들이는 값이 알맞은 범위에 있는지 검사해야 하기 때문이다. 이를테면 `|undump(a,b,&x)|'는
@@ -27779,8 +28429,8 @@ func wGet(f *wordFile) { // 다음 원소를 |f.buf|에 읽어 온다
 @<함수들@>=
 func undumpWd() memoryWord { wGet(&fmtFile); return fmtFile.buf }
 func undumpInt() int32 { wGet(&fmtFile); return fmtFile.buf.sc }
-func undumpHh() twoHalves { wGet(&fmtFile); return fmtFile.buf.hh }
-func undumpQqqq() fourQuarters { wGet(&fmtFile); return fmtFile.buf.qqqq }
+func undumpHh() twoHalves { wGet(&fmtFile); return *fmtFile.buf.hh() }
+func undumpQqqq() fourQuarters { wGet(&fmtFile); return *fmtFile.buf.qqqq() }
 
 func undump(a, b int32, v *int32) bool {
 	x := undumpInt()
@@ -27865,8 +28515,8 @@ if x != hyphSize {
 
 @<|storeFmtFile| 안의 작은 함수@>=
 dumpFourASCII := func() {
-	w.b0 = qi(so(strPool[k])); w.b1 = qi(so(strPool[k+1]))
-	w.b2 = qi(so(strPool[k+2])); w.b3 = qi(so(strPool[k+3]))
+	w.setB0(qi(so(strPool[k]))); w.setB1(qi(so(strPool[k+1])))
+	w.setB2(qi(so(strPool[k+2]))); w.setB3(qi(so(strPool[k+3])))
 	dumpQqqq(w)
 }
 
@@ -27890,8 +28540,8 @@ printInt(poolPtr)
 @<|loadFmtFile|의 매크로@>=
 undumpFourASCII := func() {
 	w = undumpQqqq()
-	strPool[k] = si(qo(w.b0)); strPool[k+1] = si(qo(w.b1))
-	strPool[k+2] = si(qo(w.b2)); strPool[k+3] = si(qo(w.b3))
+	strPool[k] = si(qo(w.b0())); strPool[k+1] = si(qo(w.b1()))
+	strPool[k+2] = si(qo(w.b2())); strPool[k+3] = si(qo(w.b3()))
 }
 
 @ 문자열 풀을 되살린다. 크기가 지금 \TeX의 한도를 넘으면 포맷을 읽을 수 없다.
@@ -28419,6 +29069,21 @@ wClose(&fmtFile)
 @<전역 변수@>=
 var @!readyAlready int32 // 경제를 위해 순수를 희생한다
 
+@ 환경 변수 \.{TEXCPUPROFILE}에 파일 이름을 주면, \TeX은 그 파일에 \GO/의 CPU 프로파일을 남긴다. 원본에는 없는,
+이 판의 실험을 위한 장치다(\secref{go-native}). 프로파일로는 시간이 어디에 드는지 알아볼 수 있고, \GO/ 컴파일러의 프로파일 기반
+최적화(PGO)도 할 수 있다. 꾸러미 디렉터리에 프로파일을 \.{default.pgo}라는 이름으로 두면 \.{go build}가 저절로 그것을 읽어,
+자주 지나는 길을 더 과감하게 인라인하는 따위로 코드를 다듬는다. 그 파일은 \.{make pgo}가 긴 문서를 조판하며 만든다.
+
+프로파일을 멈추는 함수는 |main|이 맨 처음에 미루어 두므로 맨 나중에 불린다. 그래서 |endOfTEX|로 끝나든 |finalEnd|로 끝나든
+마지막 순간까지 프로파일에 들어간다.
+
+@<CPU 프로파일을 원하면 뜨기 시작한다@>=
+if name := os.Getenv("TEXCPUPROFILE"); name != "" {
+	if f, err := os.Create(name); err == nil && pprof.StartCPUProfile(f) == nil {
+		defer pprof.StopCPUProfile()
+	}
+}
+
 @ \seclabel{main}이제 정말로 왔다. \TeX은 여기서 시작하고 여기서 끝난다.
 
 실행 시스템이 영리해서 초기화하지 않은 변수를 읽는 ``실수''를 잡아낸다면, |readyAlready|에 관한 처음의 검사는 지워야 한다.
@@ -28431,9 +29096,11 @@ var @!readyAlready int32 // 경제를 위해 순수를 희생한다
 
 @<주 프로그램@>=
 func main() { // |startHere|
+	@<CPU 프로파일을 원하면 뜨기 시작한다@>
 	@<바깥 레이블로 가는 |panic|을 받을 함수를 미루어 둔다@>
 	iniVersion = len(os.Args) > 1 && os.Args[1] == "-ini"
 	@<끼어들기 신호를 받으면...@>
+	@<파일 색인을 만들 고루틴을 띄운다@>
 	history = fatalErrorStop // 초기화하는 동안 그만둘 때를 대비한다
 	tOpenOut() // 터미널을 출력용으로 연다
 	if readyAlready == 314159 {
@@ -28446,13 +29113,7 @@ func main() { // |startHere|
 		goto finalEnd
 	}
 	initialize() // 전역 변수들을 처음 값으로 정한다
-	if iniVersion {
-		if !getStringsStarted() {
-			goto finalEnd
-		}
-		initPrim() // 원시 명령마다 |primitive|를 부른다
-		initStrPtr = strPtr; initPoolPtr = poolPtr; fixDateAndTime()
-	}
+	@<\.{INITEX}라면 문자열 풀을 채우고 원시 명령들을 넣는다@>
 	readyAlready = 314159
 startOfTEX:
 	@<출력 루틴들을 초기화한다@>
@@ -28464,6 +29125,18 @@ startOfTEX:
 finalEnd:
 	readyAlready = 0
 	@<터미널의 마지막 줄을 끝내고 출력 버퍼를 비운다@>
+}
+
+@ \.{INITEX}는 초기화에 이어 문자열 풀을 채우고, 원시 명령을 모두 해시 표에 넣는다. 그때까지
+쓴 문자열의 수와 풀의 길이는 |initStrPtr|와 |initPoolPtr|에 기억해 둔다.
+
+@<\.{INITEX}라면 문자열 풀을...@>=
+if iniVersion {
+	if !getStringsStarted() {
+		goto finalEnd
+	}
+	initPrim() // 원시 명령마다 |primitive|를 부른다
+	initStrPtr = strPtr; initPoolPtr = poolPtr; fixDateAndTime()
 }
 
 @ 터미널의 마지막 줄이 끝나지 않았으면 줄 끝을 손수 덧붙이고, 버퍼에 남은 터미널 출력도 비운다.
@@ -29038,7 +29711,8 @@ outWhat(p)
 outWhat(p)
 
 @ 이 모든 준비를 마치고, 드디어 요청된 자료를 실제로 내보내는 루틴들에 이르렀다. 명령 \.{\\special}부터 하자(그것이 더 쉽다). 토큰
-목록을 문자열로 바꾸어 \.{DVI} 파일의 |xxx1|이나 |xxx4| 명령에 담는다. 문자열은 쓰고 나면 바로 지운다.
+목록을 문자열로 바꾸어 \.{DVI} 파일의 |xxx1|이나 |xxx4| 명령에 담는다. 이 판에서는 그 바이트들을 명령 |opSpecial|에 실어
+보낸다(\secref{dvi-ops}). 문자열은 쓰고 나면 바로 지운다.
 
 @<|hlistOut|과 |vlistOut|에 필요한...@>=
 func specialOut(p pointer) {
@@ -29049,14 +29723,11 @@ func specialOut(p pointer) {
 	showTokenList(link(writeTokens(p)), null, poolSize-poolPtr)
 	selector = oldSetting
 	strRoom(1)
-	if curLength() < 256 {
-		dviOut(xxx1); dviOut(curLength())
-	} else {
-		dviOut(xxx4); dviFour(curLength())
-	}
+	dviOps = append(dviOps, opSpecial, curLength())
 	for k = strStart[strPtr]; k <= poolPtr-1; k++ {
-		dviOut(so(strPool[k]))
+		dviOps = append(dviOps, so(strPool[k]))
 	}
+	flushOps()
 	poolPtr = strStart[strPtr] // 문자열을 지운다
 }
 
