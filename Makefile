@@ -8,9 +8,9 @@
 #   make story      story.tex를 조판해 진짜 TeX의 DVI와 비교한다
 #   make trip       커누스의 TRIP 테스트를 돌린다
 #   make test       story와 trip을 모두 돌린다
-#   make regress    main 가지의 TeX과 출력이 바이트까지 같은지 본다(trip을 먼저 돌린다)
+#   make regress    기준 판(BASE, 기본 faithful)의 TeX과 출력이 바이트까지 같은지 본다(trip을 먼저 돌린다)
 #   make pgo        프로파일 기반 최적화에 쓸 default.pgo를 새로 만든다(리눅스가 아니면 docker)
-#   make fuzz       main 가지의 TeX과 출력을 견주는 차등 퍼징을 FUZZTIME(기본 1m) 동안 돌린다
+#   make fuzz       기준 판의 TeX과 출력을 견주는 차등 퍼징을 FUZZTIME(기본 1m) 동안 돌린다
 #   make install    tex 명령이 이 TeX을 부르게 한다(PREFIX, 기본 ~/.local)
 #   make uninstall  make install로 설치한 것을 지운다
 #   make clean      만든 것을 모두 지운다
@@ -78,22 +78,29 @@ trip:
 
 test: story trip
 
+# make regress와 make fuzz가 견줄 기준 판. 꼬리표 faithful은 원본 tex.web을 충실히 옮긴 판,
+# 곧 go-native를 합치기 전의 커밋이다. 다른 커밋이나 가지와 견주려면 BASE=main처럼 준다.
+BASE = faithful
+
 regress: $(BUILD)/tex trip
-	tests/regress.sh -t
+	BASE=$(BASE) tests/regress.sh -t
 
 pgo: tex.go
 	tests/pgo.sh
 
-# 차등 퍼징의 기준: main 가지의 tex.w로 만든 TeX
-$(BUILD)/ref/tex: .git/refs/heads/main
-	@mkdir -p $(BUILD)/ref
-	git show main:tex.w > $(BUILD)/ref/tex.w
-	cp go.mod $(BUILD)/ref/
-	cd $(BUILD)/ref && gtangle tex.w >/dev/null && go build -o tex .
+# 차등 퍼징의 기준: 기준 판의 tex.w로 만든 TeX. 기준마다 디렉터리를 따로 두므로 BASE를
+# 바꾸면 새로 만든다. 가지 이름을 주었다면 그 가지가 움직여도 저절로 다시 만들지는 않으니
+# build/ref-가지이름을 지운다.
+REF = $(BUILD)/ref-$(BASE)
+$(REF)/tex:
+	@mkdir -p $(REF)
+	git show $(BASE):tex.w > $(REF)/tex.w
+	cp go.mod $(REF)/
+	cd $(REF) && gtangle tex.w >/dev/null && go build -o tex .
 
 FUZZTIME = 1m
-fuzz: $(BUILD)/tex $(BUILD)/ref/tex
-	go test ./tests/fuzz -run=FuzzSame -fuzz=FuzzSame -fuzztime=$(FUZZTIME)
+fuzz: $(BUILD)/tex $(REF)/tex
+	TEXREF=$(CURDIR)/$(REF)/tex go test ./tests/fuzz -run=FuzzSame -fuzz=FuzzSame -fuzztime=$(FUZZTIME)
 
 # 실행 파일과 그것으로 만든 plain 포맷은 $(TEXDIR)에 두고, $(BINDIR)/tex에는 TEXFORMATS를
 # $(TEXDIR)로 놓고 그 실행 파일을 부르는 작은 스크립트를 둔다. TEXFORMATS는 TeX Live의

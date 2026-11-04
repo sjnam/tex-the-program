@@ -1,10 +1,12 @@
 #!/bin/sh
-# 이 가지의 TeX(build/tex)이 기준 가지(기본값 main)의 TeX과 똑같은 결과를 내는지 본다.
-# go-native 실험에서는 무엇을 고치든 출력이 한 바이트도 달라져서는 안 되므로,
-# TeX Live의 tex가 아니라 고치기 전의 이 프로그램과 견준다.
+# 지금의 TeX(build/tex)이 기준 판의 TeX과 똑같은 결과를 내는지 본다. 기준은 BASE로 정하는
+# 커밋이고, 기본값은 꼬리표 faithful, 곧 원본 tex.web을 충실히 옮긴 판(go-native를 합치기
+# 전)이다. 빠르게 하려고 무엇을 고치든 출력이 한 바이트도 달라져서는 안 되므로, TeX Live의
+# tex가 아니라 고치기 전의 이 프로그램과 견준다.
 #
 #   tests/regress.sh            요약만 찍는다
 #   tests/regress.sh -t         같은 문서를 여러 번 조판해 걸린 시간도 견준다
+#   BASE=main tests/regress.sh  다른 커밋이나 가지와 견준다
 #
 # 견주는 것:
 #   - TRIP 테스트가 남기는 파일 일곱 개 (tests/trip.sh가 만든 build/trip과)
@@ -22,12 +24,12 @@ set -e
 
 TOP=$(cd "$(dirname "$0")/.." && pwd)
 timing=0; [ "$1" = "-t" ] && timing=1
-BASE=${BASE:-main}
+BASE=${BASE:-faithful}
 W=$TOP/build/regress
 OURS=$TOP/build/tex
 REF=$W/ref/tex
 
-# 1. 기준 가지의 tex.w로 기준 TeX과 기준 TRIP 결과를 만든다
+# 1. 기준 판의 tex.w로 기준 TeX과 기준 TRIP 결과를 만든다
 rm -rf "$W"; mkdir -p "$W/ref/tests"
 git -C "$TOP" show "$BASE:tex.w" > "$W/ref/tex.w"
 git -C "$TOP" show "$BASE:tests/trip.sh" > "$W/ref/tests/trip.sh"; chmod +x "$W/ref/tests/trip.sh"
@@ -41,7 +43,7 @@ same() { # $1: 이름, $2 $3: 견줄 두 파일
   else printf '  %-28s 다르다\n' "$1"; bad=1; diff "$2" "$3" | head -10 | sed 's/^/      /'; fi
 }
 
-echo "$BASE 가지의 TeX과 견준다"
+echo "$BASE 판의 TeX과 견준다"
 for f in tripin.log tripin.fot trip.log trip.fot trip.typ tripos.tex 8terminal.tex; do
   same "TRIP $f" "$W/ref/build/trip/$f" "$TOP/build/trip/$f"
 done
@@ -93,7 +95,7 @@ for x in typ log1 fot; do same "tex.$x (sync)" "$W/ref/run/tex.$x" "$W/ours/run/
 
 # 4. 원하면 걸린 시간을 견준다(다섯 번 가운데 가장 짧은 것)
 if [ "$timing" = 1 ]; then
-  echo "걸린 시간(초, 다섯 번 가운데 가장 짧은 것): 기준 / 이 가지"
+  echo "걸린 시간(초, 다섯 번 가운데 가장 짧은 것): 기준 / 지금"
   for d in ini story tex big; do
     for who in ref ours; do
       tex=$REF; [ $who = ours ] && tex=$OURS

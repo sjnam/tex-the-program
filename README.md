@@ -14,6 +14,10 @@
   커누스의 농담은 그대로 두었다.
 - 같은 `tex.w`에서 사람이 읽을 문서(`tex.pdf`, 약 820쪽)와 실제로 돌아가는 프로그램(`build/tex`)이
   함께 나온다. 이 프로그램은 실제 TeX처럼 작동하고, 커누스의 TRIP 테스트도 통과한다(아래 참조).
+- 프로그램은 Go의 기능(고루틴과 통로, `unsafe`로 흉내 낸 공용체 따위)을 아낌없이 써서 빠르게
+  했다(`tex.w`의 2절). 알고리즘은 그대로이고, 출력은 원본을 충실히 옮긴 판(꼬리표 `faithful`)과 바이트까지
+  같다. `tex.web`의 본문을 여덟 번 되풀이한 3911쪽 문서가 2.12초에서 1.43초로 줄어, TeX Live의
+  `tex`(1.55초)보다 빠르다.
 
 ## 파일
 
@@ -186,15 +190,16 @@ tests/compare.sh 문서이름    # kpsewhich로 찾을 수 있는 plain TeX 문�
 두 DVI를 `dvitype`으로 풀어 비교한다. 날짜가 들어 있는 DVI 머리의 주석은 빼고 비교한다.
 `story.tex`의 DVI는 진짜 TeX의 것과 같다.
 
-### 고치기 전의 이 프로그램과 비교하기
+### 원본을 충실히 옮긴 판과 비교하기
 
 ```sh
 make regress                # make trip을 돌린 다음 tests/regress.sh -t
-BASE=가지이름 tests/regress.sh   # main이 아닌 가지와 견준다
+make regress BASE=main      # 다른 가지나 커밋과 견준다(tests/regress.sh라면 BASE=main tests/regress.sh)
 ```
 
-`go-native` 가지는 이식성 대신 Go의 기능을 마음껏 써서 빠르게 만들어 보는 실험이다. 무엇을 고치든
-출력이 한 바이트도 달라져서는 안 되므로, `main` 가지의 `tex.w`로 기준 TeX을 따로 만들어 출력을
+이 프로그램은 처음에 원본에 충실하게 옮긴 뒤, `go-native` 가지에서 이식성 대신 Go의 기능을 마음껏 써서
+빠르게 하고 본줄기에 합친 것이다(`tex.w`의 2절). 무엇을 고치든 출력이 한 바이트도 달라져서는 안 되므로,
+합치기 전의 충실한 판에 꼬리표 `faithful`을 붙여 두고 그 커밋의 `tex.w`로 기준 TeX을 따로 만들어 출력을
 견준다. 견주는 것은 TRIP 테스트가 남기는 파일 일곱 개, plain 포맷을 만들 때의 터미널 출력과 로그,
 그리고 세 문서(`story.tex`, `orig/tex.web`을 weave한 536쪽 문서, 그 본문을 여덟 번 되풀이한
 3911쪽 문서)의 DVI와 로그와 터미널 출력이다. `-t`를 주면 걸린 시간도 견준다.
@@ -206,8 +211,8 @@ make fuzz                   # 1분 동안 (FUZZTIME=10m 따위로 바꿀 수 있
 go test ./tests/fuzz        # 씨앗 입력만
 ```
 
-`tests/fuzz`는 Go의 퍼징으로 plain TeX 입력을 만들어, `main` 가지의 `tex.w`로 만든 TeX(`build/ref/tex`)과
-이 가지의 TeX에 함께 넣는다. 그리고 터미널 출력과 남긴 파일(DVI, 로그, `\openout`으로 쓴 파일)이 바이트까지
+`tests/fuzz`는 Go의 퍼징으로 plain TeX 입력을 만들어, `faithful` 판의 `tex.w`로 만든
+TeX(`build/ref-faithful/tex`)과 지금의 TeX에 함께 넣는다. `make fuzz BASE=main`처럼 기준을 바꿀 수도 있다. 그리고 터미널 출력과 남긴 파일(DVI, 로그, `\openout`으로 쓴 파일)이 바이트까지
 같은지 본다. 쪽 내보내기를 비동기식으로 못 박은 실행도 DVI와 쓴 파일을 견준다. TeX은 한 프로세스에서 되풀이해
 돌릴 수 없으므로 입력마다 실행 파일을 띄운다. macOS에서는 `sandbox-exec`로 가두어, 무작위 입력이 작업 디렉터리
 밖에 파일을 쓰지 못하게 한다. 다른 결과가 나오면 그 입력이 `tests/fuzz/testdata/fuzz/FuzzSame/`에 남는다.

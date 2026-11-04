@@ -1,12 +1,13 @@
-// 차등 퍼징: 같은 입력을 기준 TeX(main 가지의 tex.w로 만든 것)과 이 가지의 TeX으로
-// 조판해, 남긴 파일(DVI, 로그, \openout으로 쓴 파일)과 터미널 출력이 바이트까지 같은지 본다.
+// 차등 퍼징: 같은 입력을 기준 TeX(꼬리표 faithful, 곧 원본 tex.web을 충실히 옮긴 판의 tex.w로
+// 만든 것)과 지금의 TeX으로 조판해, 남긴 파일(DVI, 로그, \openout으로 쓴 파일)과 터미널 출력이
+// 바이트까지 같은지 본다.
 // 쪽 내보내기를 비동기식으로 못 박은 실행(TEXDVI=async)도 함께 견주되, 이때는 메모리 통계가
 // 달라질 수 있으므로 DVI와 \write로 쓴 파일만 견준다.
 //
 //	go test ./tests/fuzz                       씨앗 입력만 돌린다
 //	go test ./tests/fuzz -fuzz=FuzzSame -fuzztime=10m
 //
-// 실행 파일은 환경 변수 TEXOURS와 TEXREF로 줄 수 있다. 기본값은 build/tex와 build/ref/tex다
+// 실행 파일은 환경 변수 TEXOURS와 TEXREF로 줄 수 있다. 기본값은 build/tex와 build/ref-faithful/tex다
 // (make fuzz가 둘 다 만든다). TeX은 전역 상태 때문에 한 프로세스에서 되풀이해 돌릴 수 없으므로
 // 입력마다 실행 파일을 띄운다. macOS에서는 sandbox-exec로 가두어 임시 디렉터리 밖에 쓰지 못하게 한다.
 package fuzz
@@ -70,7 +71,7 @@ var (
 func setup() {
 	root, _ := filepath.Abs("../..")
 	oursBin = envOr("TEXOURS", filepath.Join(root, "build", "tex"))
-	refBin = envOr("TEXREF", filepath.Join(root, "build", "ref", "tex"))
+	refBin = envOr("TEXREF", filepath.Join(root, "build", "ref-faithful", "tex"))
 	for _, b := range []string{oursBin, refBin} {
 		if _, err := os.Stat(b); err != nil {
 			setupErr = fmt.Errorf("%s가 없다 (make fuzz가 만든다): %v", b, err)
@@ -234,10 +235,10 @@ func FuzzSame(f *testing.F) {
 			async = runFor(t, 5*runTimeout, oursBin, oursFmt, doc, "TEXDVI=async")
 		}
 		if ref.timedOut || ours.timedOut || async.timedOut {
-			t.Fatalf("일부만 시간 안에 끝났다 (기준 %v, 이 가지 %v, 비동기식 %v)",
+			t.Fatalf("일부만 시간 안에 끝났다 (기준 %v, 지금 %v, 비동기식 %v)",
 				!ref.timedOut, !ours.timedOut, !async.timedOut)
 		}
-		compare(t, "기준과 이 가지", ref, ours, func(string) bool { return true })
+		compare(t, "기준과 지금", ref, ours, func(string) bool { return true })
 		compare(t, "기준과 비동기식", ref, async, func(n string) bool {
 			return n != "(terminal)" && n != "t.log"
 		})
