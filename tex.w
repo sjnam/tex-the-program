@@ -63,7 +63,7 @@ vardef southof(expr q) = (xpart center q, ypart llcorner bbox q) enddef;
   \vskip 15pt
   \centerline{도널드 커누스의 \TeX\ 프로그램을 한글 \.{GWEB}으로 옮김}
   \vfill}
-\def\botofcontents{\vfill
+\def\botofcontents{\par\vskip 0pt plus 1filll
   \ninepoint\baselineskip12pt
   \noindent 원본 \copyright\ 1982 Donald E. Knuth
   \bigskip\noindent
