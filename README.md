@@ -12,7 +12,7 @@
 - 문서는 커누스가 처음부터 GWEB과 Go로 쓴 것처럼 서술했다. Pascal에만 해당하는 설명은 걷어 내고,
   Go로 옮기면서 달라진 점은 따로 떼지 않고 해당하는 절의 설명에 녹여 넣었다. TeX의 역사와
   커누스의 농담은 그대로 두었다.
-- 같은 `tex.w`에서 사람이 읽을 문서(`tex.pdf`, 약 820쪽)와 실제로 돌아가는 프로그램(`build/tex`)이
+- 같은 `tex.w`에서 사람이 읽을 문서(`tex.pdf`, 약 880쪽)와 실제로 돌아가는 프로그램(`build/tex`)이
   함께 나온다. 이 프로그램은 실제 TeX처럼 작동하고, 커누스의 TRIP 테스트도 통과한다(아래 참조).
 - 프로그램은 Go의 기능(고루틴과 통로, `unsafe`로 흉내 낸 공용체 따위)을 아낌없이 써서 빠르게
   했다(`tex.w`의 2절). 알고리즘은 그대로이고, 출력은 원본을 충실히 옮긴 판(꼬리표 `faithful`)과 바이트까지
@@ -25,12 +25,17 @@
 | --- | --- |
 | `tex.w` | 번역 본문. 모든 것이 여기서 나온다 |
 | `lion.pdf` | `tex.pdf` 1쪽의 왼쪽 아래에 넣는 사자 그림 |
-| `tex-deco.ch` | 쪽마다 액자를 두르는 바꿈 파일(`make deco`) |
+| `tex-deco.ch` | 쪽마다 액자를 두르는 바꿈 파일(`make deco`, `make twill-deco`) |
 | `decoframe.pdf` | `tex-deco.ch`가 쪽마다 까는 액자 그림 |
-| `Makefile` | 빌드, 조판, 테스트 |
+| `tex.bux` | 미니 색인을 만들 때 gtwill이 읽는, 산문과 주석에만 나오는 이름들의 의미(`make twill`) |
+| `Makefile` | 빌드, 조판, 테스트(`make help`로 규칙 목록을 본다) |
 | `go.mod` | Go 모듈 정의 |
+| `default.pgo` | `go build`가 프로파일 기반 최적화에 쓰는 CPU 프로파일(`make pgo`로 새로 만든다) |
 | `tests/trip.sh` | TRIP 테스트 |
 | `tests/compare.sh` | 문서 하나를 진짜 TeX과 함께 조판해 DVI를 비교한다 |
+| `tests/regress.sh` | 꼬리표 `faithful`의 판과 출력이 바이트까지 같은지 본다(`make regress`) |
+| `tests/fuzz/` | 같은 비교를 무작위 입력으로 하는 차등 퍼징(`make fuzz`) |
+| `tests/pgo.sh` | `default.pgo`를 만든다 |
 | `tests/typeset-check.py` | `tex.pdf`에서 오류 없이 조용히 깨진 조판(악센트가 된 따옴표, 잘못 끊긴 수 따위)을 찾는다 |
 | `orig/tex.web` | 옮긴 원본(CTAN의 3.141592653) |
 | `orig/names.tsv` | 원본의 영어 절 이름과 한글 절 이름의 대응표 |
@@ -45,7 +50,7 @@
 함께 찍힌다.
 
 이 번역은 쪽 넘김을 깔끔하게 하려고 긴 절을 몇 개로 나누기도 하고, 정의와 코드를 따로 두려고 절을
-보태기도 했다. 그래서 절 번호가 원본과 어긋난다(원본 1380절, 번역 1490절). 원본이나
+보태기도 했다. 그래서 절 번호가 원본과 어긋난다(원본 1380절, 번역 1525절). 원본이나
 *TeX: The Program*과 맞추어 볼 때는 절 이름(`orig/names.tsv`)과 찾아보기를 쓰면 된다. 마지막 부인
 찾아보기에서는 식별자와 오류 메시지가 쓰인 모든 절을 찾을 수 있다.
 
@@ -78,7 +83,7 @@
 
 ### Pascal에서 Go로
 
-옮기면서 정한 관례는 문서의 첫 부분(3절)과 해당 절의 설명에 적혀 있다. 대표적인 것만 들면 다음과 같다.
+옮기면서 정한 관례는 문서의 첫 부분(4절)과 해당 절의 설명에 적혀 있다. 대표적인 것만 들면 다음과 같다.
 
 - 식별자는 Go의 관례대로 낙타 표기로 썼다(원본의 `get_next`는 `getNext`, `end_of_TEX`는 `endOfTEX`).
   원본과 맞추어 볼 때는 밑줄을 빼고 그 다음 글자를 대문자로 바꾸면 된다. 예약어와 겹치는
@@ -102,19 +107,35 @@
 - GWEB 도구 `gtangle`, `gweave`와 그 매크로(`kotexgweb.tex`, `gwebmac.tex`)
 - LuaTeX와 TeX Live: 문서를 조판할 때, 그리고 프로그램이 TFM 파일과 `plain.tex` 같은 입력 파일을
   `kpsewhich`로 찾을 때 쓴다
-- 테스트에는 `pltotf`, `dvitype`(TeX Live에 들어 있다), `curl`, `perl`도 쓴다
+- 테스트에는 `pltotf`, `dvitype`(TeX Live에 들어 있다), `curl`, `perl`도 쓴다. `make regress`와
+  `make pgo`는 `orig/tex.web`을 조판하려고 TeX Live의 `weave`도 쓰고, `make pgo`는 리눅스가 아니면
+  `docker`도 쓴다
 - [qpdf](https://qpdf.sourceforge.io/): gweave가 문서 맨 끝에 두는 차례를 맨 앞으로 옮긴다
 - `make check`에는 `python3`를 쓰고, 있으면 `pdftotext`(poppler)도 쓴다
+- 미니 색인을 붙인 판(`make twill`, `make twill-deco`, `make proof`)에는
+  [gtwill](https://github.com/sjnam/gtwill)의 `gtwill`, `gtwill-refsort`와 매크로 `gtwimac.tex`,
+  `gtproofmac.tex`를 쓴다(gtwill 저장소에서 `make install`)
 
 ```sh
 make            # build/tex와 tex.pdf를 만든다
 make build      # 프로그램만: tex.w → tex.go(gtangle) → build/tex(go build)
 make pdf        # 문서만: tex.w → tex.tex(gweave) → tex.pdf(luatex 두 번, qpdf로 차례를 맨 앞에)
 make deco       # 쪽마다 액자를 두른 판: tex.w + tex-deco.ch → tex-deco.pdf(tex.pdf는 그대로 둔다)
+make twill      # 쪽마다 미니 색인을 붙인 판: tex.w + tex.bux → tex-twill.pdf(gtwill, luatex 세 번)
+make twill-deco # 미니 색인과 액자를 함께 붙인 판: tex-twill-deco.pdf
+make proof      # 교정용 판: 절마다 미니 색인 항목을 바로 뒤에 찍는다 → tex-proof.pdf
 make check      # 조판 경고(Overfull, Underfull 따위)와 조용히 깨진 조판의 수를 센다. 둘 다 0이어야 한다
-make test       # make story와 make trip(아래 테스트)을 함께 돌린다
-make clean
+make test       # make vet, make story, make trip(아래 테스트)을 함께 돌린다
+make help       # 규칙 목록을 찍는다
+make clean      # 만든 것을 지운다(make distclean은 CTAN에서 받아 둔 tests/trip/까지 지운다)
 ```
+
+미니 색인을 붙인 판은 커누스가 CTWILL로 *TeX: The Program*을 찍은 방식을 따른다. 펼친 두 쪽마다
+그 두 쪽에 나오는 식별자가 어디서 무엇으로 정의되었는지를 모아 붙인다. 정의에서 의미를 읽어 낼
+수 없는 이름(원본 `tex.web`의 매크로처럼 산문이나 주석에만 나오는 것)은 `tex.bux`가 의미를 준다.
+`tex.bux`의 몇몇 항목에는 절 번호가 붙어 있어 절이 늘거나 줄면 함께 고쳐야 하는데, 쪽 나누기에 가려지지
+않은 `make proof`의 교정용 판에서 확인하면 된다. 교정용 판은 쪽 배치를 신경 쓰지 않으므로 조판 경고가
+나도 상관없다.
 
 ## 실행
 
@@ -212,8 +233,9 @@ go test ./tests/fuzz        # 씨앗 입력만
 ```
 
 `tests/fuzz`는 Go의 퍼징으로 plain TeX 입력을 만들어, `faithful` 판의 `tex.w`로 만든
-TeX(`build/ref-faithful/tex`)과 지금의 TeX에 함께 넣는다. `make fuzz BASE=main`처럼 기준을 바꿀 수도 있다. 그리고 터미널 출력과 남긴 파일(DVI, 로그, `\openout`으로 쓴 파일)이 바이트까지
-같은지 본다. 쪽 내보내기를 비동기식으로 못 박은 실행도 DVI와 쓴 파일을 견준다. TeX은 한 프로세스에서 되풀이해
+TeX(`build/ref-faithful/tex`)과 지금의 TeX에 함께 넣고, 터미널 출력과 남긴 파일(DVI, 로그,
+`\openout`으로 쓴 파일)이 바이트까지 같은지 본다. `make fuzz BASE=main`처럼 기준을 바꿀 수도
+있다. 쪽 내보내기를 비동기식으로 못 박은 실행도 DVI와 쓴 파일을 견준다. TeX은 한 프로세스에서 되풀이해
 돌릴 수 없으므로 입력마다 실행 파일을 띄운다. macOS에서는 `sandbox-exec`로 가두어, 무작위 입력이 작업 디렉터리
 밖에 파일을 쓰지 못하게 한다. 다른 결과가 나오면 그 입력이 `tests/fuzz/testdata/fuzz/FuzzSame/`에 남는다.
 

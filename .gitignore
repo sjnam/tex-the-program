@@ -34,6 +34,14 @@ tex-twill-deco.ref
 tex-twill-deco.mref
 tex-twill-deco.smref
 
+# make proof: gtwill -P가 만든 교정용 문서
+tex-proof.tex
+tex-proof.log
+tex-proof.pdf
+tex-proof.toc
+tex-proof.ref
+tex-proof.mref
+
 # make trip: tests/trip.sh가 처음 돌 때 CTAN에서 받아 오는 커누스의 원본 파일들
 tests/trip/
 

@@ -7,20 +7,25 @@
 #   make fmt        build/plain.fmt를 만든다(INITEX로 plain.tex를 읽고 \dump)
 #   make story      story.tex를 조판해 진짜 TeX의 DVI와 비교한다
 #   make trip       커누스의 TRIP 테스트를 돌린다
-#   make test       story와 trip을 모두 돌린다
+#   make vet        tex.w에서 뽑은 Go 소스와 퍼징 테스트를 go vet으로 살핀다
+#   make test       vet, story, trip을 모두 돌린다
 #   make regress    기준 판(BASE, 기본 faithful)의 TeX과 출력이 바이트까지 같은지 본다(trip을 먼저 돌린다)
 #   make pgo        프로파일 기반 최적화에 쓸 default.pgo를 새로 만든다(리눅스가 아니면 docker)
 #   make fuzz       기준 판의 TeX과 출력을 견주는 차등 퍼징을 FUZZTIME(기본 1m) 동안 돌린다
 #   make install    tex 명령이 이 TeX을 부르게 한다(PREFIX, 기본 ~/.local)
 #   make uninstall  make install로 설치한 것을 지운다
 #   make clean      만든 것을 모두 지운다
+#   make distclean  clean에 더해 CTAN에서 받아 둔 TRIP 파일(tests/trip/)까지 지운다
 #   make deco       테두리에 액자를 두른 문서(tex-deco.pdf)를 만든다
 #   make twill      쪽마다 미니 색인을 붙인 문서(tex-twill.pdf)를 gtwill로 만든다
 #   make twill-deco 미니 색인과 액자를 함께 붙인 문서(tex-twill-deco.pdf)를 만든다
+#   make proof      절마다 미니 색인 항목을 붙인 교정용 문서(tex-proof.pdf)를 만든다
+#   make help       이 목록을 찍는다
 
 BUILD = build
 
-.PHONY: all build pdf check fmt story trip test regress pgo fuzz install uninstall clean deco twill twill-deco
+.PHONY: all build pdf check fmt vet story trip test regress pgo fuzz install uninstall clean distclean\
+  deco twill twill-deco proof help
 
 all: build pdf
 
@@ -70,13 +75,16 @@ $(BUILD)/plain.fmt: $(BUILD)/tex
 
 fmt: $(BUILD)/plain.fmt
 
+vet: tex.go
+	go vet . ./tests/fuzz
+
 story: $(BUILD)/tex
 	tests/compare.sh story
 
 trip:
 	tests/trip.sh
 
-test: story trip
+test: vet story trip
 
 # make regress와 make fuzz가 견줄 기준 판. 꼬리표 faithful은 원본 tex.web을 충실히 옮긴 판,
 # 곧 go-native를 합치기 전의 커밋이다. 다른 커밋이나 가지와 견주려면 BASE=main처럼 준다.
@@ -167,9 +175,27 @@ tex-twill-deco.pdf: tex.w tex.bux tex-deco.ch lion.pdf decoframe.pdf
 
 twill-deco: tex-twill-deco.pdf
 
+# 교정용 문서. gtwill -P는 쪽을 펼침면으로 짜지 않고, 절마다 그 절이 미니 색인에 보탤 항목을
+# 바로 뒤에 찍는다. tex.bux의 절 번호가 맞는지, 미니 색인에 `???'로 나올 이름이 없는지를
+# 쪽 나누기에 가려지기 전에 여기서 확인한다. 쪽 배치는 신경 쓰지 않은 판이므로 Underfull
+# 경고가 나도 상관없다. \secref 때문에 luatex는 두 번 돈다.
+tex-proof.pdf: tex.w tex.bux lion.pdf
+	mkdir -p $(BUILD) && $(GTWILL) -P -o $(BUILD) tex.w && mv $(BUILD)/tex.tex tex-proof.tex
+	luatex --interaction=nonstopmode tex-proof.tex >/dev/null
+	luatex --interaction=nonstopmode tex-proof.tex >/dev/null
+
+proof: tex-proof.pdf
+
+help:
+	@sed -n 's/^#   //p' $(firstword $(MAKEFILE_LIST))
+
 clean:
 	rm -rf $(BUILD) tex.go tex.tex tex.log tex.pdf tex.toc tex.ref tex.idx tex.scn\
 	  tex-deco.tex tex-deco.log tex-deco.pdf tex-deco.toc tex-deco.ref\
 	  tex-twill.tex tex-twill.log tex-twill.pdf tex-twill.toc tex-twill.ref tex-twill.mref tex-twill.smref\
 	  tex-twill-deco.tex tex-twill-deco.log tex-twill-deco.pdf tex-twill-deco.toc tex-twill-deco.ref\
-	  tex-twill-deco.mref tex-twill-deco.smref
+	  tex-twill-deco.mref tex-twill-deco.smref\
+	  tex-proof.tex tex-proof.log tex-proof.pdf tex-proof.toc tex-proof.ref tex-proof.mref
+
+distclean: clean
+	rm -rf tests/trip
