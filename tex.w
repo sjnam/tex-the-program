@@ -147,13 +147,22 @@ vardef southof(expr q) = (xpart center q, ypart llcorner bbox q) enddef;
 처음 바란 대로 고루틴과 통로가 \TeX의 일을 실제로 나누어 맡는 곳이다.
 \item{$\bullet$} 기록 파일과 터미널에 문자를 쓸 때 |any|를 거치지 않고(\secref{print-char}), 출력 파일의 버퍼를
 64킬로바이트로 늘렸다. 추적을 모두 켜서 기록 파일이 65메가바이트가 되는 536쪽짜리 문서가 0.93초에서 0.75초로 줄었다.
-\smallskip\noindent
-해 보았지만 얻는 것이 없어 버린 것도 적어 둔다. \.{DVI} 파일의 쓰기 버퍼를 키우는 것은 1\pct!쯤으로 재는 오차
+\item{$\bullet$} 열이틀 뒤(2026년 11월 12일)에 프로파일을 다시 떠서 자잘한 것 넷을 더 찾았다. 키워드를 훑을 때 되돌려 둔
+토큰을 꺼내지 않고 들여다보기만 한다(\secref{scan-keyword-fast}). 쪽 명령을 쪽마다 넘기지 않고 여러 쪽씩 묶어 넘겨서, 잠든
+고루틴을 깨우는 횟수를 줄인다(\secref{ship-mode}의 다음 절). 입력 줄이 버퍼에 넉넉히 들어가면 문자마다 하던 검사를 루프 밖으로
+뺀다(\secref{input-ln}). 표 |eqtb|와 배열 |fontInfo|의 필드 함수도 첨자를 가려 경계 검사를 뺀다(\secref{xeq-level}). 하나하나는
+1\pct!나 2\pct!지만 모으면 3911쪽짜리 문서가 1.42초에서 1.35초로 준다. 고루틴을 깨우는 값이 비싼 리눅스 컨테이너 안에서는
+1.78초에서 1.61초가 되었다.
+
+@ 해 보았지만 얻는 것이 없어 버린 것도 적어 둔다. \.{DVI} 파일의 쓰기 버퍼를 키우는 것은 1\pct!쯤으로 재는 오차
 안이었고, 쓰레기 수집을 끄는 것은 아무 차이가 없었다. 기록 파일 쓰기를 고루틴에게 넘기는 것도 차이가 없었다.
 버퍼가 크면 시스템 호출이 이미 몇 번 안 되기 때문이다. 가장 뜨거운 |getNext|에서 흔한 경우(줄 한가운데의 글자,
 토큰 목록의 보통 토큰)를 맨 앞에서 지역 변수로 빨리 처리해 보았더니 오히려 1\pct!쯤 느려졌다. 컴파일러는
 |switch|를 이미 점프 표로 만들고 있고, 비용은 전역 변수를 읽는 데보다 토큰마다 갈리는 분기에서 나오는 듯하다.
-토큰의 두 필드를 한 번에 읽고 나눗셈을 자리 옮김으로 바꾸어 보아도 차이가 없었다. 입력 파일의 줄을 따로 도는
+토큰의 두 필드를 한 번에 읽고 나눗셈을 자리 옮김으로 바꾸어 보아도 차이가 없었다. 프로파일을 새로 뜨는 것, 경계 검사를
+모조리 끄는 것(가릴 만한 배열을 가리고 나면 1\pct!쯤 남는다), 글꼴마다 하나씩 있는 작은 배열들의 첨자를 가리는 것,
+|backInput|에서 다 읽힌 한 토큰짜리 목록을 그 자리에서 다시 쓰는 것, 쪽마다 터미널을 비우지 않는 것도 재 보았으나 모두 재는
+오차 안이었다. 입력 파일의 줄을 따로 도는
 고루틴이 미리 읽어 묶음으로 넘기면 2\pct!쯤 빨라졌지만 쓰지 않기로 했다. 원래보다 훨씬 멀리 앞서 읽게 되므로,
 지금 읽고 있는 입력 파일을 \.{\\openout}으로 덮어쓰는 문서에서는 결과가 달라질 수 있기 때문이다. 결과가 한
 바이트도 달라지지 않는다는 조건에 예외를 두면서까지 얻을 만한 것은 아니었다.
@@ -1262,9 +1271,8 @@ func inputLn(f *alphaFile, bypassEoln bool) bool { // 다음 줄을 입력하거
 	}
 	lastNonblank := first // 줄 끝의 공백을 지운 |last|
 	for {
-		for _, c := range bytes.TrimSuffix(line, []byte{'\n'}) {
-			@<문자 |c|를 |buffer|에 넣는다@>
-		}
+		line = bytes.TrimSuffix(line, []byte{'\n'})
+		@<조각 |line|을 |buffer|에 넣는다@>
 		if err != bufio.ErrBufferFull {
 			break
 		}
@@ -1274,7 +1282,33 @@ func inputLn(f *alphaFile, bypassEoln bool) bool { // 다음 줄을 입력하거
 	return true
 }
 
-@ 앞 절의 안쪽 루프 몸통이다. 문자 하나를 내부 코드로 바꾸어 버퍼에 넣고, 그것이 공백이
+@ 조각이 버퍼의 남은 자리에 넉넉히 들어가면 넘침을 걱정할 일이 없으니, 문자마다 하던 검사를 루프 밖으로 뺀다. 그러면
+안쪽 루프에는 내부 코드로 바꾸어 옮겨 적는 일만 남는다. 변수 |maxBufStack|은 다 옮긴 뒤에 한 번만 고치고, 줄 끝의 공백은
+뒤에서부터 거슬러 올라가며 찾는다. 문자마다 검사하는 다음 절의 루프와 결과는 같고, 3911쪽짜리 문서의 조판 시간은 1\pct!쯤
+준다(2026년 11월 12일). 버퍼가 넘칠지도 모르는 긴 줄만 예전처럼 다음 절의 루프로 한 문자씩 넣는다.
+@^inner loop@>
+
+@<조각 |line|을 |buffer|에...@>=
+if n := int32(len(line)); last+n < bufSize {
+	for i, c := range line {
+		buffer[last+int32(i)] = xord[c]
+	}
+	last += n
+	if last > maxBufStack {
+		maxBufStack = last
+	}
+	j := last
+	for j > lastNonblank && buffer[j-1] == ' ' {
+		j--
+	}
+	lastNonblank = j
+} else {
+	for _, c := range line {
+		@<문자 |c|를 |buffer|에 넣는다@>
+	}
+}
+
+@ 느린 길의 안쪽 루프 몸통이다. 문자 하나를 내부 코드로 바꾸어 버퍼에 넣고, 그것이 공백이
 아니면 ``마지막으로 본 공백 아닌 문자 다음 자리'' |lastNonblank|를 앞으로 옮긴다. 줄을 다
 읽은 뒤 |last|를 이 값으로 되돌리면 줄 끝의 공백이 저절로 떨어져 나간다. 그사이에 버퍼가 가장
 멀리까지 쓰인 자리 |maxBufStack|도 고쳐 두고, 버퍼가 꽉 차면 넘침을 알린다.
@@ -5917,12 +5951,12 @@ func eqLevelField(w memoryWord) quarterword { return w.hh().b1() }
 func eqTypeField(w memoryWord) quarterword  { return w.hh().b0() }
 func equivField(w memoryWord) halfword       { return w.hh().rh }
 
-func eqLevel(p pointer) quarterword        { return eqLevelField(eqtb[p]) } // 정의의 수준
-func setEqLevel(p pointer, v quarterword) { eqtb[p].hh().setB1(v) }
-func eqType(p pointer) quarterword         { return eqTypeField(eqtb[p]) } // 등가물의 명령 코드
-func setEqType(p pointer, v quarterword)  { eqtb[p].hh().setB0(v) }
-func equiv(p pointer) halfword              { return equivField(eqtb[p]) } // 등가 값
-func setEquiv(p pointer, v halfword)       { eqtb[p].hh().rh = v }
+func eqLevel(p pointer) quarterword        { return eqLevelField(eqtb[p&eqtbMask]) } // 정의의 수준
+func setEqLevel(p pointer, v quarterword) { eqtb[p&eqtbMask].hh().setB1(v) }
+func eqType(p pointer) quarterword         { return eqTypeField(eqtb[p&eqtbMask]) } // 등가물의 명령 코드
+func setEqType(p pointer, v quarterword)  { eqtb[p&eqtbMask].hh().setB0(v) }
+func equiv(p pointer) halfword              { return equivField(eqtb[p&eqtbMask]) } // 등가 값
+func setEquiv(p pointer, v halfword)       { eqtb[p&eqtbMask].hh().rh = v }
 
 const (
 	@!levelZero = minQuarterword // 정의되지 않은 양의 수준
@@ -6508,8 +6542,8 @@ const (
 @<정의@>=
 func delCode(n int32) int32          { return eqtb[delCodeBase+n].sc }
 func setDelCode(n int32, v int32)   { eqtb[delCodeBase+n].sc = v }
-func count(n int32) int32             { return eqtb[countBase+n].sc }
-func intPar(n int32) int32           { return eqtb[intBase+n].sc } // 정수 매개변수
+func count(n int32) int32             { return eqtb[(countBase+n)&eqtbMask].sc }
+func intPar(n int32) int32           { return eqtb[(intBase+n)&eqtbMask].sc } // 정수 매개변수
 func setIntPar(n int32, v int32)    { eqtb[intBase+n].sc = v }
 func pretolerance() int32 { return intPar(pretoleranceCode) }
 func tolerance() int32 { return intPar(toleranceCode) }
@@ -6903,8 +6937,8 @@ const (
 @ 영역 6의 치수들을 읽고 쓰는 함수들이다. 이를테면 |hsize()|는 지금의 \.{\\hsize}다.
 
 @<함수들@>=
-func dimen(n int32) scaled         { return eqtb[scaledBase+n].sc }
-func dimenPar(n int32) scaled     { return eqtb[dimenBase+n].sc } // 눈금 양
+func dimen(n int32) scaled         { return eqtb[(scaledBase+n)&eqtbMask].sc }
+func dimenPar(n int32) scaled     { return eqtb[(dimenBase+n)&eqtbMask].sc } // 눈금 양
 func setDimenPar(n int32, v scaled) { eqtb[dimenBase+n].sc = v }
 func parIndent() scaled { return dimenPar(parIndentCode) }
 func mathSurround() scaled { return dimenPar(mathSurroundCode) }
@@ -7062,8 +7096,18 @@ func showEqtb(n pointer) {
 배열 |xeqLevel|의 첨자는 |intBase|에서 시작하면 되지만, \GO/의 배열은 첨자가 0에서 시작하므로 |eqtbSize+1|개를
 잡고 |intBase|보다 작은 칸은 쓰지 않는다. 표 |eqtb|도 마찬가지로 칸 0을 쓰지 않는다.
 
+표 |eqtb|의 크기도 |eqtbSize+1|이 아니라 그보다 큰 2의 거듭제곱 |eqtbMask+1|로 잡는다. 까닭은 배열
+|mem|에서와 같다(\secref{mem-array}). 토큰 하나를 읽을 때마다 불리는 |eqType|과 |equiv|, 매개변수를 읽는 |intPar|와
+|dimenPar| 같은 필드 함수들이 첨자를 |eqtbMask|로 가리면 컴파일러가 경계 검사를 뺀다. 첨자는 본디
+|eqtbSize|를 넘지 않으니 가려도 달라지지 않는다. 표가 정말 그 안에 들어가는지는 음수가 될 수 없는 상수
+하나를 선언해서 컴파일러에게 확인시킨다. 글꼴 정보를 담는 배열 |fontInfo|의 필드 함수들도 같은 식으로
+고쳤더니 긴 문서의 조판 시간이 1\pct!쯤 줄었다(2026년 11월 12일).
+@^inner loop@>
+
 @<전역 변수@>=
-var @!eqtb [eqtbSize + 1]memoryWord
+const @!eqtbMask = 8191 // |eqtbSize| 이상인 가장 작은 $2^k-1$
+const _ = uint(eqtbMask - eqtbSize) // 표가 넘치면 여기서 컴파일이 멈춘다
+var @!eqtb [eqtbMask + 1]memoryWord
 var @!xeqLevel [eqtbSize + 1]quarterword
 
 @ 처음에는 영역 5와 6의 항목이 모두 바깥 수준에서 정의된 것으로 둔다.
@@ -10569,6 +10613,7 @@ func scanKeyword(s string) bool { // 주어진 문자열을 찾는다
 	var k int // |s|의 첨자
 	p = backupHead
 	setLink(p, null)
+	@<되돌려 둔 토큰이 키워드의 첫 글자와 어긋나면 바로 |false|를 돌려준다@>@;
 	k = 0
 	for k < len(s) {
 		getXToken() // 여기서 재귀가 일어날 수 있다
@@ -10587,6 +10632,43 @@ func scanKeyword(s string) bool { // 주어진 문자열을 찾는다
 	}
 	flushList(link(backupHead))
 	return true
+}
+
+@ \seclabel{scan-keyword-fast}키워드는 대개 줄줄이 묻는다. 치수 하나를 읽을 때만 해도 |scanDimen|은 `\.{em}'인가, `\.{ex}'인가,
+`\.{true}'인가, `\.{pt}'인가 하고 차례로 묻고, 글루라면 `\.{plus}'와 `\.{minus}'가 뒤따른다. 대부분은 첫 글자에서
+어긋난다. 그때마다 위의 루틴은 방금 되돌려 둔 토큰을 |getXToken|으로 다시 꺼내고, 어긋난 것을 보고는 |backInput|으로
+도로 밀어 넣는다. 꺼낼 때 입력 스택의 한 층과 노드 하나를 내놓고, 넣을 때 바로 그 노드와 그 층을 다시 얻는다. 헛수고다.
+
+그래서 입력 스택의 맨 위가 `되돌린 토큰 하나짜리 목록'이면 꺼내지 않고 들여다보기만 한다. 그 토큰이 펼쳐지지 않는
+것이고 키워드의 첫 글자와 어긋나면, |getXToken|이 놓았을 값들을 |curCs|, |curCmd|, |curChr|, |curTok|에 놓고 곧장
+|false|를 돌려준다. 결과가 똑같다는 것은 이렇게 따져 볼 수 있다. 느린 길에서 |getNext|는 토큰을 읽어 |loc|를 |null|로
+만들고, |backInput|은 다 읽힌 그 목록을 |endTokenList|로 걷어 노드를 |avail|의 맨 위에 돌려놓았다가 |getAvail|로 바로 그
+노드를 되받아 같은 토큰을 적고 같은 층에 쌓는다. |alignState|는 중괄호 토큰이라면 한 번 늘었다가 한 번 줄고, |dynUsed|도
+제자리로 온다. 그러니 남는 것은 네 전역 변수뿐이다. 다만 몇 가지 경우는 느린 길에 맡긴다. 명령 코드가 |maxCommand|보다
+크면 펼쳐야 하고, 공백이면 건너뛰어야 하며, |tabMark|와 |carRet|은 정렬의 $v_j$ 틀을 끼워 넣을 수 있다. 바로 아래층이 다 읽힌
+토큰 목록이면 |backInput|이 그 층까지 걷을 것이고, |interrupt|가 0이 아니면 |endTokenList|가 사용자에게 말을 걸 것이다.
+이 지름길로 3911쪽짜리 문서의 조판 시간이 2\pct!쯤 줄었다(2026년 11월 12일).
+@^inner loop@>
+
+@<되돌려 둔 토큰이 키워드의 첫 글자와...@>=
+if state == tokenList && loc != null && loc == start && link(loc) == null &&
+	tokenType() == backedUp && interrupt == 0 {
+	below := &inputStack[inputPtr-1] // 바로 아래층
+	if below.stateField != tokenList || below.locField != null || below.indexField == vTemplate {
+		var cs pointer // |curCs|가 될 값
+		var cmd, chr halfword // |curCmd|와 |curChr|가 될 값
+		t := info(loc)
+		if t >= csTokenFlag {
+			cs = t - csTokenFlag; cmd = eqType(cs); chr = equiv(cs)
+		} else {
+			cmd = t / 0o400; chr = t % 0o400
+		}
+		if cmd <= maxCommand && cmd != spacer && (cmd < tabMark || cmd > carRet) &&
+			(cs != 0 || chr != asciiCode(s[0]) && chr != asciiCode(s[0])-'a'+'A') {
+			curCs = cs; curCmd = cmd; curChr = chr; curTok = t
+			return false
+		}
+	}
 }
 
 @ 다음은 mu 단위와 mu가 아닌 단위가 섞였을 때 경보를 울리는 프로시저다. 이를테면 \.{\\mskip}에 pt로 된 글루를 주면 이
@@ -13607,7 +13689,9 @@ const (
 	@!nonAddress = 0 // 가짜 |bcharLabel|
 )
 
-var @!fontInfo [fontMemSize + 1]memoryWord // 글꼴 자료의 큰 모음
+const @!fontMemMask = 32767 // |fontMemSize| 이상인 가장 작은 $2^k-1$
+const _ = uint(fontMemMask - fontMemSize) // 배열이 넘치면 여기서 컴파일이 멈춘다
+var @!fontInfo [fontMemMask + 1]memoryWord // 글꼴 자료의 큰 모음
 var @!fmemPtr fontIndex // |fontInfo|에서 쓰이지 않는 첫 낱말
 var @!fontPtr internalFontNumber // 쓰이고 있는 가장 큰 내부 글꼴 번호
 var @!fontCheck [fontMax + 1]fourQuarters // 검사합
@@ -13701,26 +13785,27 @@ $$b=|heightIndex|\times16+|depthIndex|$$
 태그 필드는 |charTag(q)|라고 부르고, 나머지 바이트는 위에서 이미 정의한 함수로 |remByte(q)|라고 부른다.
 
 문자의 |width|, |height|, |depth|, |tag| 필드를 읽는 것은 \TeX의 안쪽 루프의 일부이므로, 이 함수들은 될 수 있는 대로
-빠른 코드가 되기를 바란다.
+빠른 코드가 되기를 바란다. 그래서 표 |eqtb|의 필드 함수들처럼(\secref{xeq-level}) 첨자를 |fontMemMask|로 가려
+경계 검사를 뺀다.
 @^inner loop@>
 
 @<정의@>=
 func charInfo(f internalFontNumber, c quarterword) fourQuarters {
-	return *fontInfo[charBase[f]+c].qqqq()
+	return *fontInfo[(charBase[f]+c)&fontMemMask].qqqq()
 }
 func charWidth(f internalFontNumber, q fourQuarters) scaled {
-	return fontInfo[widthBase[f]+q.b0()].sc
+	return fontInfo[(widthBase[f]+q.b0())&fontMemMask].sc
 }
 func charExists(q fourQuarters) bool { return q.b0() > minQuarterword }
 func charItalic(f internalFontNumber, q fourQuarters) scaled {
-	return fontInfo[italicBase[f]+(qo(q.b2()))/4].sc
+	return fontInfo[(italicBase[f]+(qo(q.b2()))/4)&fontMemMask].sc
 }
 func heightDepth(q fourQuarters) int32 { return qo(q.b1()) }
 func charHeight(f internalFontNumber, hd int32) scaled {
-	return fontInfo[heightBase[f]+(hd)/16].sc
+	return fontInfo[(heightBase[f]+(hd)/16)&fontMemMask].sc
 }
 func charDepth(f internalFontNumber, hd int32) scaled {
-	return fontInfo[depthBase[f]+(hd)%16].sc
+	return fontInfo[(depthBase[f]+(hd)%16)&fontMemMask].sc
 }
 func charTag(q fourQuarters) int32 { return (qo(q.b2())) % 4 }
 
@@ -13748,7 +13833,7 @@ nullCharacter.setB3(minQuarterword)
 const @!kernBaseOffset = 256 * (128 + minQuarterword)
 
 func charKern(f internalFontNumber, q fourQuarters) scaled {
-	return fontInfo[kernBase[f]+256*opByte(q)+remByte(q)].sc
+	return fontInfo[(kernBase[f]+256*opByte(q)+remByte(q))&fontMemMask].sc
 }
 func ligKernStart(f internalFontNumber, q fourQuarters) int32 { // 합자/커닝 프로그램의 시작
 	return ligKernBase[f] + remByte(q)
@@ -15882,7 +15967,7 @@ if stat {
 
 @ 상자 |p|를 쪽 하나로 내보낸다. 명령 |bop|에는 \.{\\count0}부터 \.{\\count9}까지와 앞 |bop|의 위치를 적고, 기준점을
 \.{\\hoffset}과 \.{\\voffset}만큼 옮긴 자리에서 상자를 내보낸 다음 |eop|를 적는다. 이 판에서는 이 일들도 명령으로 낸다.
-비동기식이면 쪽을 다 훑은 뒤 쌓인 명령을 고루틴에게 넘긴다(\secref{dvi-goroutine}).
+비동기식이면 쪽을 다 훑은 뒤, 명령이 넉넉히 쌓였을 때 고루틴에게 넘긴다(\secref{dvi-goroutine}).
 @<상자 |p|를 내보낸다@>=
 @<|maxH|와 |maxV|의 값을 갱신하되, 쪽이 너무 크면 |goto done|@>
 @<|shipOut|을 시작할 때...@>
@@ -15894,10 +15979,10 @@ if typ(p) == vlistNode {
 	hlistOut()
 }
 dviOps = append(dviOps, opPageEnd)
-if shipAsync {
-	sendPage()
-} else {
+if !shipAsync {
 	flushOps()
+} else if len(dviOps) >= dviBatch {
+	sendPages()
 }
 done:
 
@@ -16302,16 +16387,23 @@ if dviMode == "async" || dviMode == "" && tracingStats() <= 0 {
 	waitDVI(); shipAsync = false
 }
 
-@ 쪽 명령은 버퍼가 넷인 통로 |dviPages|로 넘긴다. 그러니 고루틴이 조금 밀려도 본체는 네 쪽까지 앞서 나갈 수 있다. 다 쓴
-슬라이스는 통로 |dviFree|로 돌려받아 다시 쓴다. 넘겼지만 아직 다 실행하지 않은 쪽의 수는 |dviBusy|가 센다.
+@ 쪽 명령은 버퍼가 넷인 통로 |dviPages|로 넘긴다. 그러니 고루틴이 조금 밀려도 본체는 네 묶음까지 앞서 나갈 수 있다. 다 쓴
+슬라이스는 통로 |dviFree|로 돌려받아 다시 쓴다. 넘겼지만 아직 다 실행하지 않은 묶음의 수는 |dviBusy|가 센다.
+
+처음에는 쪽마다 하나씩 넘겼다. 그런데 고루틴의 일은 본체의 일보다 훨씬 가벼워서, 고루틴은 쪽 하나를 실행하고 나면 늘 잠들어
+있었다. 그러면 본체는 쪽을 넘길 때마다 운영체제를 불러 고루틴을 깨워야 하는데, 그 값이 리눅스에서는 조판 시간의 몇 퍼센트나
+되었다. 그래서 이제는 명령이 |dviBatch|개 넘게 쌓일 때까지 여러 쪽을 한 슬라이스에 이어 적었다가 한꺼번에 넘긴다(2026년
+11월 12일). 명령의 흐름은 그대로이므로 \.{DVI} 파일은 달라지지 않고, 3911쪽짜리 문서에서 고루틴을 깨우는 횟수는 3911번에서
+몇백 번으로 준다. 조판 시간은 내 기계에서 1\pct!쯤, 리눅스 컨테이너 안에서는 훨씬 많이 줄었다.
 
 @<전역 변수@>=
 var @!dviMode = os.Getenv("TEXDVI") // `\.{sync}', `\.{async}', 또는 빈 문자열
 var @!dviPages chan []int32 // 고루틴에게 넘기는 쪽들
 var @!dviFree chan []int32 // 다 쓴 명령 슬라이스들
-var @!dviBusy sync.WaitGroup // 넘겼지만 아직 실행하지 않은 쪽들
+var @!dviBusy sync.WaitGroup // 넘겼지만 아직 실행하지 않은 묶음들
+const @!dviBatch = 1 << 16 // 명령이 이만큼 쌓이면 고루틴에게 넘긴다
 
-@ 고루틴은 쪽을 받을 때마다 실행하고, 슬라이스를 돌려준 다음 |dviBusy|를 하나 줄인다. 통로 |dviFree|가 차 있으면 슬라이스는
+@ 고루틴은 묶음을 받을 때마다 실행하고, 슬라이스를 돌려준 다음 |dviBusy|를 하나 줄인다. 통로 |dviFree|가 차 있으면 슬라이스는
 그냥 버린다.
 
 @<\.{DVI} 명령을 실행하는...@>=
@@ -16329,13 +16421,13 @@ go func() {
 	}
 }()
 
-@ 함수 |sendPage|는 쌓인 명령을 고루틴에게 넘기고, 돌려받은 슬라이스가 있으면 그것을 새 |dviOps|로 삼는다. 함수
+@ 함수 |sendPages|는 쌓인 명령을 고루틴에게 넘기고, 돌려받은 슬라이스가 있으면 그것을 새 |dviOps|로 삼는다. 함수
 |waitDVI|는 넘긴 쪽을 고루틴이 모두 실행할 때까지 기다린다. 비동기식으로 쪽을 내보내다가 치명적인 오류로 여기 왔다면 아직
 넘기지 않은 반쪽짜리 명령이 남아 있으므로, 그것부터 넘긴다. 기다리고 나면 실행하는 쪽의 변수는 모두 본체의 것이 된다.
 |sync.WaitGroup|의 |Wait|가 끝나면 고루틴이 그 전에 쓴 값을 본체가 읽을 수 있음이 보장된다.
 
 @<함수들@>=
-func sendPage() {
+func sendPages() {
 	dviBusy.Add(1)
 	dviPages <- dviOps
 	select {
@@ -16348,7 +16440,7 @@ func sendPage() {
 
 func waitDVI() {
 	if shipAsync && len(dviOps) > 0 {
-		sendPage()
+		sendPages()
 	}
 	dviBusy.Wait()
 	dviPrivate = false
