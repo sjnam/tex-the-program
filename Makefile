@@ -87,7 +87,7 @@ trip:
 test: vet story trip
 
 # make regress와 make fuzz가 견줄 기준 판. 꼬리표 faithful은 원본 tex.web을 충실히 옮긴 판,
-# 곧 go-native를 합치기 전의 커밋이다. 다른 커밋이나 가지와 견주려면 BASE=main처럼 준다.
+# 곧 go-native가 갈라지기 직전의 커밋이다. 다른 커밋이나 가지와 견주려면 BASE=main처럼 준다.
 BASE = faithful
 
 regress: $(BUILD)/tex trip

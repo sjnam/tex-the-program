@@ -1,7 +1,7 @@
 #!/bin/sh
 # 지금의 TeX(build/tex)이 기준 판의 TeX과 똑같은 결과를 내는지 본다. 기준은 BASE로 정하는
-# 커밋이고, 기본값은 꼬리표 faithful, 곧 원본 tex.web을 충실히 옮긴 판(go-native를 합치기
-# 전)이다. 빠르게 하려고 무엇을 고치든 출력이 한 바이트도 달라져서는 안 되므로, TeX Live의
+# 커밋이고, 기본값은 꼬리표 faithful, 곧 원본 tex.web을 충실히 옮긴 판(go-native가 갈라지기
+# 직전)이다. 빠르게 하려고 무엇을 고치든 출력이 한 바이트도 달라져서는 안 되므로, TeX Live의
 # tex가 아니라 고치기 전의 이 프로그램과 견준다.
 #
 #   tests/regress.sh            요약만 찍는다
