@@ -1,10 +1,11 @@
 @x
 \def\title{\TeX82}
 @y
-\input pic
-
+% 액자 그림은 한 번만 읽어 두고 쪽마다 그것을 가리킨다(1절의 사자처럼 LuaTeX의 기본 명령으로)
+\saveimageresource width 7.55in height 11.05in {decoframe.pdf}
+\edef\decoframe{\the\lastsavedimageresourceindex}
 \def\FrameBG{\vbox to 0pt{\vskip-.72in
-  \moveleft.63in\hbox{\pic width 7.55in height 11.05in{decoframe.pdf}}\vss}%
+  \moveleft.63in\hbox{\useimageresource\decoframe}\vss}%
   \nointerlineskip}
 \let\twillbackground=\FrameBG % gtwill이 짜는 펼침면에도 액자를 두른다
 \def\plainoutput{\shipout\vbox{\FrameBG\makeheadline\pagebody\makefootline}%
