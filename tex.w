@@ -104,7 +104,7 @@ vardef southof(expr q) = (xpart center q, ypart llcorner bbox q) enddef;
 여기고 쓴 글이다.
 @.GWEB@>
 @^TeXbook@>
-\par\vfill\noindent
+\par\vskip 0pt plus 1filll\noindent % gtwill이 왼쪽 쪽 끝에 덧붙이는 \vfill보다 차수가 높아야 사자가 바닥에 붙는다
 \saveimageresource height 1.5in {texlion.pdf}\useimageresource\lastsavedimageresourceindex
 
 @ 지금의 구현에는 꽤 긴 역사가 있다. 시작은 1977년 여름이었다. 그해 5월에 저자가 쓴
