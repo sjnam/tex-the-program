@@ -1,7 +1,7 @@
-% 이 파일은 크누스의 tex.web(Version 3.141592653, 2021)을 한글 GWEB(Go)로
+% 이 파일은 커누스의 tex.web(Version 3.141592653, 2021)을 한글 GWEB(Go)로
 % 옮긴 것이다. 원본 tex.web (C) 1982 Donald E. Knuth.
 % 원본의 조건(``고친 파일은 tex.web이라는 이름을 달아서는 안 된다'')에 따라
-% 이 파일은 tex.web이 아니며, 크누스의 TeX 꾸러미의 일부가 아니다.
+% 이 파일은 tex.web이 아니며, 커누스의 TeX 꾸러미의 일부가 아니다.
 % 손대지 않은 원본은 CTAN의 systems/knuth/dist/tex/tex.web에 있다.
 
 \input kotexgweb
@@ -61,20 +61,20 @@ vardef southof(expr q) = (xpart center q, ypart llcorner bbox q) enddef;
   \null\vfill
   \centerline{\titlefont \TeX: The Program}
   \vskip 15pt
-  \centerline{도널드 크누스의 \TeX\ 프로그램을 한글 \.{GWEB}으로 옮김}
+  \centerline{도널드 커누스의 \TeX\ 프로그램을 한글 \.{GWEB}으로 옮김}
   \vfill}
 \def\botofcontents{\par\vskip 0pt plus 1filll
   \ninepoint\baselineskip12pt
   \noindent 원본 \copyright\ 1982 Donald E. Knuth
   \bigskip\noindent
-  크누스의 원본 파일 \.{tex.web}은 고치지 않는 한 얼마든지 복사하고 배포할 수 있다.
+  커누스의 원본 파일 \.{tex.web}은 고치지 않는 한 얼마든지 복사하고 배포할 수 있다.
   고친 파일은 이름이 \.{tex.web}이 아닐 때에만 허용된다.
   \bigskip\noindent
   이 문서는 그 조건에 따라 원본을 한글과 \GO/로 옮긴 것이며,
-  크누스의 \TeX\ 꾸러미의 일부가 아니다. 손대지 않은 원본은
+  커누스의 \TeX\ 꾸러미의 일부가 아니다. 손대지 않은 원본은
   {\tt https://mirrors.ctan.org/systems/knuth/dist/tex/tex.web}에서
   받을 수 있다. 번역에 잘못이 있다면 그것은 옮긴이의
-  탓이지 크누스의 탓이 아니다.}
+  탓이지 커누스의 탓이 아니다.}
 
 % gweave가 형으로 알아보지 못하는 이름들.
 @s bufio.Reader int
