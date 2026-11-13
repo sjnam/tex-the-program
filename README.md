@@ -12,7 +12,7 @@
 - 문서는 크누스가 처음부터 GWEB과 Go로 쓴 것처럼 서술했다. Pascal에만 해당하는 설명은 걷어 내고,
   Go로 옮기면서 달라진 점은 따로 떼지 않고 해당하는 절의 설명에 녹여 넣었다. TeX의 역사와
   크누스의 농담은 그대로 두었다.
-- 같은 `tex.w`에서 사람이 읽을 문서(`tex.pdf`, 약 820쪽)와 실제로 돌아가는 프로그램(`build/tex`)이
+- 같은 `tex.w`에서 사람이 읽을 문서(`tex.pdf`, 약 860쪽)와 실제로 돌아가는 프로그램(`build/tex`)이
   함께 나온다. 이 프로그램은 실제 TeX처럼 작동하고, 크누스의 TRIP 테스트도 통과한다(아래 참조).
 
 ## 파일
@@ -21,9 +21,10 @@
 | --- | --- |
 | `tex.w` | 번역 본문. 모든 것이 여기서 나온다 |
 | `texlion.pdf` | `tex.pdf` 1쪽의 왼쪽 아래에 넣는 사자 그림 |
-| `tex-deco.ch` | 쪽마다 액자를 두르는 바꿈 파일(`make deco`) |
+| `tex-deco.ch` | 쪽마다 액자를 두르는 바꿈 파일(`make deco`, `make twill-deco`) |
 | `decoframe.pdf` | `tex-deco.ch`가 쪽마다 까는 액자 그림 |
-| `Makefile` | 빌드, 조판, 테스트 |
+| `tex.bux` | 미니 색인을 만들 때 gtwill이 읽는, 산문과 주석에만 나오는 이름들의 의미(`make twill`) |
+| `Makefile` | 빌드, 조판, 테스트(`make help`로 규칙 목록을 본다) |
 | `go.mod` | Go 모듈 정의 |
 | `tests/trip.sh` | TRIP 테스트 |
 | `tests/compare.sh` | 문서 하나를 진짜 TeX과 함께 조판해 DVI를 비교한다 |
@@ -99,16 +100,30 @@
 - 테스트에는 `pltotf`, `dvitype`(TeX Live에 들어 있다), `curl`, `perl`도 쓴다
 - [qpdf](https://qpdf.sourceforge.io/): gweave가 문서 맨 끝에 두는 차례를 맨 앞으로 옮긴다
 - `make check`에는 `python3`를 쓰고, 있으면 `pdftotext`(poppler)도 쓴다
+- 미니 색인을 붙인 판(`make twill`, `make twill-deco`, `make proof`)에는
+  [gtwill](https://github.com/sjnam/gtwill)의 `gtwill`, `gtwill-refsort`와 매크로 `gtwimac.tex`,
+  `gtproofmac.tex`를 쓴다(gtwill 저장소에서 `make install`)
 
 ```sh
 make            # build/tex와 tex.pdf를 만든다
 make build      # 프로그램만: tex.w → tex.go(gtangle) → build/tex(go build)
 make pdf        # 문서만: tex.w → tex.tex(gweave) → tex.pdf(luatex 두 번, qpdf로 차례를 맨 앞에)
 make deco       # 쪽마다 액자를 두른 판: tex.w + tex-deco.ch → tex-deco.pdf(tex.pdf는 그대로 둔다)
+make twill      # 쪽마다 미니 색인을 붙인 판: tex.w + tex.bux → tex-twill.pdf(gtwill, luatex 세 번)
+make twill-deco # 미니 색인과 액자를 함께 붙인 판: tex-twill-deco.pdf
+make proof      # 교정용 판: 절마다 미니 색인 항목을 바로 뒤에 찍는다 → tex-proof.pdf
 make check      # 조판 경고(Overfull, Underfull 따위)와 조용히 깨진 조판의 수를 센다. 둘 다 0이어야 한다
-make test       # make story와 make trip(아래 테스트)을 함께 돌린다
-make clean
+make test       # make vet, make story, make trip(아래 테스트)을 함께 돌린다
+make help       # 규칙 목록을 찍는다
+make clean      # 만든 것을 지운다(make distclean은 CTAN에서 받아 둔 tests/trip/까지 지운다)
 ```
+
+미니 색인을 붙인 판은 크누스가 CTWILL로 *TeX: The Program*을 찍은 방식을 따른다. 펼친 두 쪽마다
+그 두 쪽에 나오는 식별자가 어디서 무엇으로 정의되었는지를 모아 붙인다. 정의에서 의미를 읽어 낼
+수 없는 이름(원본 `tex.web`의 매크로처럼 산문이나 주석에만 나오는 것)은 `tex.bux`가 의미를 준다.
+`tex.bux`의 몇몇 항목에는 절 번호가 붙어 있어 절이 늘거나 줄면 함께 고쳐야 하는데, 쪽 나누기에 가려지지
+않은 `make proof`의 교정용 판에서 확인하면 된다. 교정용 판은 쪽 배치를 신경 쓰지 않으므로 조판 경고가
+나도 상관없다.
 
 ## 실행
 

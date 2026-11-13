@@ -7,15 +7,19 @@
 #   make fmt        build/plain.fmt를 만든다(INITEX로 plain.tex를 읽고 \dump)
 #   make story      story.tex를 조판해 진짜 TeX의 DVI와 비교한다
 #   make trip       크누스의 TRIP 테스트를 돌린다
-#   make test       story와 trip을 모두 돌린다
+#   make vet        tex.w에서 뽑은 Go 소스를 go vet으로 살핀다
+#   make test       vet, story, trip을 모두 돌린다
 #   make clean      만든 것을 모두 지운다
+#   make distclean  clean에 더해 CTAN에서 받아 둔 TRIP 파일(tests/trip/)까지 지운다
 #   make deco       테두리에 액자를 두른 문서(tex-deco.pdf)를 만든다
 #   make twill      쪽마다 미니 색인을 붙인 문서(tex-twill.pdf)를 gtwill로 만든다
 #   make twill-deco 미니 색인과 액자를 함께 붙인 문서(tex-twill-deco.pdf)를 만든다
+#   make proof      절마다 미니 색인 항목을 붙인 교정용 문서(tex-proof.pdf)를 만든다
+#   make help       이 목록을 찍는다
 
 BUILD = build
 
-.PHONY: all build pdf check fmt story trip test clean deco twill twill-deco
+.PHONY: all build pdf check fmt vet story trip test clean distclean deco twill twill-deco proof help
 
 all: build pdf
 
@@ -64,13 +68,16 @@ $(BUILD)/plain.fmt: $(BUILD)/tex
 
 fmt: $(BUILD)/plain.fmt
 
+vet: tex.go
+	go vet .
+
 story: $(BUILD)/tex
 	tests/compare.sh story
 
 trip:
 	tests/trip.sh
 
-test: story trip
+test: vet story trip
 
 # 액자를 두른 판은 tex-deco.pdf로 따로 만들어 tex.pdf를 건드리지 않는다
 tex-deco.pdf: tex.w tex-deco.ch texlion.pdf decoframe.pdf
@@ -111,9 +118,27 @@ tex-twill-deco.pdf: tex.w tex.bux tex-deco.ch texlion.pdf decoframe.pdf
 
 twill-deco: tex-twill-deco.pdf
 
+# 교정용 문서. gtwill -P는 쪽을 펼침면으로 짜지 않고, 절마다 그 절이 미니 색인에 보탤 항목을
+# 바로 뒤에 찍는다. tex.bux의 절 번호가 맞는지, 미니 색인에 `???'로 나올 이름이 없는지를
+# 쪽 나누기에 가려지기 전에 여기서 확인한다. 쪽 배치는 신경 쓰지 않은 판이므로 Underfull
+# 경고가 나도 상관없다. \secref 때문에 luatex는 두 번 돈다.
+tex-proof.pdf: tex.w tex.bux texlion.pdf
+	mkdir -p $(BUILD) && $(GTWILL) -P -o $(BUILD) tex.w && mv $(BUILD)/tex.tex tex-proof.tex
+	luatex --interaction=nonstopmode tex-proof.tex >/dev/null
+	luatex --interaction=nonstopmode tex-proof.tex >/dev/null
+
+proof: tex-proof.pdf
+
+help:
+	@sed -n 's/^#   //p' $(firstword $(MAKEFILE_LIST))
+
 clean:
 	rm -rf $(BUILD) tex.go tex.tex tex.log tex.pdf tex.toc tex.ref tex.idx tex.scn\
 	  tex-deco.tex tex-deco.log tex-deco.pdf tex-deco.toc tex-deco.ref\
 	  tex-twill.tex tex-twill.log tex-twill.pdf tex-twill.toc tex-twill.ref tex-twill.mref tex-twill.smref\
 	  tex-twill-deco.tex tex-twill-deco.log tex-twill-deco.pdf tex-twill-deco.toc tex-twill-deco.ref\
-	  tex-twill-deco.mref tex-twill-deco.smref
+	  tex-twill-deco.mref tex-twill-deco.smref\
+	  tex-proof.tex tex-proof.log tex-proof.pdf tex-proof.toc tex-proof.ref tex-proof.mref
+
+distclean: clean
+	rm -rf tests/trip
