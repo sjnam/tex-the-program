@@ -372,7 +372,7 @@ var iniVersion bool // 이것이 \.{INITEX}인가?
 
 @<전역 상수@>=
 const (
-	@!memMax = 30000 // \TeX의 내부 배열 |mem|의 가장 큰 첨자;
+	@!memMax = 5000000 // \TeX의 내부 배열 |mem|의 가장 큰 첨자;
 	@t\qquad@>// |maxHalfword|보다 엄격히 작아야 한다;
 	@t\qquad@>// \.{INITEX}에서는 |memTop|과 같아야 하고, 그 밖에는 |>=memTop|
 	@!memMin = 0 // \TeX의 내부 배열 |mem|의 가장 작은 첨자;
@@ -416,7 +416,7 @@ const (
 const (
 	@!memBot = 0 // \.{INITEX}가 내보내는 |mem| 배열의 가장 작은 첨자;
 	@t\qquad@>// |memMin|보다 작으면 안 된다
-	@!memTop = 30000 // \.{INITEX}가 내보내는 |mem| 배열의 가장 큰 첨자;
+	@!memTop = 5000000 // \.{INITEX}가 내보내는 |mem| 배열의 가장 큰 첨자;
 	@t\qquad@>// |memBot|보다 상당히 커야 하고 |memMax|보다 크면 안 된다
 	@!fontBase = 0 // 가장 작은 내부 글꼴 번호; |minQuarterword|보다 작으면 안 된다
 	@!hashSize = 2100 // 제어 시퀀스의 최대 개수; 많아야 대략
@@ -630,15 +630,21 @@ const (
 작은 코드에 대응시키는 편이 대개 가장 낫다. 가장 ``너그러운'' 문자 집합을 원한다면 이
 대입문들의 오른쪽에 있는 |' '|를 |textChar(i)|로 바꾸면 된다. 그러면 256개의 코드가 모두
 제 모습 그대로 드나든다.
+
+이 번역은 그 너그러운 쪽을 골랐다(2026년 11월 14일). 처음에는 원본대로 공백을 넣었는데, 그러면 입력 파일의 제어 문자와
+\.{'177}보다 큰 바이트가 모두 |invalidCode|로 읽힌다. 그런데 \.{texbook.tex}만 해도 쪽이 바뀌는 자리마다 쪽 넘김
+문자~\.{\^\^L}이 들어 있어서(plain \TeX은 그것을 \.{\\par}로 정의해 둔다), 163째 줄에서 `\.{Text line contains an
+invalid character}'로 멈추었다. \TeX\ Live의 \.{tex}도 256개의 코드를 모두 그대로 받는다. 문자를 찍을 때 \.{\^\^L}
+같은 꼴로 바꾸는 것은 |xchr|와 상관없는 일이어서, 터미널과 기록 파일에 찍히는 것은 달라지지 않는다.
 @^character set dependencies@>
 @^system dependencies@>
 
 @<핵심 변수들의...@>=
 for i = 0; i <= 0o37; i++ {
-	xchr[i] = ' '
+	xchr[i] = textChar(i)
 }
 for i = 0o177; i <= 0o377; i++ {
-	xchr[i] = ' '
+	xchr[i] = textChar(i)
 }
 
 @ 다음 코드는 시스템과 상관없이 배열 |xord|에 |xchr|의 역을 알맞게 채운다. 먼저 모든
@@ -2857,7 +2863,7 @@ const (
 	@!minQuarterword = 0 // |quarterword|에 허용되는 가장 작은 값
 	@!maxQuarterword = 255 // |quarterword|에 허용되는 가장 큰 값
 	@!minHalfword = 0 // |halfword|에 허용되는 가장 작은 값
-	@!maxHalfword = 65535 // |halfword|에 허용되는 가장 큰 값
+	@!maxHalfword = 8388607 // |halfword|에 허용되는 가장 큰 값
 )
 
 @ 쿼터워드와 하프워드의 값이 지켜야 할 부등식은 다음과 같다(정확히는 이 코드가 검사하는,
@@ -3060,6 +3066,11 @@ endfig;
 배열 |mem|에서 실제로 쓰는 첨자는 |memMin..memMax|다. \GO/의 배열은 첨자가 0부터 시작하므로
 여기서는 0부터 |memMax|까지 잡는다. 위의 부등식에서 |null<=memMin|이고 |null=minHalfword=0|이므로,
 이렇게 해도 첨자를 그대로 쓸 수 있다. 첨자가 |memMin|보다 작은 낱말은 쓰지 않는다.
+
+메모리의 크기 |memMax|와 |memTop|은 원래 30000이었다. 그것으로는 {\sl The \TeX book\/}조차 끝까지 조판하지 못한다. 찾아보기를
+두 단으로 짜는 대목에서 메모리가 넘친다. 그래서 \TeX\ Live와 같은 오백만 낱말로 늘리고, 하프워드의 한계 |maxHalfword|도 그에
+맞추어 65535에서 $2^{23}-1$로 올렸다(2026년 11월 14일). 운영체제는 배열에서 실제로 손댄 부분에만 메모리를 내주므로, 작은
+문서를 조판할 때 드는 메모리는 그대로다.
 
 @<전역 변수@>=
 var @!mem [memMax + 1]memoryWord // 큰 동적 저장 영역
