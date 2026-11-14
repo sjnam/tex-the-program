@@ -19,6 +19,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 	"sync"
@@ -177,10 +178,20 @@ func compare(t *testing.T, what string, a, b result, keep func(string) bool) {
 		y, oky := b.files[n]
 		if okx != oky {
 			t.Errorf("%s: %s가 한쪽에만 있다 (기준 %v, 이쪽 %v)", what, n, okx, oky)
-		} else if !bytes.Equal(x, y) {
+		} else if x, y = mask(n, x), mask(n, y); !bytes.Equal(x, y) {
 			t.Errorf("%s: %s가 다르다\n%s", what, n, firstDiff(x, y))
 		}
 	}
+}
+
+// 메모리를 쓰는 순서에 달린 통계는 기준 판과 달라도 되므로 가린다(tests/regress.sh의 mask와 같다).
+var memStats = regexp.MustCompile(`still untouched: \d+|(?m)^\d+ memory locations dumped|(?m)^ \d+ words of memory out of`)
+
+func mask(name string, x []byte) []byte {
+	if strings.HasSuffix(name, ".dvi") {
+		return x
+	}
+	return memStats.ReplaceAll(x, []byte("(memory statistics)"))
 }
 
 func firstDiff(x, y []byte) string {

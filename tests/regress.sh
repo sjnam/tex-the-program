@@ -1,8 +1,8 @@
 #!/bin/sh
 # 지금의 TeX(build/tex)이 기준 판의 TeX과 똑같은 결과를 내는지 본다. 기준은 BASE로 정하는
 # 커밋이고, 기본값은 꼬리표 faithful, 곧 원본 tex.web을 충실히 옮긴 판(go-native가 갈라지기
-# 직전)이다. 빠르게 하려고 무엇을 고치든 출력이 한 바이트도 달라져서는 안 되므로, TeX Live의
-# tex가 아니라 고치기 전의 이 프로그램과 견준다.
+# 직전)이다. TeX Live의 tex가 아니라 고치기 전의 이 프로그램과 견준다. 2026년 11월 14일부터는
+# 출력이 바이트까지 같아야 한다는 조건을 풀었으므로, 일부러 달라지게 둔 것(메모리 통계)은 가리고 견준다.
 #
 #   tests/regress.sh            요약만 찍는다
 #   tests/regress.sh -t         같은 문서를 여러 번 조판해 걸린 시간도 견준다
@@ -35,12 +35,21 @@ git -C "$TOP" show "$BASE:tex.w" > "$W/ref/tex.w"
 git -C "$TOP" show "$BASE:tests/trip.sh" > "$W/ref/tests/trip.sh"; chmod +x "$W/ref/tests/trip.sh"
 cp "$TOP/go.mod" "$W/ref/"
 cp -r "$TOP/tests/trip" "$W/ref/tests/"
-(cd "$W/ref" && gtangle tex.w >/dev/null 2>&1 && go build -o tex . && tests/trip.sh >/dev/null 2>&1)
+# 기준 TeX에는 빠르기와 상관없는 수정 둘(문자 대응과 메모리 크기)을 입힌다. TRIP용은 trip.sh가 따로 만든다.
+(cd "$W/ref" && gtangle tex.w >/dev/null 2>&1 && "$TOP/tests/refpatch.sh" tex.go && go build -o tex . && tests/trip.sh >/dev/null 2>&1)
 
 bad=0
+# 메모리를 쓰는 순서가 기준 판과 달라졌으므로(tex.w의 크기별 빈 노드 목록), 그 순서에 달린 통계 셋,
+# 곧 아직 손대지 않은 낱말의 수와 포맷에 내보낸 낱말의 수와 쓴 낱말의 최댓값은 가리고 견준다.
+mask() {
+  sed -e 's/still untouched: [0-9]*/still untouched: N/' \
+      -e 's/^[0-9]* memory locations dumped/N memory locations dumped/' \
+      -e 's/^ [0-9]* words of memory out of/ N words of memory out of/' "$1"
+}
 same() { # $1: 이름, $2 $3: 견줄 두 파일
-  if cmp -s "$2" "$3"; then printf '  %-28s 같다\n' "$1"
-  else printf '  %-28s 다르다\n' "$1"; bad=1; diff "$2" "$3" | head -10 | sed 's/^/      /'; fi
+  mask "$2" > "$W/a.masked"; mask "$3" > "$W/b.masked"
+  if cmp -s "$W/a.masked" "$W/b.masked"; then printf '  %-28s 같다\n' "$1"
+  else printf '  %-28s 다르다\n' "$1"; bad=1; diff "$W/a.masked" "$W/b.masked" | head -10 | sed 's/^/      /'; fi
 }
 
 echo "$BASE 판의 TeX과 견준다"

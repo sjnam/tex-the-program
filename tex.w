@@ -154,6 +154,11 @@ vardef southof(expr q) = (xpart center q, ypart llcorner bbox q) enddef;
 뺀다(\secref{input-ln}). 표 |eqtb|와 배열 |fontInfo|의 필드 함수도 첨자를 가려 경계 검사를 뺀다(\secref{xeq-level}). 하나하나는
 1\pct!나 2\pct!지만 모으면 3911쪽짜리 문서가 1.42초에서 1.35초로 준다. 고루틴을 깨우는 값이 비싼 리눅스 컨테이너 안에서는
 1.78초에서 1.61초가 되었다.
+\item{$\bullet$} 가지를 다시 떼어 낸 날에는 키워드가 맞는 쪽에도 지름길을 냈다(\secref{scan-keyword-match}). 키워드의 글자들이
+펼칠 것 없이 눈앞에 놓여 있으면 토큰을 하나씩 꺼내지 않고 한 번에 읽는다. 프로파일에서 치수를 읽는 |scanDimen|의 몫이
+13\pct!에서 7\pct!쯤으로 줄었고, 3911쪽짜리 문서는 1.36초에서 1.34초가 되었다.
+\item{$\bullet$} 돌려받은 작은 노드를 크기마다 따로 둔 목록에 꿰어 두었다가 그대로 다시 내준다(\secref{sized-nodes}).
+3911쪽짜리 문서가 1.34초에서 1.25초로 줄었다. 원본의 알고리즘을 바꾼 첫 번째 것이다.
 
 @ 해 보았지만 얻는 것이 없어 버린 것도 적어 둔다. \.{DVI} 파일의 쓰기 버퍼를 키우는 것은 1\pct!쯤으로 재는 오차
 안이었고, 쓰레기 수집을 끄는 것은 아무 차이가 없었다. 기록 파일 쓰기를 고루틴에게 넘기는 것도 차이가 없었다.
@@ -171,6 +176,11 @@ vardef southof(expr q) = (xpart center q, ypart llcorner bbox q) enddef;
 결과가 같다는 것은 \.{tests/regress.sh}만이 아니라 \GO/의 퍼징으로도 확인한다(\.{tests/fuzz}). 무작위로 만든
 plain \TeX\ 입력을 \.{faithful} 판의 \TeX과 지금의 \TeX에 함께 넣고, 남긴 파일과 터미널 출력이 바이트까지
 같은지 본다.
+
+가지를 다시 떼어 낸 날에 조건도 풀었다. 이제 이 가지에서는 결과가 바이트까지 같지 않아도 되고, 알고리즘과 자료구조도 마음대로
+바꿀 수 있다. 그 자유를 처음 쓴 것이 노드 할당기다. 메모리를 쓰는 순서가 달라져서 기록 파일의 메모리 통계 셋, 곧 아직 손대지
+않은 낱말의 수와 포맷에 내보낸 낱말의 수와 쓴 낱말의 최댓값이 \.{faithful} 판과 달라졌다. 그 밖의 출력은 여전히 한 바이트도
+다르지 않으며, 시험할 때는 이 셋만 가리고 견준다.
 
 @ 지금의 구현에는 꽤 긴 역사가 있다. 시작은 1977년 여름이었다. 그해 5월에 저자가 쓴
 명세를 바탕으로 마이클~F. 플래스와 프랭크~M. 리앙이 원형을 설계하고 짰다.
@@ -442,7 +452,7 @@ var iniVersion bool // 이것이 \.{INITEX}인가?
 
 @<전역 상수@>=
 const (
-	@!memMax = 30000 // \TeX의 내부 배열 |mem|의 가장 큰 첨자;
+	@!memMax = 5000000 // \TeX의 내부 배열 |mem|의 가장 큰 첨자;
 	@t\qquad@>// |maxHalfword|보다 엄격히 작아야 한다;
 	@t\qquad@>// \.{INITEX}에서는 |memTop|과 같아야 하고, 그 밖에는 |>=memTop|
 	@!memMin = 0 // \TeX의 내부 배열 |mem|의 가장 작은 첨자;
@@ -486,7 +496,7 @@ const (
 const (
 	@!memBot = 0 // \.{INITEX}가 내보내는 |mem| 배열의 가장 작은 첨자;
 	@t\qquad@>// |memMin|보다 작으면 안 된다
-	@!memTop = 30000 // \.{INITEX}가 내보내는 |mem| 배열의 가장 큰 첨자;
+	@!memTop = 5000000 // \.{INITEX}가 내보내는 |mem| 배열의 가장 큰 첨자;
 	@t\qquad@>// |memBot|보다 상당히 커야 하고 |memMax|보다 크면 안 된다
 	@!fontBase = 0 // 가장 작은 내부 글꼴 번호; |minQuarterword|보다 작으면 안 된다
 	@!hashSize = 2100 // 제어 시퀀스의 최대 개수; 많아야 대략
@@ -700,15 +710,21 @@ const (
 작은 코드에 대응시키는 편이 대개 가장 낫다. 가장 ``너그러운'' 문자 집합을 원한다면 이
 대입문들의 오른쪽에 있는 |' '|를 |textChar(i)|로 바꾸면 된다. 그러면 256개의 코드가 모두
 제 모습 그대로 드나든다.
+
+이 판은 그 너그러운 쪽을 골랐다(2026년 11월 14일). 처음에는 원본대로 공백을 넣었는데, 그러면 입력 파일의 제어 문자와
+\.{'177}보다 큰 바이트가 모두 |invalidCode|로 읽힌다. 그런데 \.{texbook.tex}만 해도 쪽이 바뀌는 자리마다 쪽 넘김
+문자~\.{\^\^L}이 들어 있어서(plain \TeX은 그것을 \.{\\par}로 정의해 둔다), 163째 줄에서 `\.{Text line contains an
+invalid character}'로 멈추었다. \TeX\ Live의 \.{tex}도 256개의 코드를 모두 그대로 받는다. 문자를 찍을 때 \.{\^\^L}
+같은 꼴로 바꾸는 것은 |xchr|와 상관없는 일이어서(\secref{print-char} 근처), 터미널과 기록 파일에 찍히는 것은 달라지지 않는다.
 @^character set dependencies@>
 @^system dependencies@>
 
 @<핵심 변수들의...@>=
 for i = 0; i <= 0o37; i++ {
-	xchr[i] = ' '
+	xchr[i] = textChar(i)
 }
 for i = 0o177; i <= 0o377; i++ {
-	xchr[i] = ' '
+	xchr[i] = textChar(i)
 }
 
 @ 다음 코드는 시스템과 상관없이 배열 |xord|에 |xchr|의 역을 알맞게 채운다. 먼저 모든
@@ -3155,7 +3171,7 @@ const (
 	@!minQuarterword = 0 // |quarterword|에 허용되는 가장 작은 값
 	@!maxQuarterword = 255 // |quarterword|에 허용되는 가장 큰 값
 	@!minHalfword = 0 // |halfword|에 허용되는 가장 작은 값
-	@!maxHalfword = 65535 // |halfword|에 허용되는 가장 큰 값
+	@!maxHalfword = 8388607 // |halfword|에 허용되는 가장 큰 값
 )
 
 @ 쿼터워드와 하프워드의 값이 지켜야 할 부등식은 다음과 같다(정확히는 이 코드가 검사하는,
@@ -3389,7 +3405,7 @@ endfig;
 여기서는 0부터 세고, 위의 부등식에서 |null<=memMin|이고 |null=minHalfword=0|이므로 첨자를 그대로
 쓸 수 있다. 첨자가 |memMin|보다 작은 낱말은 쓰지 않는다.
 
-그런데 배열의 크기는 |memMax+1|이 아니라 |maxHalfword+1|, 곧 65536이다. \GO/는 배열을 읽을
+그런데 배열의 크기는 |memMax+1|이 아니라 |maxHalfword+1|, 곧 $2^{23}$이다. \GO/는 배열을 읽을
 때마다 첨자가 범위 안에 있는지 검사하는데, |link|나 |width| 같은 필드 함수는 \TeX의 안쪽 루프에서
 쉴 새 없이 불리므로 이 검사도 무시하지 못할 만큼 쌓인다. 크기가 2의 거듭제곱인 배열의 첨자를
 `|p&maxHalfword|'처럼 그 크기에서 1을 뺀 값으로 가리면, 컴파일러는 첨자가 범위를 벗어날 수 없음을
@@ -3397,6 +3413,10 @@ endfig;
 조금도 바뀌지 않는다. 필드 함수들만 이렇게 고쳤는데도 긴 문서의 조판 시간이 4\pct!쯤 줄었다
 (2026년 10월 31일). 늘어난 배열의 뒷부분은 손대지 않으므로 운영체제가 실제 메모리를 내주지도
 않는다.
+
+메모리의 크기 |memMax|와 |memTop|은 원래 30000이었다. 그것으로는 {\sl The \TeX book\/}조차 끝까지 조판하지 못한다. 찾아보기를
+두 단으로 짜는 대목에서 메모리가 넘친다. 그래서 \TeX\ Live와 같은 오백만 낱말로 늘리고, 하프워드의 한계 |maxHalfword|도 그에
+맞추어 65535에서 $2^{23}-1$로 올렸다(2026년 11월 14일). 낱말 하나가 8바이트이니 배열 |mem|은 64메가바이트가 된다.
 @^inner loop@>
 
 @<전역 변수@>=
@@ -3624,6 +3644,7 @@ func getNode(s int32) pointer { // 가변 크기 노드 할당
 	var q pointer // 물리적으로 |p| 다음에 있는 노드
 	var r int32 // 새로 할당한 노드, 또는 그 영예의 후보
 	var t int32 // 임시 레지스터
+	@<크기가 |s|인 노드가 크기별 목록에 있으면 그것을 돌려준다@>@;
 restart:
 	p = rover // 루프의 어떤 빈 노드에서 시작한다
 	for {
@@ -3634,6 +3655,7 @@ restart:
 			break
 		} // 목록 전체를 훑을 때까지 되풀이한다
 	}
+	@<크기별 목록에 노드가 있으면 모두 고리로 돌려보내고 |goto restart|@>@;
 	if s == 0o10000000000 {
 		return maxHalfword
 	}
@@ -3734,15 +3756,73 @@ goto found
 
 @<함수들@>=
 func freeNode(p pointer, s halfword) { // 가변 크기 노드의 해방
-	setNodeSize(p, s)
-	setLink(p, emptyFlag)
-	q := llink(rover) // |llink(rover)|
-	setLlink(p, q)
-	setRlink(p, rover) // 두 연결을 다 놓는다
-	setLlink(rover, p)
-	setRlink(q, p) // |p|를 루프에 끼워 넣는다
 	if stat {
 		varUsed -= s // 통계를 유지한다
+	}
+	if s < sizedNodes {
+		setLink(p, sizeFree[s]); sizeFree[s] = p
+		return
+	}
+	@<노드 |p|를 크기가 |s|인 빈 노드로 만들어 |rover| 바로 앞에 끼워 넣는다@>
+}
+
+@ @<노드 |p|를 크기가 |s|인 빈 노드로...@>=
+setNodeSize(p, s)
+setLink(p, emptyFlag)
+q := llink(rover) // |llink(rover)|
+setLlink(p, q)
+setRlink(p, rover) // 두 연결을 다 놓는다
+setLlink(rover, p)
+setRlink(q, p) // |p|를 루프에 끼워 넣는다
+
+@ \seclabel{sized-nodes}여기까지가 원본의 할당기다. 이 판에서는 그 앞에 지름길을 하나 놓았다(2026년 11월 14일). \TeX이
+얻고 돌려주는 노드는 거의 다 몇 가지 작은 크기다. 글루와 커닝과 벌점은 두 낱말, 글루 명세는 네 낱말, 상자는 일곱 낱말이다.
+그리고 쪽 하나를 내보낼 때마다 그 노드들이 한꺼번에 풀렸다가 다음 쪽을 짓는 동안 같은 크기로 다시 나간다. 그러니 돌려받은
+작은 노드를 고리에 넣어 이웃과 합쳤다가 도로 쪼개는 것은 헛일이다. 그래서 크기가 |sizedNodes|보다 작은 노드는 크기마다
+따로 둔 목록 |sizeFree[s]|의 맨 앞에 꿰어 두었다가, 같은 크기를 달라고 하면 고리를 돌지 않고 거기서 바로 내준다.
+한 낱말짜리 노드의 목록 |avail|과 같은 방식이다. 목록에 든 노드는 |link|로 이어지므로 첫 낱말이 |emptyFlag|가 아니다. 그래서
+고리의 할당기는 그런 노드를 쓰고 있는 노드로 여겨 건드리지 않는다.
+
+이렇게 묶어 둔 낱말들은 다른 크기의 요청에는 쓸 수 없다. 그래서 고리를 한 바퀴 다 돌고도 자리를 찾지 못하면, 메모리를
+늘리거나 넘쳤다고 알리기 전에 목록의 노드를 모두 고리로 돌려보내고 처음부터 다시 찾는다. 그러면 원본이 넘치지 않을 곳에서
+이 판이 넘치는 일은 없다. \.{INITEX}가 메모리를 내보내기 전에 부르는 |getNode|$(2^{30})$도 이 길을 지나므로, 포맷
+파일에는 고리만 남는다.
+
+이 지름길로 3911쪽짜리 문서의 조판 시간이 6\pct!쯤 줄었다. 그 대신 메모리를 쓰는 순서가 원본과 달라져서, 기록 파일의 메모리
+통계 가운데 아직 손대지 않은 낱말의 수 같은 것은 원본과 달라질 수 있다. 쓰고 있는 낱말의 수 |varUsed|는 그대로다.
+@^inner loop@>
+
+@<전역 변수@>=
+const @!sizedNodes = 16 // 이보다 작은 노드는 크기별 목록으로 관리한다
+var @!sizeFree [sizedNodes]pointer // 크기마다 따로 둔 빈 노드의 목록
+
+@ @<크기가 |s|인 노드가 크기별 목록에...@>=
+if s < sizedNodes {
+	if p = sizeFree[s]; p != null {
+		sizeFree[s] = link(p); setLink(p, null)
+		if stat {
+			varUsed += s // 사용 통계를 유지한다
+		}
+		return p
+	}
+}
+
+@ 블록으로 싸 둔 것은 그 안에서 선언하는 변수들 때문이다. \GO/는 변수 선언을 건너뛰어 앞으로 가는 |goto|를 허락하지
+않는데, 이 자리 위에는 레이블 |found|로 가는 |goto|가 있다.
+
+@<크기별 목록에 노드가 있으면...@>=
+{
+	released := false // 돌려보낸 노드가 있는가?
+	for s := int32(2); s < sizedNodes; s++ {
+		for sizeFree[s] != null {
+			p := sizeFree[s]
+			sizeFree[s] = link(p)
+			@<노드 |p|를 크기가 |s|인 빈 노드로...@>
+			released = true
+		}
+	}
+	if released {
+		goto restart
 	}
 }
 
@@ -10615,6 +10695,7 @@ func scanKeyword(s string) bool { // 주어진 문자열을 찾는다
 	p = backupHead
 	setLink(p, null)
 	@<되돌려 둔 토큰이 키워드의 첫 글자와 어긋나면 바로 |false|를 돌려준다@>@;
+	@<키워드가 통째로 눈앞에 있으면 한 번에 읽고 |true|를 돌려준다@>@;
 	k = 0
 	for k < len(s) {
 		getXToken() // 여기서 재귀가 일어날 수 있다
@@ -10670,6 +10751,95 @@ if state == tokenList && loc != null && loc == start && link(loc) == null &&
 			return false
 		}
 	}
+}
+
+@ \seclabel{scan-keyword-match}맞는 쪽에도 지름길을 낸다(2026년 11월 14일). 키워드가 맞을 때 위의 루틴은 글자마다 |getXToken|을 부르고,
+읽은 토큰을 되돌림 목록에 하나씩 적어 두었다가 끝에 가서 그 목록을 버린다. 그런데 `\.{\\kern.5em}'의 `\.{em}'이나
+`\.{\\vrule width}'의 `\.{width}'처럼 키워드의 글자들이 펼칠 것 없이 눈앞에 그대로 놓여 있을 때가 대부분이다. 그럴 때는
+입력을 건드리지 않고 먼저 견주어 보고, 끝까지 맞으면 읽는 자리만 그만큼 옮긴다.
+
+글자들이 놓일 수 있는 곳은 둘이다. 하나는 지금 읽는 토큰 목록이고, 다른 하나는 지금 읽는 줄이다. 줄의 문자는 범주 코드가
+|letter|나 |otherChar|일 때만 견준다. 그런 문자는 |getNext|가 어느 상태에서든 그대로 토큰 하나로 만들고 상태를 |midLine|으로
+바꾸기 때문이다. 흔한 경우가 하나 더 있다. 함수 |scanDimen|은 단위를 묻기 전에 토큰 하나를 읽었다가 되돌려 두므로, 키워드의 첫
+글자는 되돌린 토큰 목록에 있고 나머지는 그 아래층에 있다. 그래서 맨 위가 되돌린 목록이고 그것을 끝까지 읽어도 키워드가
+남으면 바로 아래층에서 이어 견준다. 다 맞으면 |getNext|가 했을 그대로 |endTokenList|로 맨 위층을 걷어 낸다. 아래층이
+다 읽힌 토큰 목록이면 |getNext|가 그 층도 걷었을 테니 그런 경우는 느린 길에 맡긴다. 어긋나거나, 글자가 모자라거나,
+|interrupt|가 0이 아닐 때도 아무것도 건드리지 않고 느린 길로 간다. 그러니 이 지름길이 하는 일은 느린 길이 끝났을 때의
+상태를 곧바로 만드는 것뿐이다.
+
+견주는 일은 두 층에서 하므로 함수 둘로 둔다. 둘 다 키워드 |s|의 |k|째 글자부터 견주어, 맞은 데까지의 |k|와 그때의 자리를
+돌려준다. 맞은 마지막 토큰은 전역 변수 |curTok|에 남긴다.
+@^inner loop@>
+
+@<함수들@>=
+func keywordInList(s string, k int, r pointer) (int, pointer) {
+	for r != null && k < len(s) {
+		t := info(r)
+		c := t % 0o400
+		if t/0o400 != letter && t/0o400 != otherChar ||
+			c != asciiCode(s[k]) && c != asciiCode(s[k])-'a'+'A' {
+			break
+		}
+		curTok = t; k++; r = link(r)
+	}
+	return k, r
+}
+
+func keywordInLine(s string, k int, j, l halfword) (int, halfword) {
+	for j <= l && k < len(s) {
+		c := buffer[j]
+		cat := catCode(c)
+		if cat != letter && cat != otherChar ||
+			c != asciiCode(s[k]) && c != asciiCode(s[k])-'a'+'A' {
+			break
+		}
+		curTok = cat*0o400 + c; k++; j++
+	}
+	return k, j
+}
+
+@ 변수 |r|과 |j|는 맞은 글자들 바로 다음 자리다. 앞의 것은 토큰 목록 안의 자리이고 뒤의 것은 줄 안의 자리다. 견주는
+동안 |curTok|이 바뀌지만, 느린 길로 가더라도 |getXToken|이 곧 다시 놓으므로 탈이 없다.
+
+@<키워드가 통째로 눈앞에...@>=
+if interrupt == 0 {
+	var r pointer // 토큰 목록에서 맞은 글자들의 다음 자리
+	var j halfword // 줄에서 맞은 글자들의 다음 자리
+	if state != tokenList {
+		k, j = keywordInLine(s, 0, loc, limit)
+		if k == len(s) {
+			loc = j; state = midLine
+			@<마지막으로 맞은 토큰 |curTok|을 방금 읽은 것으로 해 두고 |true|를 돌려준다@>
+		}
+	} else if k, r = keywordInList(s, 0, loc); k == len(s) {
+		loc = r
+		@<마지막으로 맞은...@>
+	} else if k > 0 && r == null && tokenType() == backedUp {
+		@<바로 아래층에서 이어 견주어, 다 맞으면 맨 위층을 걷고 |true|를 돌려준다@>
+	}
+}
+
+@ @<마지막으로 맞은...@>=
+curCs = 0; curCmd = curTok / 0o400; curChr = curTok % 0o400
+return true
+
+@ 맨 위층을 걷어 내면 아래층이 맨 위가 되므로, 읽는 자리는 그런 다음에 옮긴다.
+
+@<바로 아래층에서 이어 견주어...@>=
+below := &inputStack[inputPtr-1] // 바로 아래층
+if below.stateField != tokenList {
+	k, j = keywordInLine(s, k, below.locField, below.limitField)
+} else if below.locField != null {
+	k, r = keywordInList(s, k, below.locField)
+}
+if k == len(s) {
+	loc = null; endTokenList()
+	if state != tokenList {
+		loc = j; state = midLine
+	} else {
+		loc = r
+	}
+	@<마지막으로 맞은...@>
 }
 
 @ 다음은 mu 단위와 mu가 아닌 단위가 섞였을 때 경보를 울리는 프로시저다. 이를테면 \.{\\mskip}에 pt로 된 글루를 주면 이
@@ -16335,7 +16505,7 @@ i += 11 + max(n+1, 0)
 @ 움직임 노드를 얻고 돌려주는 함수다. 동기식이면 원래처럼 |getNode|와 |freeNode|를 쓴다. 비동기식이면 배열 |mem|에서
 |memMax| 뒤쪽을 고루틴의 몫으로 쓴다. 노드 크기가 하나뿐이므로 할당기는 간단하다. 돌려받은 노드는 |movFree|에서 시작하는
 목록에 꿰어 두었다가 다시 쓰고, 그 목록이 비면 |movHi|를 늘려 새 노드를 만든다. 이 영역은 |maxHalfword-memMax|낱말이므로,
-보통의 |memMax=30000|이면 \TeX의 메모리 전체보다도 크다. 움직임 노드가 그만큼 쌓이는 쪽이라면 동기식으로도 메모리가
+|memMax=5000000|이면 삼백만 낱말이 넘는다. 움직임 노드가 그만큼 쌓이는 쪽이라면 동기식으로도 메모리가
 넘쳤을 것이다.
 
 플래그 |dviPrivate|는 지금 실행하는 쪽이 고루틴인지 알려 준다. 이 변수와 영역은 실행하는 쪽만 건드린다.

@@ -30,10 +30,10 @@ cp "$DIST/trip.tex" .
 cp "$TOP/tex.w" "$TOP/go.mod" .
 gtangle tex.w >/dev/null 2>&1
 perl -0pi -e '
-  s/(\n\tmemMax\s*=\s*)30000/${1}3000/        or die "memMax";
+  s/(\n\tmemMax\s*=\s*)5000000/${1}3000/      or die "memMax";
   s/(\n\tmemMin\s*=\s*)0 /${1}1 /             or die "memMin";
   s/(\n\tmemBot\s*=\s*)0 /${1}1 /             or die "memBot";
-  s/(\n\tmemTop\s*=\s*)30000/${1}3000/        or die "memTop";
+  s/(\n\tmemTop\s*=\s*)5000000/${1}3000/      or die "memTop";
   s/(\n\terrorLine\s*=\s*)72/${1}64/          or die "errorLine";
   s/(\n\thalfErrorLine\s*=\s*)42/${1}32/      or die "halfErrorLine";
   s/(\n\tmaxPrintLine\s*=\s*)79/${1}72/       or die "maxPrintLine";

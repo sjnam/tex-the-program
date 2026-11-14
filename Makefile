@@ -9,7 +9,7 @@
 #   make trip       커누스의 TRIP 테스트를 돌린다
 #   make vet        tex.w에서 뽑은 Go 소스와 퍼징 테스트를 go vet으로 살핀다
 #   make test       vet, story, trip을 모두 돌린다
-#   make regress    기준 판(BASE, 기본 faithful)의 TeX과 출력이 바이트까지 같은지 본다(trip을 먼저 돌린다)
+#   make regress    기준 판(BASE, 기본 faithful)의 TeX과 출력이 같은지 본다(메모리 통계는 가린다; trip을 먼저 돌린다)
 #   make pgo        프로파일 기반 최적화에 쓸 default.pgo를 새로 만든다(리눅스가 아니면 docker)
 #   make fuzz       기준 판의 TeX과 출력을 견주는 차등 퍼징을 FUZZTIME(기본 1m) 동안 돌린다
 #   make install    tex 명령이 이 TeX을 부르게 한다(PREFIX, 기본 ~/.local)
@@ -99,12 +99,13 @@ pgo: tex.go
 # 차등 퍼징의 기준: 기준 판의 tex.w로 만든 TeX. 기준마다 디렉터리를 따로 두므로 BASE를
 # 바꾸면 새로 만든다. 가지 이름을 주었다면 그 가지가 움직여도 저절로 다시 만들지는 않으니
 # build/ref-가지이름을 지운다.
+# 기준 판에는 빠르기와 상관없는 수정 둘(문자 대응과 메모리 크기)을 입혀서 만든다(tests/refpatch.sh).
 REF = $(BUILD)/ref-$(BASE)
 $(REF)/tex:
 	@mkdir -p $(REF)
 	git show $(BASE):tex.w > $(REF)/tex.w
 	cp go.mod $(REF)/
-	cd $(REF) && gtangle tex.w >/dev/null && go build -o tex .
+	cd $(REF) && gtangle tex.w >/dev/null && ../../tests/refpatch.sh tex.go && go build -o tex .
 
 FUZZTIME = 1m
 fuzz: $(BUILD)/tex $(REF)/tex
