@@ -11,6 +11,8 @@
 # 견주는 것:
 #   - TRIP 테스트가 남기는 파일 일곱 개 (tests/trip.sh가 만든 build/trip과)
 #   - 같은 TRIP 테스트를 쪽 내보내기를 비동기식으로 못 박고(TEXDVI=async) 돌린 결과
+#   - 같은 TRIP 테스트를 토큰을 들여다보는 지름길을 켜고(TEXPEEK=on) 돌린 결과 가운데 DVI와 쓴 파일
+#     (trip.sh는 보통 그 지름길을 끈다. 오류 메시지의 문맥이 원본과 달라지기 때문이다)
 #   - INITEX로 plain 포맷을 만들 때의 로그(시간을 잴 때는 ini로 적는다)
 #   - story.tex(배포판에서 찾는다), tex.web을 weave한 문서(536쪽), 그 본문을 여덟 번 되풀이한 문서(3911쪽),
 #     쪽을 내보내는 도중에 \write에서 치명적인 오류가 나는 문서(fatal),
@@ -60,6 +62,12 @@ TEXDVI=async "$TOP/tests/trip.sh" >/dev/null 2>&1
 for f in tripin.log tripin.fot trip.log trip.fot trip.typ tripos.tex 8terminal.tex; do
   same "TRIP(async) $f" "$W/ref/build/trip/$f" "$TOP/build/trip/$f"
 done
+# 토큰을 읽지 않고 들여다보는 지름길을 켜면 오류 메시지의 문맥이 달라지므로, 그때는 DVI와 쓴 파일만 견준다
+TEXPEEK=on "$TOP/tests/trip.sh" >/dev/null 2>&1
+for f in trip.typ tripos.tex 8terminal.tex; do
+  same "TRIP(peek) $f" "$W/ref/build/trip/$f" "$TOP/build/trip/$f"
+done
+"$TOP/tests/trip.sh" >/dev/null 2>&1 # build/trip을 보통의 결과로 되돌려 둔다
 
 # 2. 견줄 문서들을 마련한다
 mkdir -p "$W/doc"

@@ -159,6 +159,8 @@ vardef southof(expr q) = (xpart center q, ypart llcorner bbox q) enddef;
 13\pct!에서 7\pct!쯤으로 줄었고, 3911쪽짜리 문서는 1.36초에서 1.34초가 되었다.
 \item{$\bullet$} 돌려받은 작은 노드를 크기마다 따로 둔 목록에 꿰어 두었다가 그대로 다시 내준다(\secref{sized-nodes}).
 3911쪽짜리 문서가 1.34초에서 1.25초로 줄었다. 원본의 알고리즘을 바꾼 첫 번째 것이다.
+\item{$\bullet$} 토큰을 읽었다가 되돌려 놓는 대신 읽지 않고 들여다본다(\secref{peek}). 또 치수의 첫 토큰을 되돌렸다가 다시 읽던
+것을 없앴다. 3911쪽짜리 문서가 1.25초에서 1.21초로 줄었다.
 
 @ 해 보았지만 얻는 것이 없어 버린 것도 적어 둔다. \.{DVI} 파일의 쓰기 버퍼를 키우는 것은 1\pct!쯤으로 재는 오차
 안이었고, 쓰레기 수집을 끄는 것은 아무 차이가 없었다. 기록 파일 쓰기를 고루틴에게 넘기는 것도 차이가 없었다.
@@ -177,10 +179,19 @@ vardef southof(expr q) = (xpart center q, ypart llcorner bbox q) enddef;
 plain \TeX\ 입력을 \.{faithful} 판의 \TeX과 지금의 \TeX에 함께 넣고, 남긴 파일과 터미널 출력이 바이트까지
 같은지 본다.
 
+조건을 푼 날(바로 아래 문단)에는 상자를 훑는 일까지 통째로 고루틴에게 넘겨 보았다. 본체는 다 지은 쪽의 상자를 건네주기만 하고,
+|hlistOut|과 |vlistOut|은 고루틴에서 돈다. 다만 \.{\\write}와 \.{\\special}은 본체의 상태가 있어야 하므로 본체가 상자를 미리 한 번
+훑어 처리하고, 상자는 고루틴이 다 내보낸 뒤에 본체가 지운다. 결과는 맞았지만 3911쪽짜리 문서가 1.25초에서 1.32초로 오히려
+느려졌다. 미리 훑는 데에만 5\pct!가 들었고, 그것을 빼고 재어도 1.25초 그대로였다. 본체가 방금 지은 상자를 다른 코어가 읽고, 한참
+뒤에 본체가 식은 그 노드들을 지워 다시 쓰는 값이, 본체가 훑지 않아서 아끼는 값을 다 먹는다. 지금처럼 작은 명령의 줄만 넘기는
+편이 캐시에는 훨씬 낫다. 덤으로 배운 것도 있다. 가짜 문자 노드를 두는 자리 |ligTrick|은 |hlistOut|과 |hpack|이 함께 쓰므로, 둘을
+서로 다른 고루틴에서 돌리면 안 된다.
+
 가지를 다시 떼어 낸 날에 조건도 풀었다. 이제 이 가지에서는 결과가 바이트까지 같지 않아도 되고, 알고리즘과 자료구조도 마음대로
 바꿀 수 있다. 그 자유를 처음 쓴 것이 노드 할당기다. 메모리를 쓰는 순서가 달라져서 기록 파일의 메모리 통계 셋, 곧 아직 손대지
-않은 낱말의 수와 포맷에 내보낸 낱말의 수와 쓴 낱말의 최댓값이 \.{faithful} 판과 달라졌다. 그 밖의 출력은 여전히 한 바이트도
-다르지 않으며, 시험할 때는 이 셋만 가리고 견준다.
+않은 낱말의 수와 포맷에 내보낸 낱말의 수와 쓴 낱말의 최댓값이 \.{faithful} 판과 달라졌다. 토큰을 들여다보는 지름길은 오류
+메시지의 문맥을 바꾼다. 되돌린 토큰을 보여 주는 `\.{<to be read again>}' 줄이 빠질 수 있다. 조판 결과와 그 밖의 출력은 여전히
+한 바이트도 다르지 않으며, 시험할 때는 통계 셋을 가리고 지름길을 끈 채로 견준다.
 
 @ 지금의 구현에는 꽤 긴 역사가 있다. 시작은 1977년 여름이었다. 그해 5월에 저자가 쓴
 명세를 바탕으로 마이클~F. 플래스와 프랭크~M. 리앙이 원형을 설계하고 짰다.
@@ -10718,39 +10729,62 @@ func scanKeyword(s string) bool { // 주어진 문자열을 찾는다
 
 @ \seclabel{scan-keyword-fast}키워드는 대개 줄줄이 묻는다. 치수 하나를 읽을 때만 해도 |scanDimen|은 `\.{em}'인가, `\.{ex}'인가,
 `\.{true}'인가, `\.{pt}'인가 하고 차례로 묻고, 글루라면 `\.{plus}'와 `\.{minus}'가 뒤따른다. 대부분은 첫 글자에서
-어긋난다. 그때마다 위의 루틴은 방금 되돌려 둔 토큰을 |getXToken|으로 다시 꺼내고, 어긋난 것을 보고는 |backInput|으로
-도로 밀어 넣는다. 꺼낼 때 입력 스택의 한 층과 노드 하나를 내놓고, 넣을 때 바로 그 노드와 그 층을 다시 얻는다. 헛수고다.
+어긋난다. 그때마다 위의 루틴은 다음 토큰을 |getXToken|으로 꺼내고, 어긋난 것을 보고는 |backInput|으로 도로 밀어 넣는다.
+헛수고다. 그래서 다음 토큰이 펼칠 것 없는 토큰임을 읽지 않고 알 수 있으면(\secref{peek}) 들여다보기만 하고, 키워드의 첫
+글자와 어긋나면 곧장 |false|를 돌려준다.
 
-그래서 입력 스택의 맨 위가 `되돌린 토큰 하나짜리 목록'이면 꺼내지 않고 들여다보기만 한다. 그 토큰이 펼쳐지지 않는
-것이고 키워드의 첫 글자와 어긋나면, |getXToken|이 놓았을 값들을 |curCs|, |curCmd|, |curChr|, |curTok|에 놓고 곧장
-|false|를 돌려준다. 결과가 똑같다는 것은 이렇게 따져 볼 수 있다. 느린 길에서 |getNext|는 토큰을 읽어 |loc|를 |null|로
-만들고, |backInput|은 다 읽힌 그 목록을 |endTokenList|로 걷어 노드를 |avail|의 맨 위에 돌려놓았다가 |getAvail|로 바로 그
-노드를 되받아 같은 토큰을 적고 같은 층에 쌓는다. |alignState|는 중괄호 토큰이라면 한 번 늘었다가 한 번 줄고, |dynUsed|도
-제자리로 온다. 그러니 남는 것은 네 전역 변수뿐이다. 다만 몇 가지 경우는 느린 길에 맡긴다. 명령 코드가 |maxCommand|보다
-크면 펼쳐야 하고, 공백이면 건너뛰어야 하며, |tabMark|와 |carRet|은 정렬의 $v_j$ 틀을 끼워 넣을 수 있다. 바로 아래층이 다 읽힌
-토큰 목록이면 |backInput|이 그 층까지 걷을 것이고, |interrupt|가 0이 아니면 |endTokenList|가 사용자에게 말을 걸 것이다.
-이 지름길로 3911쪽짜리 문서의 조판 시간이 2\pct!쯤 줄었다(2026년 11월 12일).
+처음에는(2026년 11월 12일) 출력이 원본과 한 바이트도 달라지지 않도록, 입력 스택의 맨 위가 `되돌린 토큰 하나짜리 목록'일 때만
+이렇게 했다. 그때는 느린 길이 끝났을 때와 입력 스택의 모양까지 같다. 지금은 토큰 목록 어디에 있는 토큰이든 들여다본다.
 @^inner loop@>
 
 @<되돌려 둔 토큰이 키워드의 첫 글자와...@>=
-if state == tokenList && loc != null && loc == start && link(loc) == null &&
-	tokenType() == backedUp && interrupt == 0 {
-	below := &inputStack[inputPtr-1] // 바로 아래층
-	if below.stateField != tokenList || below.locField != null || below.indexField == vTemplate {
-		var cs pointer // |curCs|가 될 값
-		var cmd, chr halfword // |curCmd|와 |curChr|가 될 값
-		t := info(loc)
-		if t >= csTokenFlag {
-			cs = t - csTokenFlag; cmd = eqType(cs); chr = equiv(cs)
-		} else {
-			cmd = t / 0o400; chr = t % 0o400
-		}
-		if cmd <= maxCommand && cmd != spacer && (cmd < tabMark || cmd > carRet) &&
-			(cs != 0 || chr != asciiCode(s[0]) && chr != asciiCode(s[0])-'a'+'A') {
-			curCs = cs; curCmd = cmd; curChr = chr; curTok = t
+if peekUnexpandable() &&
+	(curCs != 0 || curChr != asciiCode(s[0]) && curChr != asciiCode(s[0])-'a'+'A') {
+	return false
+}
+
+@ \seclabel{peek}\TeX은 토큰을 하나 읽어 보고 바라던 것이 아니면 되돌려 놓는 일을 아주 자주 한다. 수 뒤에 공백이 있는지,
+숫자가 더 이어지는지, 단위 자리에 내부 치수가 오는지를 모두 그렇게 알아본다. 되돌린 토큰은 입력 스택에 새 층을 하나 쌓아
+거기에 두므로, 읽고 되돌리는 데에는 노드 하나와 스택의 한 층을 얻었다 내놓는 값이 든다. 3911쪽짜리 문서에서 이 값이 조판
+시간의 몇 퍼센트였다.
+
+함수 |peekUnexpandable|은 그 일을 읽지 않고 한다(2026년 11월 14일). 지금 읽는 토큰 목록의 다음 토큰이 펼칠 것 없고 공백도
+아닌 토큰이면, |getXToken|이 놓았을 값들을 |curCs|, |curCmd|, |curChr|, |curTok|에 놓고 |true|를 돌려준다. 입력은 건드리지
+않는다. 그러니 부르는 쪽은 `읽었다가 되돌린' 것으로 치고 넘어가면 된다. 그 밖의 경우에는 |false|를 돌려주고, 부르는 쪽은
+원래대로 읽는다. 문자 토큰은 중괄호, 수식 전환, 위아래 첨자, 글자, 기타 문자만 받는다. 정렬의 |tabMark|와 |carRet|은
+$v_j$ 틀을 끼워 넣을 수 있고 매개변수 토큰은 인자로 바뀌어야 하기 때문이다. 제어 시퀀스는 뜻이 |maxCommand| 이하인 것,
+곧 펼쳐지지 않는 것만 받는다. 줄에서 읽는 중이면 늘 |false|다. 줄의 문자는 아직 토큰이 아니어서, 되돌려 둔 토큰과 달리
+그사이에 범주 코드가 바뀌면 다른 토큰이 될 수 있다.
+
+조판 결과는 달라지지 않는다. 달라지는 것은 오류 메시지의 문맥뿐이다. 원본에서는 되돌린 토큰이 따로 한 층을 차지하므로 그
+뒤에 오류가 나면 문맥에 `\.{<to be read again>}' 줄이 나오는데, 여기서는 그 토큰이 제자리에 그대로 있으므로 그 줄이 없다.
+원본과 문맥까지 같은지 시험할 때는 환경 변수 \.{TEXPEEK}를 `\.{off}'로 주어 이 지름길을 끈다. \.{TRIP} 시험이 그렇게 한다.
+@^inner loop@>
+
+@<전역 변수@>=
+var @!peekOK = os.Getenv("TEXPEEK") != "off" // 읽지 않고 들여다보아도 되는가?
+
+@ @<함수들@>=
+func peekUnexpandable() bool {
+	if state != tokenList || loc == null || interrupt != 0 || !peekOK {
+		return false
+	}
+	t := info(loc)
+	if t >= csTokenFlag {
+		cmd := eqType(t - csTokenFlag)
+		if cmd > maxCommand || cmd == spacer || cmd == endv || cmd >= tabMark && cmd <= carRet {
 			return false
 		}
+		curCs = t - csTokenFlag; curCmd = cmd; curChr = equiv(curCs)
+	} else {
+		cmd := t / 0o400
+		if cmd != letter && cmd != otherChar && cmd > mathShift && cmd != supMark && cmd != subMark {
+			return false
+		}
+		curCs = 0; curCmd = cmd; curChr = t % 0o400
 	}
+	curTok = t
+	return true
 }
 
 @ \seclabel{scan-keyword-match}맞는 쪽에도 지름길을 낸다(2026년 11월 14일). 키워드가 맞을 때 위의 루틴은 글자마다 |getXToken|을 부르고,
@@ -11382,16 +11416,25 @@ curOrder = normal
 |scanDimen|은 |scanInt|가 정수 부분을 훑고 나면 |curTok=pointToken|이고, 소수점은 다시 읽도록 되돌려져 있다고
 가정한다.
 
+원본의 |scanDimen|은 치수의 첫 토큰을 읽어 본 다음 그것을 되돌려 놓고 |scanInt|를 부른다. 그러면 |scanInt|는 방금 되돌린
+바로 그 토큰을 다시 읽는다. 이 왕복을 없애려고 |scanInt|를 둘로 나누었다(2026년 11월 14일). 부호까지 읽는 앞부분은
+|scanInt|에 남고, 첫 토큰이 |curTok|에 있다고 보고 나머지를 하는 부분이 |scanIntRest|다. 함수 |scanDimen|은 뒤의 것을 바로 부른다.
+
 @<함수들@>=
 func scanInt() { // |curVal|을 정수로 놓는다
 	var negative bool // 답의 부호를 바꾸어야 하나?
+	@<공백도 부호도 아닌 다음 토큰을 얻고 |negative|를 알맞게 놓는다@>
+	scanIntRest(negative)
+}
+
+func scanIntRest(negative bool) { // 첫 토큰을 이미 읽은 |scanInt|
 	var m int32 // 위험의 문턱값, 곧 $2^{31}$을 |radix|로 나눈 몫
 	var d smallNumber // 방금 훑은 숫자
 	var vacuous bool // 숫자가 하나도 나타나지 않았나?
 	var okSoFar bool // 오류 메시지를 냈나?
+	var peeked bool // 수 다음의 토큰을 읽지 않고 들여다보기만 했나?
 	radix = 0
 	okSoFar = true
-	@<공백도 부호도 아닌 다음 토큰을 얻고 |negative|를 알맞게 놓는다@>
 	if curTok == alphaToken {
 		@<알파벳 문자 코드를 |curVal|에 훑어 넣는다@>
 	} else if curCmd >= minInternal && curCmd <= maxInternal {
@@ -11449,11 +11492,13 @@ if curVal > 255 {
 	@<선택적인 공백 하나를 훑는다@>
 }
 
-@ 공백 토큰이 하나 있으면 삼키고, 아니면 읽은 토큰을 되돌린다.
+@ 공백 토큰이 하나 있으면 삼키고, 아니면 읽은 토큰을 되돌린다. 공백이 아님을 읽지 않고 알 수 있으면 읽지도 않는다(\secref{peek}).
 @<선택적인 공백 하나를...@>=
-getXToken()
-if curCmd != spacer {
-	backInput()
+if !peekUnexpandable() {
+	getXToken()
+	if curCmd != spacer {
+		backInput()
+	}
 }
 
 @ 수 상수를 훑는다. 기수에 따라 넘침의 문턱값 |m|을 정한다.
@@ -11474,7 +11519,7 @@ curVal = 0
 @<|curTok|이 알맞은 숫자가 아닐 때까지 상수를 쌓는다@>
 if vacuous {
 	@<수가 없다는 데 놀라움을 나타낸다@>
-} else if curCmd != spacer {
+} else if curCmd != spacer && !peeked {
 	backInput()
 }
 
@@ -11513,6 +11558,10 @@ for {
 		}
 	} else {
 		curVal = curVal*radix + d
+	}
+	if radix == 10 && peekUnexpandable() && (curTok < zeroToken || curTok > zeroToken+9) {
+		peeked = true // 숫자가 아니니 읽지 않고 그대로 둔다(\secref{peek})
+		goto done
 	}
 	getXToken()
 }
@@ -11563,6 +11612,8 @@ func scanNormalDimen() { scanDimen(false, false, false) }
 func scanDimen(mu, inf, shortcut bool) { // |curVal|을 치수로 놓는다
 	var negative bool // 답의 부호를 바꾸어야 하나?
 	var f int32 // 분모가 $2^{16}$인 분수의 분자
+	var peeked bool // 소수 부분 다음의 토큰을 읽지 않고 들여다보기만 했나?
+	var pointRead bool // 소수점이 치수의 첫 토큰이어서 이미 읽었나?
 	@<치수 계산을 위한 지역 변수@>
 	f = 0
 	arithError = false
@@ -11588,19 +11639,20 @@ attachSign: // |curVal|이 부호 말고는 맞을 때 여기로 간다
 
 @ 루틴 |scanDimen|의 앞부분이다. 매개변수 |shortcut|이 |false|일 때 실행한다. 부호를 읽고, 내부 치수가 오면 그
 값을 쓰고, 아니면 정수 부분과 소수 부분을 읽는다. 쉼표도 소수점으로 받아들인다. 유럽에서는 쉼표를 소수점으로 쓰기
-때문이다.
+때문이다. 첫 토큰은 되돌리지 않고 |scanIntRest|에 그대로 넘긴다. 첫 토큰이 소수점이면 그것은 이미 읽은 것이므로,
+|pointRead|에 적어 두어 소수 부분을 훑을 때 다시 읽지 않게 한다.
 
 @<부호와 정수 부분과...@>=
 @<공백도 부호도 아닌...@>
 if curCmd >= minInternal && curCmd <= maxInternal {
 	@<내부 치수를 가져와 |goto attachSign|, 아니면 내부 정수를 가져온다@>
 } else {
-	backInput()
 	if curTok == continentalPointToken {
 		curTok = pointToken
 	}
-	if curTok != pointToken {
-		scanInt()
+	pointRead = curTok == pointToken
+	if !pointRead {
+		scanIntRest(false)
 	} else {
 		radix = 10
 		curVal = 0
@@ -11658,8 +11710,15 @@ if curValLevel >= glueVal {
 @<소수 부분을...@>=
 k = 0
 p = null
-getToken() // |pointToken|을 다시 훑는다
+if !pointRead {
+	getToken() // |pointToken|을 다시 훑는다
+}
+peeked = false
 for {
+	if peekUnexpandable() && (curTok > zeroToken+9 || curTok < zeroToken) {
+		peeked = true // 숫자가 아니니 읽지 않고 그대로 둔다(\secref{peek})
+		goto done1
+	}
 	getXToken()
 	if curTok > zeroToken+9 || curTok < zeroToken {
 		goto done1
@@ -11680,7 +11739,7 @@ for kk = k; kk >= 1; kk-- {
 	freeAvail(q)
 }
 f = roundDecimals(k)
-if curCmd != spacer {
+if curCmd != spacer && !peeked {
 	backInput()
 }
 
@@ -11738,25 +11797,28 @@ if scanKeyword("fil") {
 	goto attachFraction
 }
 
-@ 단위 자리에 내부 치수가 올 수 있다. \.{2\\hsize}는 \.{\\hsize}의 두 배이고, \.{1.5em}의 \.{em}도 사실상 현재 글꼴의
+@ 다음 토큰이 내부 치수가 아님을 읽지 않고 알 수 있으면(\secref{peek}) 읽었다 되돌리는 일을 건너뛴다.
+단위 자리에 내부 치수가 올 수 있다. \.{2\\hsize}는 \.{\\hsize}의 두 배이고, \.{1.5em}의 \.{em}도 사실상 현재 글꼴의
 치수다. 내부 치수가 단위이면 앞의 수에 그 값을 곱한다. 곱할 때 넘치지 않도록 |nxPlusY|와 |xnOverD|를 쓴다.
 @<내부 치수인 단위를...@>=
 saveCurVal = curVal
-@<공백도 호출도 아닌...@>
-if curCmd < minInternal || curCmd > maxInternal {
-	backInput()
-} else {
-	if mu {
-		scanSomethingInternal(muVal, false)
-		@<글루를 치수로...@>
-		if curValLevel != muVal {
-			muError()
-		}
+if !peekUnexpandable() || curCmd >= minInternal && curCmd <= maxInternal {
+	@<공백도 호출도 아닌...@>
+	if curCmd < minInternal || curCmd > maxInternal {
+		backInput()
 	} else {
-		scanSomethingInternal(dimenVal, false)
+		if mu {
+			scanSomethingInternal(muVal, false)
+			@<글루를 치수로...@>
+			if curValLevel != muVal {
+				muError()
+			}
+		} else {
+			scanSomethingInternal(dimenVal, false)
+		}
+		v = curVal
+		goto found
 	}
-	v = curVal
-	goto found
 }
 if mu {
 	goto notFound

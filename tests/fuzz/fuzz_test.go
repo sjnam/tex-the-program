@@ -1,8 +1,9 @@
 // 차등 퍼징: 같은 입력을 기준 TeX(꼬리표 faithful, 곧 원본 tex.web을 충실히 옮긴 판의 tex.w로
 // 만든 것)과 지금의 TeX으로 조판해, 남긴 파일(DVI, 로그, \openout으로 쓴 파일)과 터미널 출력이
-// 바이트까지 같은지 본다.
-// 쪽 내보내기를 비동기식으로 못 박은 실행(TEXDVI=async)도 함께 견주되, 이때는 메모리 통계가
-// 달라질 수 있으므로 DVI와 \write로 쓴 파일만 견준다.
+// 같은지 본다(메모리 통계는 가린다). 이 실행에서는 토큰을 읽지 않고 들여다보는 지름길을 끈다
+// (TEXPEEK=off). 그 지름길은 오류 메시지의 문맥을 바꾸기 때문이다.
+// 쪽 내보내기를 비동기식으로 못 박은 실행(TEXDVI=async)도 함께 견주되, 이때는 지름길을 켠 채로
+// 돌리고 DVI와 \write로 쓴 파일만 견준다.
 //
 //	go test ./tests/fuzz                       씨앗 입력만 돌린다
 //	go test ./tests/fuzz -fuzz=FuzzSame -fuzztime=10m
@@ -227,7 +228,7 @@ func FuzzSame(f *testing.F) {
 		var ref, ours, async result
 		var wg sync.WaitGroup
 		wg.Go(func() { ref = run(t, refBin, refFmt, doc) })
-		wg.Go(func() { ours = run(t, oursBin, oursFmt, doc) })
+		wg.Go(func() { ours = run(t, oursBin, oursFmt, doc, "TEXPEEK=off") })
 		wg.Go(func() { async = run(t, oursBin, oursFmt, doc, "TEXDVI=async") })
 		wg.Wait()
 		// 보통은 수십 ms면 끝나므로, 모두 시간을 넘기면 무한 루프로 보고 건너뛰고,
@@ -240,7 +241,7 @@ func FuzzSame(f *testing.F) {
 			ref = runFor(t, 5*runTimeout, refBin, refFmt, doc)
 		}
 		if ours.timedOut {
-			ours = runFor(t, 5*runTimeout, oursBin, oursFmt, doc)
+			ours = runFor(t, 5*runTimeout, oursBin, oursFmt, doc, "TEXPEEK=off")
 		}
 		if async.timedOut {
 			async = runFor(t, 5*runTimeout, oursBin, oursFmt, doc, "TEXDVI=async")

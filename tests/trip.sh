@@ -45,6 +45,9 @@ go build -o triptex .
 # 무엇이 잘못되면 기록 파일이 끝없이 커질 수 있으므로 파일 크기를 제한한다
 ulimit -f 100000
 export TEXFONTS=. TEXINPUTS=.
+# TRIP은 오류 메시지의 문맥까지 원본과 견주므로, 토큰을 읽지 않고 들여다보는 지름길은 끈다(tex.w의 peekUnexpandable).
+# 그 지름길을 켠 채로 돌려 보려면 TEXPEEK=on을 준다.
+export TEXPEEK=${TEXPEEK:-off}
 
 # 3. 첫 실행: `**'에 빈 줄을 주고, 다시 `**'에 \input trip을 준다
 printf '\n\\input trip\n' | ./triptex -ini > tripin.fot 2>&1 || true

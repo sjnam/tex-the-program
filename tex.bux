@@ -51,12 +51,12 @@
 @$ligKern "TFM" \zip@>
 
 % 실제 레이블. `done5: ;'처럼 뒤에 `;'이 붙어 gweave가 정의로 잡지 못한다.
-@$done5 {\TeX82}979 \twilllabel@>
+@$done5 {\TeX82}981 \twilllabel@>
 
 % 보기를 들거나 설명하려고 산문에서만 쓴 이름. 설명하는 절을 가리킨다.
 % 그 절에서만 나오는 이름은 이렇게 하면 미니 색인에서 빠진다.
 @$isNl {\TeX82}82 \zip@>
 @$reportOverflow {\TeX82}132 \zip@>
-@$P {\TeX82}789 \zip@>
-@$curHeight {\TeX82}1093 \zip@>
-@$chr {\TeX82}1357 \zip@>
+@$P {\TeX82}791 \zip@>
+@$curHeight {\TeX82}1095 \zip@>
+@$chr {\TeX82}1359 \zip@>
